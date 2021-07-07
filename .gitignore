@@ -24,4 +24,4 @@ package-lock.json
 .eslintcache
 .pjstuff.txt
 
-api/runserver.sh
+/api/runserver.sh
