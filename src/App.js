@@ -3,9 +3,10 @@ import ReactDOM from 'react-dom'
 import { makeServer } from './components/mirageServer'
 import styled from 'styled-components'
 import Sidebar from './components/Sidebar'
+import DailyView from './components/DailyView'
 import './App.css';
 
-const apiTest = "http://localhost:5001/api/testdata"
+makeServer();
 
 const ViewArea = styled.div`
   display: flex;
@@ -16,21 +17,6 @@ const ViewArea = styled.div`
   margin-left: 25%;
   border: 1px solid black;
   background-color: white;
-`
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-content: center;
-  justify-content: center;
-  padding: 5px;
-`
-
-const Child = styled.div`
-  border: 1px solid black;
-  margin-left: -1px;
-  padding: 5px;
 `
 
 const populateTimeSheet = (json) => {
@@ -45,16 +31,19 @@ const SidebarLinks = [
 
 const SidebarContent = [
   {
+    id: 1,
     title: "Daily overview",
-    content: "The overview"
+    content: <DailyView />,
   },
   {
+    id: 2,
     title: "Projects",
-    content: "The projects"
+    content: "The projects",
   },
   {
+    id: 3,
     title: "Metrics",
-    content: "The metrics"
+    content: "The metrics",
   }
 ]
 
@@ -63,47 +52,25 @@ const showContent = (links, activeLink) => {
   if (found != undefined) return <div>{found.content}</div>
 }
 
-const Entry = props =>
-  props.data.map(row => 
-    <Container>
-      <Child>{row.id}</Child>
-      <Child>{row.data.user}</Child>
-      <Child>{row.data.entry.task}</Child>
-      <Child>{row.data.entry.progress}</Child>
-      <Child>{row.ts}</Child>
-    </Container>
-  )
-
 const App = () => {
-  const [testData, setTestData] = useState(null);
   const [activeLink, setActiveLink] = useState(SidebarContent[0].title);
+  const [activeContent, setActiveContent] = useState(SidebarContent[0].content)
+  let timesheet_entries
 
-  const getTestData = async () => {
-    fetch(apiTest)
-    .then(res => res.json())
-    .then(res => {
-      setTestData(res)
-    })
-    makeServer();
-    const test = await fetch('/api/test');
-    console.log(test);
-  
-  }
-
-  useEffect(() => {
-    getTestData();
-  }, []);
+  // useEffect(() => {
+  // }, []);
 
   return (
     <div className="App">
       <Sidebar links={SidebarContent}
         activeLink={activeLink}
         setActiveLink={setActiveLink}
+        setActiveContent={setActiveContent}
       />
 
       <ViewArea>
-        {showContent(SidebarContent, activeLink)}
-        {/* {testData ? <Entry data={testData} /> : "Loading..."} */}
+        {activeContent}
+        {/* {showContent(SidebarContent, activeLink)} */}
       </ViewArea>
     </div>
   );
