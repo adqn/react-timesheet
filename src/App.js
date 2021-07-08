@@ -15,7 +15,6 @@ const ViewArea = styled.div`
   margin: auto;
   margin-top: 10%;
   margin-left: 25%;
-  border: 1px solid black;
   background-color: white;
 `
 
@@ -37,11 +36,6 @@ const SidebarContent = [
   }
 ]
 
-const showContent = (links, activeLink) => {
-  const found = links.find(link => link.title === activeLink)
-  if (found != undefined) return <div>{found.content}</div>
-}
-
 const App = () => {
   const [activeLink, setActiveLink] = useState(SidebarContent[0].title);
   const [activeContent, setActiveContent] = useState(SidebarContent[0].content)
@@ -53,6 +47,7 @@ const App = () => {
         setActiveLink={setActiveLink}
         setActiveContent={setActiveContent}
       />
+
       <ViewArea>
         {activeContent}
       </ViewArea>
