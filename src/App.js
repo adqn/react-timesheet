@@ -13,21 +13,11 @@ const ViewArea = styled.div`
   flex-direction: column;
   width: 70%;
   margin: auto;
-  margin-top: 15%;
+  margin-top: 10%;
   margin-left: 25%;
   border: 1px solid black;
   background-color: white;
 `
-
-const populateTimeSheet = (json) => {
-  // map json emp data to flexbox children
-}
-
-const SidebarLinks = [
-  "Daily overview",
-  "Projects",
-  "Metrics"
-]
 
 const SidebarContent = [
   {
@@ -55,10 +45,6 @@ const showContent = (links, activeLink) => {
 const App = () => {
   const [activeLink, setActiveLink] = useState(SidebarContent[0].title);
   const [activeContent, setActiveContent] = useState(SidebarContent[0].content)
-  let timesheet_entries
-
-  // useEffect(() => {
-  // }, []);
 
   return (
     <div className="App">
@@ -67,10 +53,8 @@ const App = () => {
         setActiveLink={setActiveLink}
         setActiveContent={setActiveContent}
       />
-
       <ViewArea>
         {activeContent}
-        {/* {showContent(SidebarContent, activeLink)} */}
       </ViewArea>
     </div>
   );

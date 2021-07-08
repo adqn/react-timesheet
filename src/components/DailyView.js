@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
+// const ViewArea = styled.div`
+//   display: flex;
+//   position: absolute;
+//   flex-direction: column;
+//   width: 70%;
+//   margin: auto;
+//   margin-top: 10%;
+//   margin-left: 25%;
+//   border: 1px solid black;
+//   background-color: white;
+// `
+
 const Container = styled.div`
   display: flex;
   flex-direction: row;
@@ -17,7 +29,7 @@ const Child = styled.div`
 `
 
 const Entry = props =>
-  props.data.map(row => 
+  props.data.map(row =>
     <Container key={row.id}>
       {/* <Child>{row.id}</Child> */}
       <Child>{row.user}</Child>
@@ -29,7 +41,7 @@ const Entry = props =>
 
 const DailyView = () => {
   const [loading, setLoading] = useState(true)
-  const [testData, setTestData] = useState(null)
+  const [testData, setTestData] = useState(null) // Cache this on load
 
   const getTestData = async () => {
     let timesheet_entries
@@ -45,7 +57,7 @@ const DailyView = () => {
 
   return (
     <div>
-      {loading ? "Loading..." : <Entry data={testData} />}
+        {loading ? "Loading..." : <Entry data={testData} />}
     </div>
   )
 
