@@ -57,7 +57,7 @@ export default function UserArea() {
   const [minutes, setMinutes] = useState(0)
   const [hours, setHours] = useState(0)
   const dummyProjects = [{
-    name: "           "
+    name: "Getting projects..."
   }]
 
   const getProjects = async () => {
