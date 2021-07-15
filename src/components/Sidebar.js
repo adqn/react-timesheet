@@ -3,11 +3,13 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
-  NavLink
+  NavLink,
+  Redirect
 } from "react-router-dom";
 import styled from 'styled-components'
 import DailyView from './DailyView'
 import Metrics from './Metrics'
+import UserArea from './UserArea'
 
 const ViewArea = styled.div`
   display: flex;
@@ -37,6 +39,12 @@ const routes = [
     exact: true,
     sidebar: () => <a>Metrics</a>,
     main: () => <Metrics />
+  },
+  {
+    path: "/userarea",
+    exact: true,
+    sidebar: () => <a>User area</a>,
+    main: () => <UserArea />
   }
 ]
 
@@ -47,6 +55,15 @@ const Sidebar = () => {
         <NavLink to="/daily" activeClassName="a active">Daily overview</NavLink>
         <NavLink to="/projects" activeClassName="a active">Projects</NavLink>
         <NavLink to="/metrics" activeClassName="a active">Metrics</NavLink>
+        <NavLink to="/userarea" activeClassName="a active">User area</NavLink>
+
+        <Switch>
+          <Route 
+            exact
+            path="/"
+            render={()=><Redirect to="/daily" />}
+            />
+        </Switch>
 
         <Switch>
           {routes.map((route, index) => (
@@ -58,6 +75,7 @@ const Sidebar = () => {
           ))}
         </Switch>
       </div>
+
       <ViewArea>
         <Switch>
           {routes.map((route, index) => (
