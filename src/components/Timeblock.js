@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 
-String.prototype.last = function() {return this[this.length - 1]}
-
 const DefaultTemplate = [
   {
-    time: '0000', 
+    time: '0000',
     planned: 'sleep',
     revisions: [
       'not sleeping',
@@ -56,32 +54,57 @@ const Container = styled.div`
 const Cell = styled.input`
   width: 100px;
   height: 20px;
-  border: 1px solid black;
-  pointer-events: ${props => props.isActive}
+  border: solid;
+  border-width: ${props => props.borderWidth};
+  border-color: ${props => props.color};
+  pointer-events: ${props => props.isActive};
 `
 
-const activeCell = styled(Cell)`
-  pointer-events: auto;
-`
-
-const InteractiveCell = ({initialValue}) => {
+const InteractiveCell = ({ initialValue }) => {
+  const inactiveColor = "black"
+  const activeColor = "#3eadce"
+  const [color, setColor] = useState(inactiveColor)
+  const [borderWidth, setBorderWidth] = useState("1px")
   const [active, setActive] = useState("none")
+  const [readOnly, setReadOnly] = useState(true)
   const [value, setValue] = useState(initialValue)
 
-  function listener(e) {
-    
+  function lockValue() {
+    setActive("none")
+    setColor(inactiveColor)
+    setBorderWidth("1px")
+    setReadOnly(true)
   }
 
   function editValue(e) {
-    if (active === "none") setActive("auto")
-    else setActive("none")
+    if (active === "none") {
+      setActive("auto")
+      setColor(activeColor)
+      setBorderWidth("3px")
+      setReadOnly(false)
+    }
+  }
+
+  function listener(e) {
+    if (e.key === "Enter") {
+      lockValue()
+    }
   }
 
   return (
-    <Cell
-      isActive={active}
-      onClick={() => editValue()}
-    />
+    <div
+      onClick={() => editValue()} 
+    >
+      <Cell
+        color={color}
+        borderWidth={borderWidth}
+        isActive={active}
+        defaultValue={initialValue}
+        readOnly={readOnly}
+        onBlur={() => lockValue()}
+        onKeyDown={e => listener(e)}
+      />
+    </div>
   )
 }
 
@@ -96,8 +119,11 @@ export default function Timeblock() {
 
 
   return (
-    <div>       
-      <InteractiveCell initialValue={"Stuff"} />
+    <div>
+      <InteractiveCell onClick={() => {
+        console.log('click');
+      }}
+        initialValue={"Stuff"} />
     </div>
   )
 }
