@@ -46,6 +46,81 @@ const DefaultTemplate = [
   }
 ]
 
+// just index by rows?
+const BetterTemplate = [
+  {
+    cols: [
+      {
+        id: 'time1',
+        content: '0000'
+      },
+      {
+        id: 'plan1',
+        content: 'sleep'
+      },
+      {
+        id: 'rev1',
+        content: `don't sleep actually`
+      }
+    ]
+  },
+  {
+    cols: [
+      {
+        id: 'time2',
+        content: '0800'
+      },
+      {
+        id: 'plan2',
+        content: 'wake up'
+      }
+    ]
+  }
+]
+
+// or columns?
+const AnotherTemplate = [
+  {
+    header: "Time",
+    rows: [
+      {
+        id: 'time1',
+        content: '0000'
+      },
+      {
+        id: 'time2',
+        content: '0800'
+      }
+    ]
+  },
+  {
+    header: "Plan",
+    rows: [
+      {
+        id: 'plan1',
+        content: 'sleep'
+      },
+      {
+        id: 'plan2',
+        content: 'wake up'
+      }
+    ]
+  },
+  {
+    header: 'Revision 1',
+    rows: [
+      {
+        id: 'rev1-1',
+        content: ''
+      },
+      {
+        id: 'rev1-2',
+        content: `don't wake up`
+      }
+    ]
+  }
+]
+
 const Container = styled.div`
   display: flex;
   flex-direction: row;
@@ -111,10 +186,10 @@ const getColumns = (template, setActiveElement) => {
 }
 
 const saveLayout = cols => {
-
+  let layout = []
 }
 
-const InteractiveCell = ({ id, initialValue, setActiveElement }) => {
+const InteractiveCell = ({ id, initialValue, setActiveElement, setLayout }) => {
   const inactiveColor = "black"
   const activeColor = "#3eadce"
   const [color, setColor] = useState(inactiveColor)
@@ -135,19 +210,8 @@ const InteractiveCell = ({ id, initialValue, setActiveElement }) => {
   }
 
   function editValue(e) {
-    const htmlString = e.currentTarget.innerHTML
-    const cellValue = htmlString.match(/value=".+"/).toString().split(`"`)[1]
-
-    let left = e.target.getBoundingClientRect().left
-    let right = e.target.getBoundingClientRect().right
-    let top = e.target.getBoundingClientRect().top
-    let bottom = e.target.getBoundingClientRect().bottom
-
-    // console.log(top, left, right, bottom)
-    // console.log(e.clientX)
-
-    // e.preventDefault()
-    // setValueRegister(value)
+    setValueRegister(value)
+    setActiveElement(id)
 
     if (active === "none") {
       setActive("auto")
@@ -155,9 +219,7 @@ const InteractiveCell = ({ id, initialValue, setActiveElement }) => {
       setBorderWidth("3px")
       setMargin("-2px")
       setReadOnly(false)
-      setActiveElement(id)
     }
-
   }
 
   function listener(e) {
@@ -179,23 +241,25 @@ const InteractiveCell = ({ id, initialValue, setActiveElement }) => {
         borderWidth={borderWidth}
         margin={margin}
         isActive={active}
-        defaultValue={value}
+        value={value}
         readOnly={readOnly}
         onBlur={() => lockValue()}
         onKeyDown={e => listener(e)}
+        onChange={e => setValue(e.target.value)}
       />
     </div>
   )
 }
 
 export default function Timeblock() {
+  const [layout, setLayout] = useState(DefaultTemplate)
   const [activeElement, setActiveElement] = useState(null)
   const [columns, setColumns] = useState([])
   const [timeColumn, plannedColumn] = getColumns(DefaultTemplate, setActiveElement)
 
   const unfocusElement = (e) => {
     if (activeElement) {
-      if (e.currentTarget.id != activeElement) {
+      if (e.target.id != activeElement) {
         // console.log("unfocused ", activeElement)
         setActiveElement(null)
       }
