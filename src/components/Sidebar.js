@@ -6,20 +6,12 @@ import {
   NavLink,
   Redirect
 } from "react-router-dom";
+import '../App.css'
 import styled from 'styled-components'
 import DailyView from './DailyView'
 import Metrics from './Metrics'
 import UserArea from './UserArea'
-
-const ViewArea = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 70%;
-  margin: auto;
-  margin-top: 10%;
-  margin-left: 25%;
-  background-color: white;
-`
+import Timeblock from './Timeblock'
 
 const routes = [
   {
@@ -45,6 +37,12 @@ const routes = [
     exact: true,
     sidebar: () => <a>User area</a>,
     main: () => <UserArea />
+  },
+  {
+    path: "/timeblock",
+    exact: true,
+    sidebar: () => <a>Timeblock</a>,
+    main: () => <Timeblock />
   }
 ]
 
@@ -56,6 +54,7 @@ const Sidebar = () => {
         <NavLink to="/projects" activeClassName="a active">Projects</NavLink>
         <NavLink to="/metrics" activeClassName="a active">Metrics</NavLink>
         <NavLink to="/userarea" activeClassName="a active">User area</NavLink>
+        <NavLink to="/timeblock" activeClassName="a active">Timeblock</NavLink>
 
         <Switch>
           <Route 
@@ -76,7 +75,7 @@ const Sidebar = () => {
         </Switch>
       </div>
 
-      <ViewArea>
+      <div className="ViewArea">
         <Switch>
           {routes.map((route, index) => (
             <Route
@@ -87,7 +86,7 @@ const Sidebar = () => {
             />
           ))}
         </Switch>
-      </ViewArea>
+      </div>
     </Router>
   )
 }
