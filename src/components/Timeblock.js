@@ -171,7 +171,7 @@ const InteractiveCell = ({ id, initialValue, setActiveElement, setLayout }) => {
   const [value, setValue] = useState(initialValue)
   const [valueRegister, setValueRegister] = useState(value)
 
-  const textInput = React.useRef(null)
+  const thisRef = React.useRef(null)
 
   function lockValue() {
     setActive("none")
@@ -183,8 +183,8 @@ const InteractiveCell = ({ id, initialValue, setActiveElement, setLayout }) => {
   }
 
   function editValue(e) {
-    // good for now but need to trigger focus on second click
-    textInput.current.focus();
+    // good for now but still need to trigger focus on second click instead
+    // thisRef.current.focus();
     setValueRegister(value)
     setActiveElement(id)
 
@@ -212,7 +212,7 @@ const InteractiveCell = ({ id, initialValue, setActiveElement, setLayout }) => {
       onClick={(e) => editValue(e)} 
     >
       <Cell
-        ref={textInput}
+        ref={thisRef}
         color={color}
         borderWidth={borderWidth}
         margin={margin}
