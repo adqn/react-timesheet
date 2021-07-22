@@ -46,42 +46,11 @@ const DefaultTemplate = [
   }
 ]
 
-// just index by rows?
-const BetterTemplate = [
-  {
-    cols: [
-      {
-        id: 'time1',
-        content: '0000'
-      },
-      {
-        id: 'plan1',
-        content: 'sleep'
-      },
-      {
-        id: 'rev1',
-        content: `don't sleep actually`
-      }
-    ]
-  },
-  {
-    cols: [
-      {
-        id: 'time2',
-        content: '0800'
-      },
-      {
-        id: 'plan2',
-        content: 'wake up'
-      }
-    ]
-  }
-]
-
 // or columns?
 const AnotherTemplate = [
   {
-    header: "Time",
+    id: 'time',
+    content: "Time",
     rows: [
       {
         id: 'time1',
@@ -94,7 +63,8 @@ const AnotherTemplate = [
     ]
   },
   {
-    header: "Plan",
+    id: 'plan',
+    content: 'Plan',
     rows: [
       {
         id: 'plan1',
@@ -107,7 +77,8 @@ const AnotherTemplate = [
     ]
   },
   {
-    header: 'Revision 1',
+    id: 'rev1',
+    content: 'Revision 1',
     rows: [
       {
         id: 'rev1-1',
@@ -159,34 +130,34 @@ const Cell = styled.input`
 
 const getColumns = (template, setActiveElement) => {
   let [time, plan, revisions] = [[], [], []]
+  let columns = [];
 
   template.map((item, i) => {
     time.push(<InteractiveCell id={"time" + i} initialValue={item.time} setActiveElement={setActiveElement}/>)
     plan.push(<InteractiveCell id={"plan" + i} initialValue={item.planned} setActiveElement={setActiveElement} />)
   })
 
-  const timeColumn =
-    <Column>
-      <Header>Time</Header>
-      {time.map(cell => {
-        return cell
-      })}
-    </Column>
+  // for (let obj of template) {
+  //   obj.rows.map(() => {
 
-  const plannedColumn = 
-    <Column>
-      <Header>Activity</Header>
-      {plan.map(cell => {
-        return cell
-      })}
-    </Column>
+  //   })
+  // }
 
-  // return [timeColumn, plannedColumn]
   return [time, plan]
 }
 
 const saveLayout = cols => {
   let layout = []
+}
+
+const TheColumn = ({id, cells}) => {
+  return (
+    <div
+      id={id}
+    >
+      {cells}
+    </div>
+  )
 }
 
 const InteractiveCell = ({ id, initialValue, setActiveElement, setLayout }) => {
@@ -200,6 +171,8 @@ const InteractiveCell = ({ id, initialValue, setActiveElement, setLayout }) => {
   const [value, setValue] = useState(initialValue)
   const [valueRegister, setValueRegister] = useState(value)
 
+  const textInput = React.useRef(null)
+
   function lockValue() {
     setActive("none")
     setColor(inactiveColor)
@@ -210,6 +183,8 @@ const InteractiveCell = ({ id, initialValue, setActiveElement, setLayout }) => {
   }
 
   function editValue(e) {
+    // good for now but need to trigger focus on second click
+    textInput.current.focus();
     setValueRegister(value)
     setActiveElement(id)
 
@@ -237,6 +212,7 @@ const InteractiveCell = ({ id, initialValue, setActiveElement, setLayout }) => {
       onClick={(e) => editValue(e)} 
     >
       <Cell
+        ref={textInput}
         color={color}
         borderWidth={borderWidth}
         margin={margin}

@@ -5,6 +5,25 @@ import { createServer } from "miragejs";
 // Maybe useful:
 // https://github.com/miragejs/examples/blob/master/react-typescript/src/mirage/index.ts
 
+let daily2 = [
+  {
+    user: "Test user",
+    project: "React timesheet",
+    description: "Some changes were made here, need approval",
+    date: '2021-07-16',
+    hours: 1,
+    minutes: 14
+  },
+  {
+    user: "Test user",
+    project: "React timesheet",
+    description: "More changes were made, things were broken, God's wrath was invoked",
+    date: '2021-07-16',
+    hours: 2,
+    minutes: 1
+  }
+]
+
 export function makeServer() {
   // return {};
   return createServer({
@@ -30,9 +49,10 @@ export function makeServer() {
             date: "7-9-2021"
           }
         ],
+        daily2,
         projects: [
           {
-            name: 'react-timesheet',
+            name: 'React timesheet',
             contributors: [
               'adqn',
               'ksiondag'
@@ -40,6 +60,13 @@ export function makeServer() {
           }
         ]
       }))
+
+      this.post('/api/newentry', (schema, req) => {
+        let attrs = JSON.parse(req.requestBody)
+        attrs.user = "Test user"
+        daily2.push(attrs)
+        console.log(attrs)
+      })
 
       this.passthrough('api.github.com')
     },
