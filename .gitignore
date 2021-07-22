@@ -26,3 +26,4 @@ package-lock.json
 # pjstuff.txt
 
 /api/runserver.sh
+.vscode
