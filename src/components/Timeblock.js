@@ -1,50 +1,47 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 
-const DefaultTemplate = [
-  {
-    time: '0000',
-    planned: 'sleep',
-    revisions: [
-      'not sleeping',
-      'maybe sleeping'
-    ]
-  },
-  {
-    time: '0800',
-    planned: 'wake up',
-    revisions: [
-      'snooze',
-      'sleep'
-    ]
-  },
-  {
-    time: '0900',
-    planned: 'breakfast',
-    revisions: []
-  },
-  {
-    time: '1200',
-    planned: 'lunch',
-    revisions: [
-      'second breakfast'
-    ]
-  },
-  {
-    time: '1600',
-    planned: 'video games',
-    revisions: [
-      'work'
-    ]
-  },
-  {
-    time: '1900',
-    planned: 'sleep',
-    revisions: [
-      'video games'
-    ]
-  }
-]
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  // background: green;
+  // border: 1px solid black;
+`
+
+const Column = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-left: -1px;
+  // border: 1px solid black;
+`
+
+const Row = styled.div`
+  display: flex;
+  flex-direction: row;
+  // margin-left: -1px;
+`
+
+const Header = styled.div`
+  font-size: 10pt;
+  text-align: center;
+  width: 100px;
+  height: 20px;
+  border: solid 1px lightgrey;
+`
+
+const Cell = styled.input`
+  width: 100px;
+  height: 20px;
+  border: solid;
+  margin-left: ${props => props.margin};
+  margin-top: ${props => props.margin};
+  margin-bottom: -1px;
+  border-width: ${props => props.borderWidth};
+  border-color: ${props => props.color};
+  pointer-events: ${props => props.isActive};
+`
 
 // or columns?
 const AnotherTemplate = [
@@ -91,59 +88,76 @@ const AnotherTemplate = [
     ]
   }
 ]
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  height: 100%;
-  // background: green;
-  // border: 1px solid black;
-`
-
-const Column = styled.div`
-  display: flex;
-  flex-direction: column;
-  margin-left: -1px;
-  // border: 1px solid black;
-`
-
-const Header = styled.div`
-  font-size: 10pt;
-  text-align: center;
-  width: 100px;
-  height: 20px;
-  border: solid 1px lightgrey;
-`
-
-const Cell = styled.input`
-  width: 100px;
-  height: 20px;
-  border: solid;
-  margin-left: ${props => props.margin};
-  margin-top: ${props => props.margin};
-  margin-bottom: -1px;
-  border-width: ${props => props.borderWidth};
-  border-color: ${props => props.color};
-  pointer-events: ${props => props.isActive};
-`
+// just index by rows?
+const BetterTemplate = [
+  {
+    cols: [
+      {
+        id: 'time0',
+        content: 'Time'
+      },
+      {
+        id: 'plan0',
+        content: 'Activity'
+      },
+      {
+        id: 'rev0',
+        content: 'Revision 1'
+      }
+    ]
+  },
+  {
+    cols: [
+      {
+        id: 'time1',
+        content: '0000'
+      },
+      {
+        id: 'plan1',
+        content: 'sleep'
+      },
+      {
+        id: 'rev1',
+        content: `don't sleep actually`
+      }
+    ]
+  },
+  {
+    cols: [
+      {
+        id: 'time2',
+        content: '0800'
+      },
+      {
+        id: 'plan2',
+        content: 'wake up'
+      }
+    ]
+  }
+]
 
 const getColumns = (template, setActiveElement) => {
   let [time, plan, revisions] = [[], [], []]
   let columns = [];
+  let rows = [];
 
-  template.map((item, i) => {
-    time.push(<InteractiveCell id={"time" + i} initialValue={item.time} setActiveElement={setActiveElement}/>)
-    plan.push(<InteractiveCell id={"plan" + i} initialValue={item.planned} setActiveElement={setActiveElement} />)
-  })
+  // assuming array of rows 
+  for (let i = 0; i < template.length; i++) {
+    rows.push([])
 
-  // for (let obj of template) {
-  //   obj.rows.map(() => {
+    for (let j = 0; j < template[i].cols.length; j++) {
+      rows[i].push(<InteractiveCell id={template[i].cols[j].id} initialValue={template[i].cols[j].content} setActiveElement={setActiveElement}/>)
+    }
+  }
 
-  //   })
-  // }
+  // template.map((item, i) => {
+  //   time.push(<InteractiveCell id={"time" + i} initialValue={item.time} setActiveElement={setActiveElement}/>)
+  //   plan.push(<InteractiveCell id={"plan" + i} initialValue={item.planned} setActiveElement={setActiveElement} />)
+  // })
 
-  return [time, plan]
+  // return [time, plan]
+
+  return rows
 }
 
 const saveLayout = cols => {
@@ -228,15 +242,16 @@ const InteractiveCell = ({ id, initialValue, setActiveElement, setLayout }) => {
 }
 
 export default function Timeblock() {
-  const [layout, setLayout] = useState(DefaultTemplate)
+  // const [layout, setLayout] = useState(DefaultTemplate)
   const [activeElement, setActiveElement] = useState(null)
   const [columns, setColumns] = useState([])
-  const [timeColumn, plannedColumn] = getColumns(DefaultTemplate, setActiveElement)
+  // const [timeColumn, plannedColumn] = getColumns(DefaultTemplate, setActiveElement)
+  const rows = getColumns(BetterTemplate, setActiveElement)
 
   const unfocusElement = (e) => {
     if (activeElement) {
       if (e.target.id != activeElement) {
-        // console.log("unfocused ", activeElement)
+        console.log("unfocused ", activeElement)
         setActiveElement(null)
       }
     }
@@ -247,15 +262,9 @@ export default function Timeblock() {
   return (
     <div>
       <Container>
-        <Column>
-          <Header>Time</Header>
-          {timeColumn}
-        </Column>
-
-        <Column>
-          <Header>Activity</Header>
-          {plannedColumn}
-        </Column>
+        {rows.map(cols => {
+          return <Row>{cols}</Row>
+        })}
       </Container>
 
       <br />
