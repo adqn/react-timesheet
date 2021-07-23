@@ -26,7 +26,7 @@ const TextInput = styled.textarea`
   height: 150px
 `
 
-const timeDropDown = (totalTime, timeUnit, setTime) => {
+const timeDropDown = (totalTime, timeUnit, setTime, parentTimeProp) => {
   timeUnit = timeUnit.toUpperCase()
   let timeDivisions = [];
 
@@ -41,6 +41,7 @@ const timeDropDown = (totalTime, timeUnit, setTime) => {
       <Select
         name={timeUnit}
         id={timeUnit}
+        value={parentTimeProp}
         onChange={e => setTime(e.target.value)}
       >
         {timeDivisions.map(num => {
@@ -103,6 +104,7 @@ export default function UserArea() {
 
     fetch('/api/newentry', req)
       .then(() => {
+        setProject(projects[0])
         setHours(0)
         setMinutes(0)
         setDescription('')
@@ -119,11 +121,12 @@ export default function UserArea() {
       {projects ?
         projectsDropDown(projects, setProject) :
         projectsDropDown(dummyProjects, setProject)}
-      {timeDropDown(12, "h", setHours)}
-      {timeDropDown(60, "m", setMinutes)}
+      {timeDropDown(12, "h", setHours, hours)}
+      {timeDropDown(60, "m", setMinutes, minutes)}
       <br />
       Description/additional information:
       <TextInput
+        value={description}
         onChange={(e) => setDescription(e.target.value)}
       />
       <button onClick={() => addEntry()}>Add entry</button>
