@@ -37,26 +37,55 @@ const BarChart = () => {
       .attr("width", w)
       .attr("height", h)
     
+    const svg2 = d3
+      .select("plotInfo")
+      .append("svg")
+      .style("border", "1px solid black")
+      .style("visibility", "hidden")
+      .attr("width", 100)
+      .attr("height", 100)
     
     svg.selectAll("rect")
       .data(data)
       .enter()
-      .append("rect")
-      .attr("x", (d, i) => i * 70)
-      .attr("y", (d, i) => coordNorm(h, d)) // rect height within container (but then why second height??)
-      .attr("width", 65)
-      .attr("height", (d, i) => d * 10)
+      .append("circle")
+      .attr("r", 5)
+      .attr("stroke", "black")
       .attr("fill", "green")
-    
+      .attr("cx", (d, i) => (i * 70) + 13)
+      .attr("cy", (d, i) => coordNorm(h, d))
+
+    svg.append("line")
+      .data(data)
+
     svg.selectAll("rect")
+      // .data(data)
       .on("mouseover", function () {
-        d3.select(this)
-          .style("fill", "orange")
+        svg2.selectAll("rect")
+          .attr("x", (d, i) => (i * 70) + 13)
+          .attr("y", d => coordNorm(h, d) + 5)
+          .style("visibility", "visible")
       })
-      .on("mouseout", function () {
-        d3.select(this)
-          .style("fill", "green")
-      })
+    
+    // svg.selectAll("rect")
+    //   .data(data)
+    //   .enter()
+    //   .append("rect")
+    //   .attr("x", (d, i) => i * 70)
+    //   .attr("y", (d, i) => coordNorm(h, d)) // rect height within container (but then why second height??)
+    //   .attr("width", 65)
+    //   .attr("height", (d, i) => d * 10)
+    //   .attr("fill", "green")
+    
+    // svg.selectAll("rect")
+    //   .on("mouseover", function () {
+    //     d3.select(this)
+    //       .style("fill", "orange")
+    //   })
+    //   .on("mouseout", function () {
+    //     d3.select(this)
+    //       .style("fill", "green")
+    //   })
 
     // svg.selectAll("text")
     //   .data(data)
@@ -122,13 +151,29 @@ const D3test = () => {
   return d3test
 }
 
+const ProperD3Ref = () => {
+  const thisRef = React.useRef(null)
+
+  useEffect(() => {
+    let container = d3.select(thisRef.current)
+
+    container
+      .append("h1")
+      .text("Finally")
+  })
+
+  return <div ref={thisRef}></div>
+}
+
 const Metrics = () => {
+
   useEffect(() => {
   })
 
   return (
     <div>
       <GitStats />
+      {/* <ProperD3Ref /> */}
       <D3test />
       <br />
       <BarChart />

@@ -4,18 +4,22 @@ import { BrowserRouter as Router, Switch, Route, Link, BrowserRouter } from "rea
 import { makeServer } from './mirageServer'
 import styled from 'styled-components'
 import Sidebar from './components/Sidebar'
+import Timer from './components/elements/Timer'
 import Auth from './components/Auth'
 import './App.css';
 
 makeServer();
 
 const App = () => {
-  // const token = localStorage.getItem(`github_token`) || null
-  // if (!token) return 
+  const [timerActivated, setTimerActivated] = useState(false)
+  const callbacks = {
+    timer: setTimerActivated
+  }
 
   return (
     <div className="App">
-      <Sidebar />
+      {timerActivated ? <Timer /> : null}
+      <Sidebar callbacks={callbacks} />
     </div>
   );
 }

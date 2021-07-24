@@ -42,7 +42,14 @@ const ItemDesc = styled(FirstItem)`
   // border: 1px solid red;
 `
 
-const Entry = ({data}) =>
+const parseDate = date => {
+  const d = new Date(date)
+  const dArray = d.toString().split(" ")
+  const someTime = dArray.slice(0, 4).join(" ")
+  return someTime
+}
+
+const Entry = ({ data }) => 
   data.map(row =>
     <Row key={row.id}>
       {/* <Item>{row.id}</Item> */}
@@ -51,7 +58,7 @@ const Entry = ({data}) =>
       <ItemDesc>{row.description}</ItemDesc>
       {/* <Item>{row.progress}</Item> */}
       <Item>{row.hours}h {row.minutes}m</Item>
-      <Item>{row.date}</Item>
+      <Item>{parseDate(row.date)}</Item>
     </Row>
   )
 
@@ -63,7 +70,7 @@ const DailyView = () => {
     let timesheet_entries
     const test = await fetch('/api/test')
     timesheet_entries = JSON.parse(test._bodyText).daily2
-    setTestData(timesheet_entries)
+    setTestData(timesheet_entries.reverse())
     setLoading(false)
   }
 

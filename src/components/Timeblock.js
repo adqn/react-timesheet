@@ -137,41 +137,22 @@ const BetterTemplate = [
 ]
 
 const getColumns = (template, setActiveElement) => {
-  let [time, plan, revisions] = [[], [], []]
-  let columns = [];
   let rows = [];
 
-  // assuming array of rows 
   for (let i = 0; i < template.length; i++) {
     rows.push([])
 
     for (let j = 0; j < template[i].cols.length; j++) {
-      rows[i].push(<InteractiveCell id={template[i].cols[j].id} initialValue={template[i].cols[j].content} setActiveElement={setActiveElement}/>)
+      if (i === 0) rows[i].push(<Header>{template[i].cols[j].content}</Header>)
+      else rows[i].push(<InteractiveCell id={template[i].cols[j].id} initialValue={template[i].cols[j].content} setActiveElement={setActiveElement}/>)
     }
   }
-
-  // template.map((item, i) => {
-  //   time.push(<InteractiveCell id={"time" + i} initialValue={item.time} setActiveElement={setActiveElement}/>)
-  //   plan.push(<InteractiveCell id={"plan" + i} initialValue={item.planned} setActiveElement={setActiveElement} />)
-  // })
-
-  // return [time, plan]
 
   return rows
 }
 
 const saveLayout = cols => {
   let layout = []
-}
-
-const TheColumn = ({id, cells}) => {
-  return (
-    <div
-      id={id}
-    >
-      {cells}
-    </div>
-  )
 }
 
 const InteractiveCell = ({ id, initialValue, setActiveElement, setLayout }) => {
@@ -251,7 +232,7 @@ export default function Timeblock() {
   const unfocusElement = (e) => {
     if (activeElement) {
       if (e.target.id != activeElement) {
-        console.log("unfocused ", activeElement)
+        // console.log("unfocused ", activeElement)
         setActiveElement(null)
       }
     }

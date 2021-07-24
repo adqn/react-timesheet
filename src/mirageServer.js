@@ -10,7 +10,7 @@ let daily2 = [
     user: "Test user",
     project: "React timesheet",
     description: "Some changes were made here, need approval",
-    date: '2021-07-16',
+    date: 1627059118345,
     hours: 1,
     minutes: 14
   },
@@ -18,7 +18,7 @@ let daily2 = [
     user: "Test user",
     project: "React timesheet",
     description: "More changes were made, things were broken, God's wrath was invoked",
-    date: '2021-07-16',
+    date: 1627059373810,
     hours: 2,
     minutes: 1
   }

@@ -36,7 +36,7 @@ const routes = [
     path: "/userarea",
     exact: true,
     sidebar: () => <a>User area</a>,
-    main: () => <UserArea />
+    main: ({callbacks}) => <UserArea callbacks={callbacks} />
   },
   {
     path: "/timeblock",
@@ -46,7 +46,7 @@ const routes = [
   }
 ]
 
-const Sidebar = () => {
+const Sidebar = ({callbacks}) => {
   return (
     <Router>
       <div className="Sidebar">
@@ -82,8 +82,10 @@ const Sidebar = () => {
               key={index}
               path={route.path}
               exact={route.exact}
-              children={<route.main />}
-            />
+              children={<route.main callbacks={callbacks} />}
+            >
+              {/* <route.main /> */}
+            </Route>
           ))}
         </Switch>
       </div>

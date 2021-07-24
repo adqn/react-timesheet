@@ -70,7 +70,12 @@ const projectsDropDown = (projects, setProject) =>
     {" "}
   </InputField>
 
-export default function UserArea() {
+const SubmitStatus = ({ didSubmit }) =>
+  didSubmit ? <div>Entry submitted!</div> : <div>Submitting...</div>
+
+export default function UserArea({callbacks}) {
+  const [submitting, setSubmitting] = useState(false)
+  const [didSubmit, setDidSubmit] = useState(false)
   const [projects, setProjects] = useState(null)
   const [project, setProject] = useState('')
   const [minutes, setMinutes] = useState(0)
@@ -86,14 +91,17 @@ export default function UserArea() {
     res = JSON.parse(data._bodyText).projects
     setProjects(res)
     setProject(res[0].name)
+
   }
 
   const addEntry = () => {
+    const epoch = Date.now()
+
     const entry = {
       project,
       description,
       hours,
-      date: "2021-27-16",
+      date: epoch,
       minutes
     }
 
@@ -102,18 +110,21 @@ export default function UserArea() {
       body: JSON.stringify(entry)
     }
 
+    setSubmitting(true)
     fetch('/api/newentry', req)
       .then(() => {
         setProject(projects[0])
         setHours(0)
         setMinutes(0)
         setDescription('')
+        setDidSubmit(true)
       })
   }
 
   useEffect(() => {
     getProjects()
-    customSelect();
+    customSelect()
+    callbacks.timer(true)
   }, [])
 
   return (
@@ -130,6 +141,7 @@ export default function UserArea() {
         onChange={(e) => setDescription(e.target.value)}
       />
       <button onClick={() => addEntry()}>Add entry</button>
+      {submitting ? <SubmitStatus didSubmit={didSubmit} /> : null}
     </div>
   )
 }
