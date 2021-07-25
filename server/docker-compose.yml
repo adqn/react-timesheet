@@ -1,0 +1,15 @@
+version: "3.7"
+
+services:
+  postgresql:
+    image: postgres:12.5
+    container_name: timesheet-pg-docker
+    volumes:
+      - ./init-user-db.sh:/docker-entrypoint-initdb.d/init-user.sh
+      - ./data/db/postgres:/var/lib/postgresql/data
+    environment: 
+      POSTGRES_USER: rory
+      POSTGRES_PASSWORD: local-setup
+    ports:
+      - "5432:5432"
+    restart: always

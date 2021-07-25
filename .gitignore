@@ -23,6 +23,9 @@ yarn.lock
 package-lock.json
 .eslintcache
 
+# Local docker database stuff
+data
+
 # pjstuff.txt
 
 /api/runserver.sh
