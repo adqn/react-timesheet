@@ -6,3 +6,13 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     CREATE DATABASE "timesheet-dev";
     GRANT ALL PRIVILEGES ON DATABASE "timesheet-dev" TO coreapi;
 EOSQL
+
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "timesheet-dev" <<-EOSQL
+    CREATE EXTENSION "uuid-ossp";
+
+    CREATE TABLE accounts (
+        id uuid DEFAULT uuid_generate_v4 (),
+        info json NOT NULL,
+        PRIMARY KEY (id)
+    );
+EOSQL
