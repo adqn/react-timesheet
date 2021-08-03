@@ -44,12 +44,10 @@ const ItemDesc = styled(FirstItem)`
 
 const parseDate = date => {
   const d = new Date(date)
-  const dArray = d.toString().split(" ")
-  const someTime = dArray.slice(0, 4).join(" ")
-  return someTime
+  return d.toDateString()
 }
 
-const Entry = ({ data }) => 
+const Entry = ({ data }) =>
   data.map(row =>
     <Row key={row.id}>
       {/* <Item>{row.id}</Item> */}

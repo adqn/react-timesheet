@@ -1,14 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { findRenderedComponentWithType } from 'react-dom/test-utils';
+// import { findRenderedComponentWithType } from 'react-dom/test-utils';
 import styled from 'styled-components'
 import customSelect from './elements/CustomSelect'
 import "../App.css"
-
-if (!Array.prototype.last) {
-  Array.prototype.last = function () {
-    return this[this.length - 1]
-  }
-}
 
 const Select = styled.select`
   // display: none;
@@ -26,7 +20,12 @@ const TextInput = styled.textarea`
   height: 150px
 `
 
-const timeDropDown = (totalTime, timeUnit, setTime, parentTimeProp) => {
+interface Project {
+  name: string,
+  contributors: string[]
+}
+
+const timeDropDown = (totalTime: number, timeUnit: string, setTime: (t:number) => void, parentTimeProp: number) => {
   timeUnit = timeUnit.toUpperCase()
   let timeDivisions = [];
 
@@ -37,12 +36,12 @@ const timeDropDown = (totalTime, timeUnit, setTime, parentTimeProp) => {
   return (
     <InputField>
     {/* <div class="custom-select"> */}
-      <label for={timeUnit}>{timeUnit}: </label>
+      <label htmlFor={timeUnit}>{timeUnit}: </label>
       <Select
         name={timeUnit}
         id={timeUnit}
         value={parentTimeProp}
-        onChange={e => setTime(e.target.value)}
+        onChange={e => setTime(parseInt(e.target.value))}
       >
         {timeDivisions.map(num => {
           return <option value={num}>{num}</option>
@@ -54,7 +53,7 @@ const timeDropDown = (totalTime, timeUnit, setTime, parentTimeProp) => {
   )
 }
 
-const projectsDropDown = (projects, setProject) =>
+const projectsDropDown = (projects: Project[], setProject: (s:string) => void) =>
   <InputField>
     {/* <div class="custom-select"> */}
       <Select
@@ -70,25 +69,25 @@ const projectsDropDown = (projects, setProject) =>
     {" "}
   </InputField>
 
-const SubmitStatus = ({ didSubmit }) =>
+const SubmitStatus = ({ didSubmit }: { didSubmit: boolean }) =>
   didSubmit ? <div>Entry submitted!</div> : <div>Submitting...</div>
 
-export default function UserArea({callbacks}) {
+export default function UserArea({callbacks}: {callbacks: object}) {
   const [submitting, setSubmitting] = useState(false)
   const [didSubmit, setDidSubmit] = useState(false)
-  const [projects, setProjects] = useState(null)
+  const [projects, setProjects] = useState([])
   const [project, setProject] = useState('')
   const [minutes, setMinutes] = useState(0)
   const [hours, setHours] = useState(0)
   const [description, setDescription] = useState('')
   const dummyProjects = [{
-    name: "Getting projects..."
+    name: "Getting projects...",
+    contributors: []
   }]
 
   const getProjects = async () => {
-    let res;
     const data = await fetch('/api/test')
-    res = JSON.parse(data._bodyText).projects
+    const res = JSON.parse(data._bodyText).projects
     setProjects(res)
     setProject(res[0].name)
 
@@ -124,7 +123,7 @@ export default function UserArea({callbacks}) {
   useEffect(() => {
     getProjects()
     customSelect()
-    callbacks.timer(true)
+    callbacks.setTimerActivated(true)
   }, [])
 
   return (

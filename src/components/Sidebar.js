@@ -83,9 +83,7 @@ const Sidebar = ({callbacks}) => {
               path={route.path}
               exact={route.exact}
               children={<route.main callbacks={callbacks} />}
-            >
-              {/* <route.main /> */}
-            </Route>
+            />
           ))}
         </Switch>
       </div>

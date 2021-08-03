@@ -6,10 +6,10 @@ const { Pool, Client } = require('pg')
 const router = express.Router();
 
 const pool = new Pool({
-  user: 'postgres',
+  user: 'rory',
   host: 'localhost',
-  database: 'testdb',
-  password: 'testpw',
+  database: 'timesheet-dev',
+  password: 'local-setup',
   port: 5432
 })
 
@@ -27,12 +27,14 @@ const pool = new Pool({
 
 router.get("/testdata", (req, res) => {
   const sql = `
-    SELECT * from timesheet_entries;  
+    SELECT * from accounts;  
   `
   pool.query(sql, (err, rows) => {
     if (err) throw err;
+    console.log(rows.rows)
     res.send(rows.rows)
   })
 })
+
 
 module.exports = router;
