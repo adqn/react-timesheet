@@ -25,6 +25,10 @@ interface Project {
   contributors: string[]
 }
 
+interface Callbacks {
+  [name: string]: React.Dispatch<React.SetStateAction<boolean>> | (() => void);
+}
+
 const timeDropDown = (totalTime: number, timeUnit: string, setTime: (t:number) => void, parentTimeProp: number) => {
   timeUnit = timeUnit.toUpperCase()
   let timeDivisions = [];
@@ -72,22 +76,37 @@ const projectsDropDown = (projects: Project[], setProject: (s:string) => void) =
 const SubmitStatus = ({ didSubmit }: { didSubmit: boolean }) =>
   didSubmit ? <div>Entry submitted!</div> : <div>Submitting...</div>
 
-export default function UserArea({callbacks}: {callbacks: object}) {
+type FIXME = any;
+
+interface Me {
+  projects: Project[];
+  daily: FIXME;
+  daily2: FIXME;
+}
+
+type Optional<T> = T | null;
+
+export default function UserArea({callbacks}: {callbacks: Callbacks}) {
   const [submitting, setSubmitting] = useState(false)
   const [didSubmit, setDidSubmit] = useState(false)
-  const [projects, setProjects] = useState([])
-  const [project, setProject] = useState('')
+  const [projects, setProjects] = useState<Project[] | null>(null)
+  const [project, setProject] = useState<string | null>(null)
   const [minutes, setMinutes] = useState(0)
   const [hours, setHours] = useState(0)
   const [description, setDescription] = useState('')
+
   const dummyProjects = [{
     name: "Getting projects...",
     contributors: []
   }]
 
+  const fetchMe = async (): Promise<Me> => {
+    return (await fetch('/api/test')).json();
+  }
+
   const getProjects = async () => {
-    const data = await fetch('/api/test')
-    const res = JSON.parse(data._bodyText).projects
+    const data = await fetchMe();
+    const res = data.projects
     setProjects(res)
     setProject(res[0].name)
 
@@ -112,7 +131,7 @@ export default function UserArea({callbacks}: {callbacks: object}) {
     setSubmitting(true)
     fetch('/api/newentry', req)
       .then(() => {
-        setProject(projects[0])
+        setProject(projects?.[0].name ?? null)
         setHours(0)
         setMinutes(0)
         setDescription('')
