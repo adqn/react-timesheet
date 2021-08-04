@@ -13,7 +13,7 @@ makeServer();
 const App = () => {
   const [timerActivated, setTimerActivated] = useState(false)
   const callbacks = {
-    timer: setTimerActivated
+    setTimerActivated,
   }
 
   return (
