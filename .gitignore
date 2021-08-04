@@ -30,3 +30,4 @@ data
 
 /api/runserver.sh
 .vscode
+.env
