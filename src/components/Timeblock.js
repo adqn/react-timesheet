@@ -1,24 +1,33 @@
 import React, { useState, useEffect } from 'react'
 import * as d3 from 'd3'
 import styled from 'styled-components'
-// testing
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
   width: 500px;
-  height: 300px;
+  height: fit-content;
   // background: green;
   // border: 1px solid black;
 `
 
 const Column = styled.div`
   flex: 1;
+  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+  font-size: 14px;
   height: 30px;
   // display: flex;
   // flex-direction: column;
   margin-left: -1px;
-  border: 1px solid grey;
+  border: 1px solid lightgrey;
+`
+
+const LeftColumn = styled(Column)`
+  border-left: none;
+`
+
+const RightColumn = styled(Column)`
+  border-right: none;
 `
 
 const Row = styled.div`
@@ -29,11 +38,24 @@ const Row = styled.div`
 `
 
 const Header = styled.div`
-  font-size: 10pt;
-  text-align: center;
-  width: 100px;
-  height: 20px;
+  line-height: 30px;
+  font-size: .9em;
+  font-weight: 100;
+  text-align: left;
+  padding-left: 10px;
+  color: grey;
+  width: 100%;
+  height: 30px;
+  margin-left: -1px;
   border: solid 1px lightgrey;
+`
+
+const LeftHeader = styled(Header)`
+  border-left: none;
+`
+
+const RightHeader = styled(Header)`
+  border-right: none;
 `
 
 const TopAnchor = styled.div`
@@ -45,12 +67,16 @@ const TopAnchor = styled.div`
 `
 
 const CellLayer = styled.div`
-  display: flex;
+  display: inline-block;
   width: 100%;
   height: 100%;
-  border: 1px solid lightblue;
-  margin-left: -1px;
-  margin-top: -1px; 
+  // border: 1px solid lightblue;
+  border: none;
+  // margin-left: -1px;
+  // margin-top: -1px; 
+  background: white;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 `
 
 const Cell = styled.input`
@@ -65,23 +91,25 @@ const Cell = styled.input`
   pointer-events: ${props => props.isActive};
 `
 
-const EditCell = styled.input`
+const EditCell = styled.div`
   visibility: ${props => props.visibility};
   position: absolute;
-  // font-family: arial;
-  // font-size: .95em;
+  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
+  font-size: 14px;
+  // font-weight: 60;
+  line-height: 1.5;
   width: 170px;
   max-width: 200px;
-  height: 30px;
-  // line-height: 1px;
-  padding: 10px;
+  height: fit-content;
+  padding: 4px;
   white-space: pre-wrap;
   word-break: break-word;
   box-sizing: border-box;
-  border: solid 1px lightgrey;
+  // border: solid 1px grey;
   border-radius: 3px;
-  // box-shadow: 1px 1px 8px black;
-  box-shadow: rgba(0, 0, 0, 0.25) 2px 9px 15px;
+  box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
+  background: white;
+  outline: none;
   resize: none;
 `
 
@@ -297,17 +325,34 @@ const InteractiveCell = ({ id, initialValue, setActiveElement, setLayout }) => {
   )
 }
 
-const ActiveCell = ({ x, y, visibility }) => {
+const ActiveCell = ({ x, y, visibility}) => {
   const [value, setValue] = useState('')
 
   const editCellRef = React.createRef(null)
+  let container
+
+  function lockValue() {
+    // setActive("none")
+    // setColor(inactiveColor)
+    // setBorderWidth("1px")
+    // setMargin("0px")
+    // setReadOnly(true)
+    // setActiveElement(null)
+  }
 
   useEffect(() => {
-    let container = d3.select(editCellRef.current)
+    container = d3.select(editCellRef.current)
 
     container
       .style("left", x + "px")
       .style("top", y + "px")
+
+    // if (isActive) editCellRef.current.focus()
+    if (visibility === "visible") {
+      editCellRef.current.focus()
+      document.execCommand('selectAll', false, null);
+      document.getSelection().collapseToEnd();
+    }
   })
 
   return (
@@ -316,6 +361,7 @@ const ActiveCell = ({ x, y, visibility }) => {
       visibility={visibility}
       value={value}
       contentEditable={true}
+      // onBlur={() => lockValue()}
       onChange={e => setValue(e.target.value)}
     />
   )
@@ -324,36 +370,43 @@ const ActiveCell = ({ x, y, visibility }) => {
 export default function Timeblock() {
   // const [layout, setLayout] = useState(DefaultTemplate)
   const [position, setPosition] = useState({x: 0, y: 0})
-  const [activeElement, setActiveElement] = useState(null)
+  const [isActive, setIsActive] = useState(false)
   const [visibility, setVisibility] = useState("hidden")
+  const [isFocused, setIsFocused] = useState(false)
   const [columns, setColumns] = useState([])
   // const [timeColumn, plannedColumn] = getColumns(DefaultTemplate, setActiveElement)
-  const rows = getColumns(BetterTemplate, setActiveElement)
+  // const rows = getColumns(BetterTemplate, setActiveElement)
 
   const thisRef = React.createRef(null)
   const cellLayerRef = React.createRef(null)
   const activeCellRef = React.createRef(null)
 
+  let cellLayer
+  let thisX, thisY
+
+  const handleCellClick = e => {
+    thisX = e.target.getBoundingClientRect().x
+    thisY = e.target.getBoundingClientRect().y
+
+    setPosition({x: thisX, y: thisY})
+    setVisibility("visible")
+    setIsActive(true)
+  }
+
   const unfocusElement = (e) => {
-    if (activeElement) {
-      if (e.target.id != activeElement) {
-        // console.log("unfocused ", activeElement)
-        setActiveElement(null)
-      }
+    e.preventDefault()
+    if (isActive) {
+      setVisibility("hidden")
+      setIsActive(false)
     }
+    // setPosition({x: 0, y: 0})
   }
 
   useEffect(() => {
-    const thisX = thisRef.current.getBoundingClientRect().x
-    const thisY = thisRef.current.getBoundingClientRect().y
-    const cellLayer = d3.select(cellLayerRef.current)
-
-    setPosition({x: thisX, y: thisY})
-    cellLayer
-      .on("mousedown", function () {
-        if (visibility === "hidden") setVisibility("visible")
-      })
-  })
+    thisX = thisRef.current.getBoundingClientRect().x
+    thisY = thisRef.current.getBoundingClientRect().y
+    cellLayer = d3.select(cellLayerRef.current)
+  }, [])
 
   return (
     <div
@@ -369,31 +422,44 @@ export default function Timeblock() {
           return <Row>{cols}</Row>
         })} */}
         <Row>
+          <LeftHeader>Column name</LeftHeader>
+          <Header>Column name</Header>
+          <RightHeader>Column name</RightHeader>
+        </Row>
+        <Row>
+          <LeftColumn>
+            <CellLayer
+              ref={cellLayerRef}
+              tabIndex={0}
+              onClick={e => handleCellClick(e)}
+              // onBlur={e => unfocusElement(e)}
+            />
+          </LeftColumn>
           <Column>
             <CellLayer
               ref={cellLayerRef}
+              tabIndex={0}
+              onClick={e => handleCellClick(e)}
             />
           </Column>
-          <Column></Column>
-          <Column></Column>
+          <RightColumn></RightColumn>
         </Row>
         <Row>
+          <LeftColumn></LeftColumn>
           <Column></Column>
-          <Column></Column>
-          <Column></Column>
+          <RightColumn></RightColumn>
         </Row>
         <Row>
+          <LeftColumn></LeftColumn>
           <Column></Column>
-          <Column></Column>
-          <Column></Column>
+          <RightColumn></RightColumn>
         </Row>
         <Row>
+          <LeftColumn></LeftColumn>
           <Column></Column>
-          <Column></Column>
-          <Column></Column>
+          <RightColumn></RightColumn>
         </Row>
       </Container>
-
       <br />
       <button>Save current layout</button>
     </div>
