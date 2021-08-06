@@ -202,6 +202,9 @@ const BetterTemplate = [
       {
         id: 'plan2',
         content: 'wake up'
+      },
+      {
+        content: 'placeholder'
       }
     ]
   }
@@ -211,11 +214,16 @@ const getColumns = (template, setActiveElement) => {
   let rows = [];
 
   for (let i = 0; i < template.length; i++) {
+    let cols = template[i].cols.length
     rows.push([])
 
-    for (let j = 0; j < template[i].cols.length; j++) {
-      if (i === 0) rows[i].push(<Header>{template[i].cols[j].content}</Header>)
-      else rows[i].push(<InteractiveCell id={template[i].cols[j].id} initialValue={template[i].cols[j].content} setActiveElement={setActiveElement} />)
+    for (let j = 0; j < cols; j++) {
+      if (i === 0 && j === 0) rows[i].push(<LeftHeader>{template[i].cols[j].content}</LeftHeader>)
+      else if (i === 0 && j < cols - 1) rows[i].push(<Header>{template[i].cols[j].content}</Header>)
+      else if (i === 0 && j === cols - 1) rows[i].push(<RightHeader>{template[i].cols[j].content}</RightHeader>)
+      else if (i > 0 && j === 0) rows[i].push(<LeftColumn>{template[i].cols[j].content}</LeftColumn>)
+      else if (i > 0 && j < cols - 1) rows[i].push(<Column>{template[i].cols[j].content}</Column>)
+      else if (i > 0 && j === cols - 1) rows[i].push(<RightColumn>{template[i].cols[j].content}</RightColumn>)
     }
   }
 
@@ -375,7 +383,7 @@ export default function Timeblock() {
   const [isFocused, setIsFocused] = useState(false)
   const [columns, setColumns] = useState([])
   // const [timeColumn, plannedColumn] = getColumns(DefaultTemplate, setActiveElement)
-  // const rows = getColumns(BetterTemplate, setActiveElement)
+  const rows = getColumns(BetterTemplate)
 
   const thisRef = React.createRef(null)
   const cellLayerRef = React.createRef(null)
@@ -418,9 +426,6 @@ export default function Timeblock() {
         visibility={visibility}
       />
       <Container>
-        {/* {rows.map(cols => {
-          return <Row>{cols}</Row>
-        })} */}
         <Row>
           <LeftHeader>Column name</LeftHeader>
           <Header>Column name</Header>
@@ -461,6 +466,7 @@ export default function Timeblock() {
         </Row>
       </Container>
       <br />
+      {rows}
       <button>Save current layout</button>
     </div>
   )
