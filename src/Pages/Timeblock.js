@@ -466,7 +466,7 @@ export default function Timeblock() {
         </Row>
       </Container>
       <br />
-      {rows}
+      {/* {rows} */}
       <button>Save current layout</button>
     </div>
   )

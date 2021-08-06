@@ -3,7 +3,7 @@ import { Octokit } from 'octokit';
 import Plot from 'react-plotly.js'
 import * as d3 from 'd3'
 import styled from 'styled-components'
-import { GitStats } from './GitStats'
+import { GitStats } from '../components/GitStats'
 
 // const token = localStorage.getItem(`token`);
 // const octokit = new Octokit({auth: token});

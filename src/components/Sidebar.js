@@ -8,10 +8,10 @@ import {
 } from "react-router-dom";
 import '../App.css'
 import styled from 'styled-components'
-import DailyView from './DailyView'
-import Metrics from './Metrics'
-import UserArea from './UserArea'
-import Timeblock from './Timeblock'
+import DailyView from '../Pages/DailyView'
+import Metrics from '../Pages/Metrics'
+import UserArea from '../Pages/UserArea'
+import Timeblock from '../Pages/Timeblock'
 
 const routes = [
   {
