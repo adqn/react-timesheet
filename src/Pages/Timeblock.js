@@ -5,7 +5,9 @@ import styled from 'styled-components'
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  width: 500px;
+  // flex-flow: column wrap;
+  padding: 10px;
+  min-width: 50%;
   height: fit-content;
   // background: green;
   // border: 1px solid black;
@@ -13,13 +15,17 @@ const Container = styled.div`
 
 const Column = styled.div`
   flex: 1;
+  flex-grow: 1;
+  line-height: 30px;
   font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 14px;
-  height: 30px;
-  // display: flex;
-  // flex-direction: column;
+  // width: ${props => props.width};
+  padding-left: 10px;
+  padding-right: 10px;
   margin-left: -1px;
   border: 1px solid lightgrey;
+  border-left: ${props => props.omitLeftBorder ? "none" : "1px solid lightgrey"};
+  border-right: ${props => props.omitRightBorder ? "none" : "1px solid lightgrey"};
 `
 
 const LeftColumn = styled(Column)`
@@ -32,36 +38,62 @@ const RightColumn = styled(Column)`
 
 const Row = styled.div`
   display: flex;
-  // flex-direction: row;
+  // width: fit-content;
+  width: 100%;
+  min-height: 30px;
   margin-left: -1px;
   margin-top: -1px;
+  // border: 1px solid;
 `
 
-const Header = styled.div`
+const HeaderCell = styled.div`
+  flex: 1;
+  // flex-grow: 1;
   line-height: 30px;
   font-size: .9em;
   font-weight: 100;
   text-align: left;
   padding-left: 10px;
   color: grey;
-  width: 100%;
-  height: 30px;
+  height: 32px;
   margin-left: -1px;
   border: solid 1px lightgrey;
+  border-left: ${props => props.omitLeftBorder ? "none" : "1px solid lightgrey"};
+  border-right: ${props => props.omitRightBorder ? "none" : "1px solid lightgrey"};
+  &:hover {
+    background: #F1F1F1;
+  }
 `
 
-const LeftHeader = styled(Header)`
+const LeftHeader = styled(HeaderCell)`
   border-left: none;
 `
 
-const RightHeader = styled(Header)`
+const RightHeader = styled(HeaderCell)`
   border-right: none;
 `
 
-const TopAnchor = styled.div`
+const CellResizeBar = styled.div`
+  // visibility: hidden;
+  display: inline-block;
   position: absolute;
-  top: 0px;
-  left: 0px;
+  width: 5px;
+  height: 34px;
+  margin-top: -1px;
+  margin-left: -12px;
+  border: none;
+  background: #27B7FF;
+  opacity: 0;
+  &:hover {
+    cursor: col-resize;
+  }
+`
+
+const cellSelectedOverlay = styled.div`
+  visibility: hidden;
+  position: absolute;
+  width: 100;
+  height: 100;
   // border: 2px solid red;
   // visibility: hidden;
 `
@@ -113,53 +145,6 @@ const EditCell = styled.div`
   resize: none;
 `
 
-// or columns?
-const AnotherTemplate = [
-  {
-    id: 'time',
-    content: "Time",
-    rows: [
-      {
-        id: 'time1',
-        content: '0000'
-      },
-      {
-        id: 'time2',
-        content: '0800'
-      }
-    ]
-  },
-  {
-    id: 'plan',
-    content: 'Plan',
-    rows: [
-      {
-        id: 'plan1',
-        content: 'sleep'
-      },
-      {
-        id: 'plan2',
-        content: 'wake up'
-      }
-    ]
-  },
-  {
-    id: 'rev1',
-    content: 'Revision 1',
-    rows: [
-      {
-        id: 'rev1-1',
-        content: ''
-      },
-      {
-        id: 'rev1-2',
-        content: `don't wake up`
-      }
-    ]
-  }
-]
-
-// just index by rows?
 const BetterTemplate = [
   {
     cols: [
@@ -170,6 +155,10 @@ const BetterTemplate = [
       {
         id: 'plan0',
         content: 'Activity'
+      },
+      {
+        id: 'rev0',
+        content: 'Revision 1'
       },
       {
         id: 'rev0',
@@ -189,7 +178,11 @@ const BetterTemplate = [
       },
       {
         id: 'rev1',
-        content: `don't sleep actually`
+        content: `don't sleep actually also long long long long entry blab lahljkd ldakjfg lsdkfj klsdj f`
+      },
+      {
+        id: 'plan1',
+        content: 'sleep'
       }
     ]
   },
@@ -205,33 +198,138 @@ const BetterTemplate = [
       },
       {
         content: 'placeholder'
+      },
+      {
+        id: 'plan2',
+        content: 'wake up'
+      }
+    ]
+  },
+  {
+    cols: [
+      {
+        content: "Well"
+      },
+      {
+        content: "That was easier"
+      },
+      {
+        content: "Than expected"
+      },
+      {
+        content: "Well"
       }
     ]
   }
 ]
 
 const getColumns = (template, setActiveElement) => {
-  let rows = [];
+  let rows = []
+  let out = []
 
   for (let i = 0; i < template.length; i++) {
     let cols = template[i].cols.length
     rows.push([])
 
     for (let j = 0; j < cols; j++) {
-      if (i === 0 && j === 0) rows[i].push(<LeftHeader>{template[i].cols[j].content}</LeftHeader>)
-      else if (i === 0 && j < cols - 1) rows[i].push(<Header>{template[i].cols[j].content}</Header>)
-      else if (i === 0 && j === cols - 1) rows[i].push(<RightHeader>{template[i].cols[j].content}</RightHeader>)
-      else if (i > 0 && j === 0) rows[i].push(<LeftColumn>{template[i].cols[j].content}</LeftColumn>)
-      else if (i > 0 && j < cols - 1) rows[i].push(<Column>{template[i].cols[j].content}</Column>)
-      else if (i > 0 && j === cols - 1) rows[i].push(<RightColumn>{template[i].cols[j].content}</RightColumn>)
+      if (i === 0 && j === 0) rows[i].push(<Header omitLeftBorder>{template[i].cols[j].content}</Header>)
+      else if (i === 0 && j < cols - 1) rows[i].push(<Header><CellResize />{template[i].cols[j].content}</Header>)
+      else if (i === 0 && j === cols - 1) {
+        rows[i].push(<Header omitRightBorder><CellResize />{template[i].cols[j].content}</Header>)
+        out.push(<Row>{rows[i]}</Row>)
+      }
+      else if (i > 0 && j === 0) rows[i].push(<FlexCell omitLeftBorder value={template[i].cols[j].content} />)
+      else if (i > 0 && j < cols - 1) rows[i].push(<FlexCell value={template[i].cols[j].content} />)
+      else if (i > 0 && j === cols - 1) {
+        rows[i].push(<FlexCell omitRightBorder value={template[i].cols[j].content} />)
+        out.push(<Row>{rows[i]}</Row>)
+      }
     }
   }
 
-  return rows
+  return out
 }
 
 const saveLayout = cols => {
   let layout = []
+}
+
+const Header = (props) => {
+  return (
+    <HeaderCell
+      omitLeftBorder={props.omitLeftBorder}
+      omitRightBorder={props.omitRightBorder}
+    >
+      {props.children}
+    </HeaderCell>
+  )
+}
+
+const CellResize = () => {
+  const thisRef = React.createRef(null)
+  let bar
+
+  useEffect(() => {
+    bar = d3.select(thisRef.current)
+    bar
+      .on("mouseover", function() {
+        d3.select(this)
+          .transition()
+          .duration(200)
+          .style("opacity", "1")
+      })
+      .on("mouseout", function () {
+        d3.select(this)
+          .transition()
+          .duration(200)
+          .style("opacity", "0")
+      })
+  })
+
+  return <CellResizeBar
+    ref={thisRef}
+        />
+}
+
+const FlexCell = (props) => {
+  const [value, setValue] = useState(props.value)
+  const [isEditing, setIsEditing] = useState(false)
+  const [size, setSize] = useState({width: 0, height: 0})
+  const [position, setPosition] = useState({x: 0, y: 0})
+  const thisRef = React.createRef(null)
+  const activeCellRef = React.createRef(null)
+  let visibility 
+  let thisX, 
+    thisY,
+    thisWidth,
+    thisHeight
+
+  function handleCellClick(e) {
+    setIsEditing(true)
+  }
+
+  useEffect(() => {
+    thisX = thisRef.current.getBoundingClientRect().x
+    thisY = thisRef.current.getBoundingClientRect().y
+    thisWidth = thisRef.current.offsetWidth
+    thisHeight = thisRef.current.offsetHeight
+    visibility = isEditing ? "visible" : "hidden"
+    setSize({width: thisWidth, height: thisHeight})
+    setPosition({x: thisX, y: thisY})
+  }, [])
+
+  return (
+    <Column
+      ref={thisRef}
+      width={props.width}
+      omitLeftBorder={props.omitLeftBorder}
+      omitRightBorder={props.omitRightBorder}
+      onClick={e => handleCellClick(e)}
+    >
+      {value}
+      {isEditing ? <ActiveCell size={size} position={position} visibility={visibility}/> : null}
+    </Column>
+  ) 
 }
 
 const InteractiveCell = ({ id, initialValue, setActiveElement, setLayout }) => {
@@ -333,7 +431,7 @@ const InteractiveCell = ({ id, initialValue, setActiveElement, setLayout }) => {
   )
 }
 
-const ActiveCell = ({ x, y, visibility}) => {
+const ActiveCell = ({ size, position, visibility}) => {
   const [value, setValue] = useState('')
 
   const editCellRef = React.createRef(null)
@@ -352,8 +450,10 @@ const ActiveCell = ({ x, y, visibility}) => {
     container = d3.select(editCellRef.current)
 
     container
-      .style("left", x + "px")
-      .style("top", y + "px")
+      .style("left", position.x + "px")
+      .style("top", position.y + "px")
+      .style("width", size.width + "px")
+      .style("min-height", size.height + "px")
 
     // if (isActive) editCellRef.current.focus()
     if (visibility === "visible") {
@@ -369,7 +469,7 @@ const ActiveCell = ({ x, y, visibility}) => {
       visibility={visibility}
       value={value}
       contentEditable={true}
-      // onBlur={() => lockValue()}
+      onBlur={() => lockValue()}
       onChange={e => setValue(e.target.value)}
     />
   )
@@ -420,53 +520,11 @@ export default function Timeblock() {
     <div
       ref={thisRef}
     >
-      <ActiveCell
-        x={position.x}
-        y={position.y}
-        visibility={visibility}
-      />
       <Container>
-        <Row>
-          <LeftHeader>Column name</LeftHeader>
-          <Header>Column name</Header>
-          <RightHeader>Column name</RightHeader>
-        </Row>
-        <Row>
-          <LeftColumn>
-            <CellLayer
-              ref={cellLayerRef}
-              tabIndex={0}
-              onClick={e => handleCellClick(e)}
-              // onBlur={e => unfocusElement(e)}
-            />
-          </LeftColumn>
-          <Column>
-            <CellLayer
-              ref={cellLayerRef}
-              tabIndex={0}
-              onClick={e => handleCellClick(e)}
-            />
-          </Column>
-          <RightColumn></RightColumn>
-        </Row>
-        <Row>
-          <LeftColumn></LeftColumn>
-          <Column></Column>
-          <RightColumn></RightColumn>
-        </Row>
-        <Row>
-          <LeftColumn></LeftColumn>
-          <Column></Column>
-          <RightColumn></RightColumn>
-        </Row>
-        <Row>
-          <LeftColumn></LeftColumn>
-          <Column></Column>
-          <RightColumn></RightColumn>
-        </Row>
+        {rows}
       </Container>
       <br />
-      {/* {rows} */}
+
       <button>Save current layout</button>
     </div>
   )
