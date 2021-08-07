@@ -39,6 +39,7 @@ const RightColumn = styled(Column)`
 const Row = styled.div`
   display: flex;
   // width: fit-content;
+  min-width: 600px;
   width: 100%;
   min-height: 30px;
   margin-left: -1px;
@@ -223,7 +224,7 @@ const BetterTemplate = [
   }
 ]
 
-const getColumns = (template, setActiveElement) => {
+const getRows = (template) => {
   let rows = []
   let out = []
 
@@ -476,44 +477,12 @@ const ActiveCell = ({ size, position, visibility}) => {
 }
 
 export default function Timeblock() {
-  // const [layout, setLayout] = useState(DefaultTemplate)
-  const [position, setPosition] = useState({x: 0, y: 0})
-  const [isActive, setIsActive] = useState(false)
-  const [visibility, setVisibility] = useState("hidden")
-  const [isFocused, setIsFocused] = useState(false)
-  const [columns, setColumns] = useState([])
-  // const [timeColumn, plannedColumn] = getColumns(DefaultTemplate, setActiveElement)
-  const rows = getColumns(BetterTemplate)
+  const [template, setTemplate] = useState(BetterTemplate)
 
   const thisRef = React.createRef(null)
-  const cellLayerRef = React.createRef(null)
-  const activeCellRef = React.createRef(null)
-
-  let cellLayer
-  let thisX, thisY
-
-  const handleCellClick = e => {
-    thisX = e.target.getBoundingClientRect().x
-    thisY = e.target.getBoundingClientRect().y
-
-    setPosition({x: thisX, y: thisY})
-    setVisibility("visible")
-    setIsActive(true)
-  }
-
-  const unfocusElement = (e) => {
-    e.preventDefault()
-    if (isActive) {
-      setVisibility("hidden")
-      setIsActive(false)
-    }
-    // setPosition({x: 0, y: 0})
-  }
 
   useEffect(() => {
-    thisX = thisRef.current.getBoundingClientRect().x
-    thisY = thisRef.current.getBoundingClientRect().y
-    cellLayer = d3.select(cellLayerRef.current)
+    console.log(getRows(template)[0])
   }, [])
 
   return (
@@ -521,7 +490,7 @@ export default function Timeblock() {
       ref={thisRef}
     >
       <Container>
-        {rows}
+        {getRows(template)}
       </Container>
       <br />
 
