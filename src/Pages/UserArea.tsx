@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 // import { findRenderedComponentWithType } from 'react-dom/test-utils';
 import styled from 'styled-components'
-import customSelect from './elements/CustomSelect'
+import customSelect from '../components/elements/CustomSelect'
 import "../App.css"
 
 const Select = styled.select`
