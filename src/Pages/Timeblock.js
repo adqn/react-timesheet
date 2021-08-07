@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useLayoutEffect } from 'react'
 import * as d3 from 'd3'
 import styled from 'styled-components'
 
@@ -16,16 +16,21 @@ const Container = styled.div`
 const Column = styled.div`
   flex: 1;
   flex-grow: 1;
-  line-height: 30px;
+  line-height: 20px;
   font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 14px;
   // width: ${props => props.width};
-  padding-left: 10px;
-  padding-right: 10px;
+  padding: 7px;
+  // padding-left: 10px;
+  // padding-right: 10px;
   margin-left: -1px;
   border: 1px solid lightgrey;
   border-left: ${props => props.omitLeftBorder ? "none" : "1px solid lightgrey"};
   border-right: ${props => props.omitRightBorder ? "none" : "1px solid lightgrey"};
+  overflow-wrap: anywhere;
+  &:hover {
+    cursor: default;
+  }
 `
 
 const LeftColumn = styled(Column)`
@@ -127,16 +132,21 @@ const Cell = styled.input`
 const EditCell = styled.div`
   visibility: ${props => props.visibility};
   position: absolute;
+  left: ${props => props.left};
+  top: ${props => props.top};
   font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 14px;
   // font-weight: 60;
-  line-height: 1.5;
-  width: 170px;
-  max-width: 200px;
+  line-height: 20px;
+  width: ${props => props.width};
+  min-height: ${props => props.minheight};
+  // max-width: 200px;
   height: fit-content;
   padding: 4px;
   white-space: pre-wrap;
   word-break: break-word;
+  // margin-top: 2px;
+  // margin-left: 2px;
   box-sizing: border-box;
   // border: solid 1px grey;
   border-radius: 3px;
@@ -160,10 +170,6 @@ const BetterTemplate = [
       {
         id: 'rev0',
         content: 'Revision 1'
-      },
-      {
-        id: 'rev0',
-        content: 'Revision 1'
       }
     ]
   },
@@ -180,10 +186,6 @@ const BetterTemplate = [
       {
         id: 'rev1',
         content: `don't sleep actually also long long long long entry blab lahljkd ldakjfg lsdkfj klsdj f`
-      },
-      {
-        id: 'plan1',
-        content: 'sleep'
       }
     ]
   },
@@ -199,10 +201,6 @@ const BetterTemplate = [
       },
       {
         content: 'placeholder'
-      },
-      {
-        id: 'plan2',
-        content: 'wake up'
       }
     ]
   },
@@ -216,9 +214,6 @@ const BetterTemplate = [
       },
       {
         content: "Than expected"
-      },
-      {
-        content: "Well"
       }
     ]
   }
@@ -304,19 +299,19 @@ const FlexCell = (props) => {
     thisY,
     thisWidth,
     thisHeight
-
+    
   function handleCellClick(e) {
-    setIsEditing(true)
-  }
-
-  useEffect(() => {
     thisX = thisRef.current.getBoundingClientRect().x
     thisY = thisRef.current.getBoundingClientRect().y
     thisWidth = thisRef.current.offsetWidth
     thisHeight = thisRef.current.offsetHeight
-    visibility = isEditing ? "visible" : "hidden"
     setSize({width: thisWidth, height: thisHeight})
     setPosition({x: thisX, y: thisY})
+    setIsEditing(true)
+  }
+
+  useEffect(() => {
+    visibility = isEditing ? "visible" : "hidden"
   }, [])
 
   return (
@@ -328,7 +323,16 @@ const FlexCell = (props) => {
       onClick={e => handleCellClick(e)}
     >
       {value}
-      {isEditing ? <ActiveCell size={size} position={position} visibility={visibility}/> : null}
+      {isEditing ?
+        <ActiveCell
+          size={size}
+          position={position}
+          visibility={visibility}
+          setIsEditing={setIsEditing}
+          value={value}
+          setValue={setValue}
+        />
+        : null}
     </Column>
   ) 
 }
@@ -432,47 +436,38 @@ const InteractiveCell = ({ id, initialValue, setActiveElement, setLayout }) => {
   )
 }
 
-const ActiveCell = ({ size, position, visibility}) => {
-  const [value, setValue] = useState('')
-
+const ActiveCell = ({ size, position, visibility, value, setValue, setIsEditing}) => {
   const editCellRef = React.createRef(null)
-  let container
 
   function lockValue() {
-    // setActive("none")
-    // setColor(inactiveColor)
-    // setBorderWidth("1px")
-    // setMargin("0px")
-    // setReadOnly(true)
-    // setActiveElement(null)
+    setIsEditing(false)
+  }
+
+  function inputText(e) {
+    setValue(e.target.innerHTML)
   }
 
   useEffect(() => {
-    container = d3.select(editCellRef.current)
-
-    container
-      .style("left", position.x + "px")
-      .style("top", position.y + "px")
-      .style("width", size.width + "px")
-      .style("min-height", size.height + "px")
-
-    // if (isActive) editCellRef.current.focus()
-    if (visibility === "visible") {
-      editCellRef.current.focus()
-      document.execCommand('selectAll', false, null);
-      document.getSelection().collapseToEnd();
-    }
+    editCellRef.current.focus()
+    document.execCommand('selectAll', false, null);
+    document.getSelection().collapseToEnd();
   })
 
   return (
     <EditCell
       ref={editCellRef}
       visibility={visibility}
-      value={value}
+      left={position.x + 3 + "px"}
+      top={position.y + 4 + "px"}
+      width={size.width + "px"}
+      minheight={size.height + "px"}
       contentEditable={true}
+      suppressContentEditableWarning={true}
       onBlur={() => lockValue()}
-      onChange={e => setValue(e.target.value)}
-    />
+      onKeyUp={(e) => inputText(e)}
+    >
+      {value}
+    </EditCell>
   )
 }
 
@@ -482,7 +477,6 @@ export default function Timeblock() {
   const thisRef = React.createRef(null)
 
   useEffect(() => {
-    console.log(getRows(template)[0])
   }, [])
 
   return (
