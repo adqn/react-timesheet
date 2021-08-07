@@ -24,7 +24,7 @@ body {
   position: fixed;
   width: 200px;
   height: 100%;
-  overflow: auto;
+  overflow: hidden;
   background-color: lightgrey;
 }
 
