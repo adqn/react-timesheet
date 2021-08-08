@@ -129,7 +129,7 @@ const Cell = styled.input`
   pointer-events: ${props => props.isActive};
 `
 
-const EditCell = styled.div`
+const EditCell = styled.textarea`
   visibility: ${props => props.visibility};
   position: absolute;
   left: ${props => props.left};
@@ -140,8 +140,7 @@ const EditCell = styled.div`
   line-height: 20px;
   width: ${props => props.width};
   min-height: ${props => props.minheight};
-  // max-width: 200px;
-  height: fit-content;
+  height: ${props => props.height};
   padding: 4px;
   white-space: pre-wrap;
   word-break: break-word;
@@ -149,9 +148,11 @@ const EditCell = styled.div`
   // margin-left: 2px;
   box-sizing: border-box;
   // border: solid 1px grey;
+  border: none;
   border-radius: 3px;
   box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
   background: white;
+  overflow: hidden;
   outline: none;
   resize: none;
 `
@@ -307,19 +308,29 @@ const FlexCell = (props) => {
     thisY,
     thisWidth,
     thisHeight
+  
+  let ro = new ResizeObserver(entries => {
+    for (let entry of entries) {
+      const cr = entry.contentRect
+      setSize({width: cr.width, height: cr.height})
+    }
+  })
     
   function handleCellClick(e) {
+    let winX = window.pageXOffset
+    let winY = window.pageYOffset
     thisX = thisRef.current.getBoundingClientRect().x
     thisY = thisRef.current.getBoundingClientRect().y
     thisWidth = thisRef.current.offsetWidth
     thisHeight = thisRef.current.offsetHeight
     setSize({width: thisWidth, height: thisHeight})
-    setPosition({x: thisX, y: thisY})
+    setPosition({x: winX + thisX, y: winY + thisY})
     setIsEditing(true)
   }
 
   useEffect(() => {
     visibility = isEditing ? "visible" : "hidden"
+    ro.observe(thisRef.current)
   }, [])
 
   return (
@@ -347,24 +358,31 @@ const FlexCell = (props) => {
 
 const ActiveCell = ({ size, position, visibility, value, setValue, setIsEditing }) => {
   const editCellRef = React.createRef(null)
+  let container
+
+  function getCursorPosition(e) {
+    editCellRef.current.setSelectionRange(
+      editCellRef.current.value.length,
+      editCellRef.current.value.length
+    )
+  }
 
   function lockValue(e) {
-    setValue(e.target.innerHTML)
+    setValue(e.target.value)
     setIsEditing(false)
   }
 
   function keyListener(e) {
-    setValue(e.target.innerHTML)
-
     if (e.key === "Enter" || e.key === "Escape") {
       setIsEditing(false)
     }
   }
 
   useEffect(() => {
+    container = d3.select(editCellRef.current)
     editCellRef.current.focus()
-    document.execCommand('selectAll', false, null);
-    document.getSelection().collapseToEnd();
+    // document.execCommand('selectAll', false, null);
+    // document.getSelection().collapseToEnd();
   })
 
   return (
@@ -372,16 +390,18 @@ const ActiveCell = ({ size, position, visibility, value, setValue, setIsEditing 
       ref={editCellRef}
       visibility={visibility}
       left={position.x + 3 + "px"}
-      top={position.y + 4 + "px"}
+      top={position.y + 3 + "px"}
       width={size.width + "px"}
       minheight={size.height + "px"}
-      contentEditable={true}
-      suppressContentEditableWarning={true}
+      height={size.height + "px"}
+      // contentEditable={true}
+      // suppressContentEditableWarning={true}
+      value={value}
+      onFocus={e => getCursorPosition(e)}
       onBlur={(e) => lockValue(e)}
       onKeyDown={(e) => keyListener(e)}
-    >
-      {value}
-    </EditCell>
+      onChange={e => setValue(e.target.value)}
+    />
   )
 }
 
