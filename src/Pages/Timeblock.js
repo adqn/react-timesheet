@@ -160,15 +160,15 @@ const BetterTemplate = [
   {
     cols: [
       {
-        id: 'time0',
+        id: 'row1-col1',
         content: 'Time'
       },
       {
-        id: 'plan0',
+        id: 'row1-col2',
         content: 'Activity'
       },
       {
-        id: 'rev0',
+        id: 'row1-col3',
         content: 'Revision 1'
       }
     ]
@@ -176,15 +176,15 @@ const BetterTemplate = [
   {
     cols: [
       {
-        id: 'time1',
+        id: 'row2-col1',
         content: '0000'
       },
       {
-        id: 'plan1',
+        id: 'row2-col2',
         content: 'sleep'
       },
       {
-        id: 'rev1',
+        id: 'row2-col3',
         content: `don't sleep actually also long long long long entry blab lahljkd ldakjfg lsdkfj klsdj f`
       }
     ]
@@ -287,6 +287,14 @@ const CellResize = () => {
         />
 }
 
+const Column_ = (props) => {
+  const [width, setWidth] = useState(props.width)
+}
+
+const Row_ = ({ cells }) => {
+
+}
+
 const FlexCell = (props) => {
   const [value, setValue] = useState(props.value)
   const [isEditing, setIsEditing] = useState(false)
@@ -337,15 +345,20 @@ const FlexCell = (props) => {
   ) 
 }
 
-const ActiveCell = ({ size, position, visibility, value, setValue, setIsEditing}) => {
+const ActiveCell = ({ size, position, visibility, value, setValue, setIsEditing }) => {
   const editCellRef = React.createRef(null)
 
-  function lockValue() {
+  function lockValue(e) {
+    setValue(e.target.innerHTML)
     setIsEditing(false)
   }
 
-  function inputText(e) {
+  function keyListener(e) {
     setValue(e.target.innerHTML)
+
+    if (e.key === "Enter" || e.key === "Escape") {
+      setIsEditing(false)
+    }
   }
 
   useEffect(() => {
@@ -364,8 +377,8 @@ const ActiveCell = ({ size, position, visibility, value, setValue, setIsEditing}
       minheight={size.height + "px"}
       contentEditable={true}
       suppressContentEditableWarning={true}
-      onBlur={() => lockValue()}
-      onKeyUp={(e) => inputText(e)}
+      onBlur={(e) => lockValue(e)}
+      onKeyDown={(e) => keyListener(e)}
     >
       {value}
     </EditCell>
