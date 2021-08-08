@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useLayoutEffect } from 'react'
 import * as d3 from 'd3'
 import styled from 'styled-components'
 
@@ -16,16 +16,21 @@ const Container = styled.div`
 const Column = styled.div`
   flex: 1;
   flex-grow: 1;
-  line-height: 30px;
+  line-height: 20px;
   font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 14px;
   // width: ${props => props.width};
-  padding-left: 10px;
-  padding-right: 10px;
+  padding: 7px;
+  // padding-left: 10px;
+  // padding-right: 10px;
   margin-left: -1px;
   border: 1px solid lightgrey;
   border-left: ${props => props.omitLeftBorder ? "none" : "1px solid lightgrey"};
   border-right: ${props => props.omitRightBorder ? "none" : "1px solid lightgrey"};
+  overflow-wrap: anywhere;
+  &:hover {
+    cursor: default;
+  }
 `
 
 const LeftColumn = styled(Column)`
@@ -39,6 +44,7 @@ const RightColumn = styled(Column)`
 const Row = styled.div`
   display: flex;
   // width: fit-content;
+  min-width: 600px;
   width: 100%;
   min-height: 30px;
   margin-left: -1px;
@@ -123,24 +129,30 @@ const Cell = styled.input`
   pointer-events: ${props => props.isActive};
 `
 
-const EditCell = styled.div`
+const EditCell = styled.textarea`
   visibility: ${props => props.visibility};
   position: absolute;
+  left: ${props => props.left};
+  top: ${props => props.top};
   font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 14px;
   // font-weight: 60;
-  line-height: 1.5;
-  width: 170px;
-  max-width: 200px;
-  height: fit-content;
+  line-height: 20px;
+  width: ${props => props.width};
+  min-height: ${props => props.minheight};
+  height: ${props => props.height};
   padding: 4px;
   white-space: pre-wrap;
   word-break: break-word;
+  // margin-top: 2px;
+  // margin-left: 2px;
   box-sizing: border-box;
   // border: solid 1px grey;
+  border: none;
   border-radius: 3px;
   box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
   background: white;
+  overflow: hidden;
   outline: none;
   resize: none;
 `
@@ -149,19 +161,15 @@ const BetterTemplate = [
   {
     cols: [
       {
-        id: 'time0',
+        id: 'row1-col1',
         content: 'Time'
       },
       {
-        id: 'plan0',
+        id: 'row1-col2',
         content: 'Activity'
       },
       {
-        id: 'rev0',
-        content: 'Revision 1'
-      },
-      {
-        id: 'rev0',
+        id: 'row1-col3',
         content: 'Revision 1'
       }
     ]
@@ -169,20 +177,16 @@ const BetterTemplate = [
   {
     cols: [
       {
-        id: 'time1',
+        id: 'row2-col1',
         content: '0000'
       },
       {
-        id: 'plan1',
+        id: 'row2-col2',
         content: 'sleep'
       },
       {
-        id: 'rev1',
+        id: 'row2-col3',
         content: `don't sleep actually also long long long long entry blab lahljkd ldakjfg lsdkfj klsdj f`
-      },
-      {
-        id: 'plan1',
-        content: 'sleep'
       }
     ]
   },
@@ -198,10 +202,6 @@ const BetterTemplate = [
       },
       {
         content: 'placeholder'
-      },
-      {
-        id: 'plan2',
-        content: 'wake up'
       }
     ]
   },
@@ -215,15 +215,12 @@ const BetterTemplate = [
       },
       {
         content: "Than expected"
-      },
-      {
-        content: "Well"
       }
     ]
   }
 ]
 
-const getColumns = (template, setActiveElement) => {
+const getRows = (template) => {
   let rows = []
   let out = []
 
@@ -291,6 +288,14 @@ const CellResize = () => {
         />
 }
 
+const Column_ = (props) => {
+  const [width, setWidth] = useState(props.width)
+}
+
+const Row_ = ({ cells }) => {
+
+}
+
 const FlexCell = (props) => {
   const [value, setValue] = useState(props.value)
   const [isEditing, setIsEditing] = useState(false)
@@ -303,19 +308,29 @@ const FlexCell = (props) => {
     thisY,
     thisWidth,
     thisHeight
-
+  
+  let ro = new ResizeObserver(entries => {
+    for (let entry of entries) {
+      const cr = entry.contentRect
+      setSize({width: cr.width, height: cr.height})
+    }
+  })
+    
   function handleCellClick(e) {
-    setIsEditing(true)
-  }
-
-  useEffect(() => {
+    let winX = window.pageXOffset
+    let winY = window.pageYOffset
     thisX = thisRef.current.getBoundingClientRect().x
     thisY = thisRef.current.getBoundingClientRect().y
     thisWidth = thisRef.current.offsetWidth
     thisHeight = thisRef.current.offsetHeight
-    visibility = isEditing ? "visible" : "hidden"
     setSize({width: thisWidth, height: thisHeight})
-    setPosition({x: thisX, y: thisY})
+    setPosition({x: winX + thisX, y: winY + thisY})
+    setIsEditing(true)
+  }
+
+  useEffect(() => {
+    visibility = isEditing ? "visible" : "hidden"
+    ro.observe(thisRef.current)
   }, [])
 
   return (
@@ -327,193 +342,75 @@ const FlexCell = (props) => {
       onClick={e => handleCellClick(e)}
     >
       {value}
-      {isEditing ? <ActiveCell size={size} position={position} visibility={visibility}/> : null}
+      {isEditing ?
+        <ActiveCell
+          size={size}
+          position={position}
+          visibility={visibility}
+          setIsEditing={setIsEditing}
+          value={value}
+          setValue={setValue}
+        />
+        : null}
     </Column>
   ) 
 }
 
-const InteractiveCell = ({ id, initialValue, setActiveElement, setLayout }) => {
-  const inactiveColor = "black"
-  const activeColor = "#3eadce"
-  const wrapperRef = React.useRef(null)
-  const cellRef = React.useRef(null)
-  const [color, setColor] = useState(inactiveColor)
-  const [borderWidth, setBorderWidth] = useState("1px")
-  const [margin, setMargin] = useState("0px")
-  const [selected, setSelected] = useState(false)
-  const [active, setActive] = useState("none")
-  const [readOnly, setReadOnly] = useState(true)
-  const [value, setValue] = useState(initialValue)
-  const [valueRegister, setValueRegister] = useState(value)
-
-  let wrapper;
-
-  function lockValue() {
-    setActive("none")
-    setColor(inactiveColor)
-    setBorderWidth("1px")
-    setMargin("0px")
-    setReadOnly(true)
-    setActiveElement(null)
-  }
-
-  function selectCell(e) {
-    wrapper = d3.select(wrapperRef.current)
-
-    if (selected) {
-      setActive("auto")
-      setReadOnly(false)
-      cellRef.current.focus()
-    } else {
-      setSelected(true)
-
-      wrapper
-        .style("border", `3px solid ${activeColor}`)
-        .style("margin-left", "-2px")
-        .style("margin-top", "-2px")
-    }
-
-  }
-
-  function deselectCell(e) {
-    wrapper = d3.select(wrapperRef.current)
-    wrapper
-      .style("border", "none")
-    setSelected(false)
-    setReadOnly(true)
-    cellRef.current.blur()
-  }
-
-  function editValue(e) {
-    // good for now but still need to trigger focus on second click instead
-    setValueRegister(value)
-    setActiveElement(id)
-
-    if (active === "none") {
-      setActive("auto")
-      setColor(activeColor)
-      setBorderWidth("3px")
-      setMargin("-2px")
-      setReadOnly(false)
-    }
-  }
-
-  function listener(e) {
-    if (e.key === "Enter") {
-      lockValue()
-    } else if (e.key === "Escape") {
-      setValue(valueRegister)
-      lockValue()
-    }
-  }
-
-  return (
-    <div
-      id={id}
-      ref={wrapperRef}
-      tabIndex={0}
-      onClick={(e) => selectCell(e)}
-      onBlur={() => deselectCell()}
-    >
-      <Cell
-        ref={cellRef}
-        color={color}
-        borderWidth={borderWidth}
-        margin={margin}
-        isActive={active}
-        value={value}
-        readOnly={readOnly}
-        // onBlur={() => lockValue()}
-        onKeyDown={e => listener(e)}
-        onChange={e => setValue(e.target.value)}
-      />
-    </div>
-  )
-}
-
-const ActiveCell = ({ size, position, visibility}) => {
-  const [value, setValue] = useState('')
-
+const ActiveCell = ({ size, position, visibility, value, setValue, setIsEditing }) => {
   const editCellRef = React.createRef(null)
   let container
 
-  function lockValue() {
-    // setActive("none")
-    // setColor(inactiveColor)
-    // setBorderWidth("1px")
-    // setMargin("0px")
-    // setReadOnly(true)
-    // setActiveElement(null)
+  function getCursorPosition(e) {
+    editCellRef.current.setSelectionRange(
+      editCellRef.current.value.length,
+      editCellRef.current.value.length
+    )
+  }
+
+  function lockValue(e) {
+    setValue(e.target.value)
+    setIsEditing(false)
+  }
+
+  function keyListener(e) {
+    if (e.key === "Enter" || e.key === "Escape") {
+      setIsEditing(false)
+    }
   }
 
   useEffect(() => {
     container = d3.select(editCellRef.current)
-
-    container
-      .style("left", position.x + "px")
-      .style("top", position.y + "px")
-      .style("width", size.width + "px")
-      .style("min-height", size.height + "px")
-
-    // if (isActive) editCellRef.current.focus()
-    if (visibility === "visible") {
-      editCellRef.current.focus()
-      document.execCommand('selectAll', false, null);
-      document.getSelection().collapseToEnd();
-    }
+    editCellRef.current.focus()
+    // document.execCommand('selectAll', false, null);
+    // document.getSelection().collapseToEnd();
   })
 
   return (
     <EditCell
       ref={editCellRef}
       visibility={visibility}
+      left={position.x + 3 + "px"}
+      top={position.y + 3 + "px"}
+      width={size.width + "px"}
+      minheight={size.height + "px"}
+      height={size.height + "px"}
+      // contentEditable={true}
+      // suppressContentEditableWarning={true}
       value={value}
-      contentEditable={true}
-      onBlur={() => lockValue()}
+      onFocus={e => getCursorPosition(e)}
+      onBlur={(e) => lockValue(e)}
+      onKeyDown={(e) => keyListener(e)}
       onChange={e => setValue(e.target.value)}
     />
   )
 }
 
 export default function Timeblock() {
-  // const [layout, setLayout] = useState(DefaultTemplate)
-  const [position, setPosition] = useState({x: 0, y: 0})
-  const [isActive, setIsActive] = useState(false)
-  const [visibility, setVisibility] = useState("hidden")
-  const [isFocused, setIsFocused] = useState(false)
-  const [columns, setColumns] = useState([])
-  // const [timeColumn, plannedColumn] = getColumns(DefaultTemplate, setActiveElement)
-  const rows = getColumns(BetterTemplate)
+  const [template, setTemplate] = useState(BetterTemplate)
 
   const thisRef = React.createRef(null)
-  const cellLayerRef = React.createRef(null)
-  const activeCellRef = React.createRef(null)
-
-  let cellLayer
-  let thisX, thisY
-
-  const handleCellClick = e => {
-    thisX = e.target.getBoundingClientRect().x
-    thisY = e.target.getBoundingClientRect().y
-
-    setPosition({x: thisX, y: thisY})
-    setVisibility("visible")
-    setIsActive(true)
-  }
-
-  const unfocusElement = (e) => {
-    e.preventDefault()
-    if (isActive) {
-      setVisibility("hidden")
-      setIsActive(false)
-    }
-    // setPosition({x: 0, y: 0})
-  }
 
   useEffect(() => {
-    thisX = thisRef.current.getBoundingClientRect().x
-    thisY = thisRef.current.getBoundingClientRect().y
-    cellLayer = d3.select(cellLayerRef.current)
   }, [])
 
   return (
@@ -521,7 +418,7 @@ export default function Timeblock() {
       ref={thisRef}
     >
       <Container>
-        {rows}
+        {getRows(template)}
       </Container>
       <br />
 

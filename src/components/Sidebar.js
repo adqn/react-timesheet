@@ -8,10 +8,13 @@ import {
 } from "react-router-dom";
 import '../App.css'
 import styled from 'styled-components'
+import * as d3 from 'd3'
 import DailyView from '../Pages/DailyView'
 import Metrics from '../Pages/Metrics'
 import UserArea from '../Pages/UserArea'
 import Timeblock from '../Pages/Timeblock'
+import ResizeSidebar from '../components/elements/ResizeSidebar'
+import { style } from 'd3';
 
 const routes = [
   {
@@ -47,9 +50,14 @@ const routes = [
 ]
 
 const Sidebar = ({callbacks}) => {
+  const [collasped, setCollapsed] = useState(false)
+  const thisRef = React.createRef(null)
+
   return (
     <Router>
-      <div className="Sidebar">
+      <div className="Sidebar"
+        ref={thisRef}
+      >
         <NavLink to="/daily" activeClassName="a active">Daily overview</NavLink>
         <NavLink to="/projects" activeClassName="a active">Projects</NavLink>
         <NavLink to="/metrics" activeClassName="a active">Metrics</NavLink>
@@ -73,6 +81,7 @@ const Sidebar = ({callbacks}) => {
             />
           ))}
         </Switch>
+        {/* <ResizeSidebar parentClass={"Sidebar"} setCollapsed={setCollapsed} /> */}
       </div>
 
       <div className="ViewArea">
