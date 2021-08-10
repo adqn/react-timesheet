@@ -1,16 +1,23 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react'
 import * as d3 from 'd3'
 import styled from 'styled-components'
+import autosize from 'autosize'
+import Modal from '../components/Modal'
 
-const Container = styled.div`
+const FlexContainer = styled.div`
   display: flex;
   flex-direction: column;
   // flex-flow: column wrap;
-  padding: 10px;
+  padding-left: 6px;
   min-width: 50%;
   height: fit-content;
   // background: green;
   // border: 1px solid black;
+`
+
+const ControlContainer = styled.div`
+  width: 100%;
+  height: 100%;
 `
 
 const Column = styled.div`
@@ -20,6 +27,8 @@ const Column = styled.div`
   font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 14px;
   // width: ${props => props.width};
+  min-height: 20px;
+  min-width: 50px;
   padding: 7px;
   // padding-left: 10px;
   // padding-right: 10px;
@@ -44,7 +53,7 @@ const RightColumn = styled(Column)`
 const Row = styled.div`
   display: flex;
   // width: fit-content;
-  min-width: 600px;
+  min-width: 420px;
   width: 100%;
   min-height: 30px;
   margin-left: -1px;
@@ -77,6 +86,24 @@ const LeftHeader = styled(HeaderCell)`
 
 const RightHeader = styled(HeaderCell)`
   border-right: none;
+`
+
+const AddButton = styled.div`
+  display: inline;
+  width: fit-content;
+  font: 1.5em bold;
+  font-weight: 900;
+  color: grey;
+  padding: 5px;
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
+  &:hover {
+    // background: #F4F4F4;
+    cursor: pointer;
+  }
 `
 
 const CellResizeBar = styled.div`
@@ -220,7 +247,7 @@ const BetterTemplate = [
   }
 ]
 
-const getRows = (template) => {
+function getRows(template) {
   let rows = []
   let out = []
 
@@ -229,17 +256,22 @@ const getRows = (template) => {
     rows.push([])
 
     for (let j = 0; j < cols; j++) {
-      if (i === 0 && j === 0) rows[i].push(<Header omitLeftBorder>{template[i].cols[j].content}</Header>)
-      else if (i === 0 && j < cols - 1) rows[i].push(<Header><CellResize />{template[i].cols[j].content}</Header>)
-      else if (i === 0 && j === cols - 1) {
-        rows[i].push(<Header omitRightBorder><CellResize />{template[i].cols[j].content}</Header>)
-        out.push(<Row>{rows[i]}</Row>)
+      if (i === 0) {
+        if (j === 0) rows[i].push(<Header omitLeftBorder>{template[i].cols[j].content}</Header>)
+        else if (j < cols - 1) rows[i].push(<Header>{template[i].cols[j].content}</Header>)
+        else {
+          rows[i].push(<Header omitRightBorder>{template[i].cols[j].content}</Header>)
+          out.push(<Row>{rows[i]}</Row>)
+        }
       }
-      else if (i > 0 && j === 0) rows[i].push(<FlexCell omitLeftBorder value={template[i].cols[j].content} />)
-      else if (i > 0 && j < cols - 1) rows[i].push(<FlexCell value={template[i].cols[j].content} />)
-      else if (i > 0 && j === cols - 1) {
-        rows[i].push(<FlexCell omitRightBorder value={template[i].cols[j].content} />)
-        out.push(<Row>{rows[i]}</Row>)
+
+      if (i > 0) {
+        if (j === 0) rows[i].push(<FlexCell omitLeftBorder value={template[i].cols[j].content} />)
+        else if (j < cols - 1) rows[i].push(<FlexCell value={template[i].cols[j].content} />)
+        else {
+          rows[i].push(<FlexCell omitRightBorder value={template[i].cols[j].content} />)
+          out.push(<Row>{rows[i]}</Row>)
+        }
       }
     }
   }
@@ -247,18 +279,54 @@ const getRows = (template) => {
   return out
 }
 
+const newRow = (template) => {
+  let id;
+  let newRow = {cols: []}
+  let colTotal = template[0].cols.length
+
+  for (let i = 0; i < colTotal; i++) {
+    // really need to ID/key every element
+    // id = cols - 1
+    newRow.cols.push({content: ""})
+  }
+
+  template.push(newRow)
+  return template
+}
+
 const saveLayout = cols => {
   let layout = []
 }
 
-const Header = (props) => {
+const Spreadsheet = (props) => { 
+  const [template, setTemplate] = useState(BetterTemplate)
+  const [rows, setRows] = useState(
+    getRows(template)
+  )
+
   return (
-    <HeaderCell
-      omitLeftBorder={props.omitLeftBorder}
-      omitRightBorder={props.omitRightBorder}
+    <ControlContainer>
+      <FlexContainer>
+        {rows}
+      </FlexContainer>
+      <AddRow template={template} setRows={setRows} />
+    </ControlContainer>
+  )
+}
+
+const AddRow = ({ template, setRows }) => {
+  function addRow() {
+    const updatedTemplate = newRow(template)
+    const updatedRows = getRows(updatedTemplate)
+    setRows(updatedRows)
+  }
+
+  return (
+    <AddButton
+      onClick={() => addRow()}
     >
-      {props.children}
-    </HeaderCell>
+      +
+    </AddButton>
   )
 }
 
@@ -288,6 +356,17 @@ const CellResize = () => {
         />
 }
 
+const Header = (props) => {
+  return (
+    <HeaderCell
+      omitLeftBorder={props.omitLeftBorder}
+      omitRightBorder={props.omitRightBorder}
+    >
+      {props.children}
+    </HeaderCell>
+  )
+}
+
 const Column_ = (props) => {
   const [width, setWidth] = useState(props.width)
 }
@@ -309,13 +388,6 @@ const FlexCell = (props) => {
     thisWidth,
     thisHeight
   
-  let ro = new ResizeObserver(entries => {
-    for (let entry of entries) {
-      const cr = entry.contentRect
-      setSize({width: cr.width, height: cr.height})
-    }
-  })
-    
   function handleCellClick(e) {
     let winX = window.pageXOffset
     let winY = window.pageYOffset
@@ -330,7 +402,6 @@ const FlexCell = (props) => {
 
   useEffect(() => {
     visibility = isEditing ? "visible" : "hidden"
-    ro.observe(thisRef.current)
   }, [])
 
   return (
@@ -357,6 +428,7 @@ const FlexCell = (props) => {
 }
 
 const ActiveCell = ({ size, position, visibility, value, setValue, setIsEditing }) => {
+  const [tempValue, setTempValue] = useState(value)
   const editCellRef = React.createRef(null)
   let container
 
@@ -368,12 +440,15 @@ const ActiveCell = ({ size, position, visibility, value, setValue, setIsEditing 
   }
 
   function lockValue(e) {
-    setValue(e.target.value)
+    setValue(tempValue)
     setIsEditing(false)
   }
 
   function keyListener(e) {
-    if (e.key === "Enter" || e.key === "Escape") {
+    if (e.key === "Enter") {
+      lockValue()
+    }
+    if (e.key === "Escape") {
       setIsEditing(false)
     }
   }
@@ -381,8 +456,7 @@ const ActiveCell = ({ size, position, visibility, value, setValue, setIsEditing 
   useEffect(() => {
     container = d3.select(editCellRef.current)
     editCellRef.current.focus()
-    // document.execCommand('selectAll', false, null);
-    // document.getSelection().collapseToEnd();
+    autosize(editCellRef.current)
   })
 
   return (
@@ -394,34 +468,29 @@ const ActiveCell = ({ size, position, visibility, value, setValue, setIsEditing 
       width={size.width + "px"}
       minheight={size.height + "px"}
       height={size.height + "px"}
-      // contentEditable={true}
-      // suppressContentEditableWarning={true}
-      value={value}
+      defaultValue={value}
+      value={tempValue}
       onFocus={e => getCursorPosition(e)}
       onBlur={(e) => lockValue(e)}
       onKeyDown={(e) => keyListener(e)}
-      onChange={e => setValue(e.target.value)}
+      onChange={e => setTempValue(e.target.value)}
     />
   )
 }
 
 export default function Timeblock() {
   const [template, setTemplate] = useState(BetterTemplate)
-
   const thisRef = React.createRef(null)
 
   useEffect(() => {
+    // const newTemplate = newRow(template)
+    // setTemplate(newTemplate)
   }, [])
 
   return (
-    <div
-      ref={thisRef}
-    >
-      <Container>
-        {getRows(template)}
-      </Container>
+    <div>
+      <Spreadsheet template={template} />
       <br />
-
       <button>Save current layout</button>
     </div>
   )
