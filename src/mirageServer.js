@@ -24,6 +24,8 @@ let daily2 = [
   }
 ]
 
+let templates = []
+
 export function makeServer() {
   // return {};
   return createServer({
@@ -58,7 +60,8 @@ export function makeServer() {
               'ksiondag'
             ]
           }
-        ]
+        ],
+        templates
       }))
 
       this.post('/api/newentry', (schema, req) => {
@@ -66,6 +69,11 @@ export function makeServer() {
         attrs.user = "Test user"
         daily2.push(attrs)
         console.log(attrs)
+      })
+
+      this.post(`/api/savetemplate`, (schema, req) => {
+        let attrs = JSON.parse(req.requestBody)
+        templates.push(attrs)
       })
 
       this.passthrough('api.github.com')
