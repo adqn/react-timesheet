@@ -35,7 +35,7 @@ const ControlContainer = styled.div`
   // border: 1px solid;
 `
 
-const Column = styled.div`
+const Cell = styled.div`
   flex: 1;
   flex-grow: 1;
   // flex-shrink: 0;
@@ -76,6 +76,7 @@ const HeaderCell = styled.div`
   border-left: ${props => props.omitLeftBorder ? "none" : "1px solid lightgrey"};
   border-right: ${props => props.omitRightBorder ? "none" : "1px solid lightgrey"};
   &:hover {
+    cursor: default;
     background: #F1F1F1;
   }
 `
@@ -147,18 +148,6 @@ const CellLayer = styled.div`
   background: white;
   -webkit-appearance: none;
   -moz-appearance: none;
-`
-
-const Cell = styled.input`
-  width: 100px;
-  height: 20px;
-  border: solid;
-  margin-left: ${props => props.margin};
-  margin-top: ${props => props.margin};
-  margin-bottom: -1px;
-  border-width: ${props => props.borderWidth};
-  border-color: ${props => props.color};
-  pointer-events: ${props => props.isActive};
 `
 
 const EditCell = styled.textarea`
@@ -257,96 +246,39 @@ const BetterTemplate = [
 ]
 
 const defaultTemplate = [
-  {
-    cols: [
-      {
-        id: 'row1-col1',
-        content: ''
-      },
-      {
-        id: 'row1-col2',
-        content: ''
-      }
-    ]
-  },
-  {
-    cols: [
-      {
-        id: 'row2-col1',
-        content: ''
-      },
-      {
-        id: 'row2-col2',
-        content: ''
-      }
-    ]
-  }
-]
-
-function getRows(template) {
-  let rows = []
-  let out = []
-
-  for (let i = 0; i < template.length; i++) {
-    let cols = template[i].cols.length
-    rows.push([])
-
-    for (let j = 0; j < cols; j++) {
-      if (i === 0) {
-        if (j === 0) rows[i].push(
-          <Header omitLeftBorder id={template[i].cols[j].id}>
-            {template[i].cols[j].content}
-          </Header>)
-        else if (j < cols - 1) rows[i].push(
-          <Header id={template[i].cols[j].id}>
-            {template[i].cols[j].content}
-          </Header>)
-        else {
-          rows[i].push(
-            <Header omitRightBorder id={template[i].cols[j].id}>
-              {template[i].cols[j].content}
-            </Header>)
-          out.push(<Row key={i}>{rows[i]}</Row>)
-        }
-      }
-
-      if (i > 0) {
-        if (j === 0) rows[i].push(
-          <FlexCell omitLeftBorder
-            id={template[i].cols[j].id}
-            value={template[i].cols[j].content}
-          />)
-        else if (j < cols - 1) rows[i].push(
-          <FlexCell
-            id={template[i].cols[j].id}
-            value={template[i].cols[j].content}
-          />)
-        else {
-          rows[i].push(
-            <FlexCell omitRightBorder
-              id={template[i].cols[j].id}
-              value={template[i].cols[j].content}
-            />)
-          out.push(<Row key={i}>{rows[i]}</Row>)
-        }
-      }
+  [
+    {
+      id: 'row1-col1',
+      content: ''
+    },
+    {
+      id: 'row1-col2',
+      content: ''
     }
-  }
-
-  return out
-}
+  ],
+  [
+    {
+      id: 'row2-col1',
+      content: ''
+    },
+    {
+      id: 'row2-col2',
+      content: ''
+    }
+  ]
+]
 
 const newRow = (temp) => {
   let template = [...temp]
   let newId, colId
   let rowId = template.length + 1
-  let newRow = {cols: []}
-  let colTotal = template[0].cols.length
+  let newRow = []
+  let colTotal = template[0].length
 
   for (let i = 0; i < colTotal; i++) {
     colId = i + 1
     newId = `row${rowId}-col${colId}`
-    newRow.cols.push({id: newId, content: ""})
+    newRow.push({ id: newId, content: "" })
   }
 
   template.push(newRow)
@@ -356,13 +288,13 @@ const newRow = (temp) => {
 const newColumn = (temp) => {
   let template = [...temp]
   let newId, rowId;
-  let colId = template[0].cols.length + 1
+  let colId = template[0].length + 1
   let rowTotal = template.length
 
   for (let i = 0; i < rowTotal; i++) {
     rowId = i + 1
     newId = `row${rowId}-col${colId}`
-    template[i].cols.push({id: newId, content: ""})
+    template[i].push({ id: newId, content: "" })
   }
 
   return template
@@ -375,8 +307,6 @@ const saveLayout = cols => {
 const AddRow = ({ template, setTemplate }) => {
   function addRow() {
     const updatedTemplate = newRow(template)
-    // const updatedRows = getRows(updatedTemplate)
-    // setRows(updatedRows)
     setTemplate(updatedTemplate)
   }
 
@@ -392,8 +322,6 @@ const AddRow = ({ template, setTemplate }) => {
 const AddColumn = ({ template, setTemplate }) => {
   function addColumn() {
     const updatedTemplate = newColumn(template)
-    // const updatedRows = getRows(updatedTemplate)
-    // setRows(updatedRows)
     setTemplate(updatedTemplate)
   }
 
@@ -413,7 +341,7 @@ const ColumnResize = () => {
   useEffect(() => {
     bar = d3.select(thisRef.current)
     bar
-      .on("mouseover", function() {
+      .on("mouseover", function () {
         d3.select(this)
           .transition()
           .duration(200)
@@ -429,7 +357,7 @@ const ColumnResize = () => {
 
   return <ColumnResizeBar
     ref={thisRef}
-        />
+  />
 }
 
 const Header = (props) => {
@@ -443,9 +371,8 @@ const Header = (props) => {
   )
 }
 
-const Spreadsheet = () => { 
+const Spreadsheet = () => {
   const [template, setTemplate] = useState(defaultTemplate)
-  const [rows, setRows] = useState(getRows(template))
   // Reducer here?
   const [action, setAction] = useState("save")
   const [modalActive, setModalActive] = useState(false)
@@ -454,60 +381,72 @@ const Spreadsheet = () => {
     setTemplate
   }
 
-  useEffect(() => {
-    const newRows = getRows(template)
-    setRows(newRows)
-  }, [template])
-
   return (
     <div>
       <ControlContainer>
         <FlexContainer>
           <SpreadsheetContext.Provider value={templateContext}>
-            {rows}
+            {template.map((row, i) => (
+              <Row key={i}>
+                {row.map((cell, j) => (
+                  <FlexCell key={j}
+                    omitLeftBorder={j === 0}
+                    omitRightBorder={j === row.length - 1}
+                    cellType={i === 0 ? "header" : undefined}
+                    id={cell.id}
+                    value={cell.content} />)
+                )}
+              </Row>
+            ))}
           </SpreadsheetContext.Provider>
           <AddRow template={template} setTemplate={setTemplate} />
         </FlexContainer>
-          <AddColumn template={template} setTemplate={setTemplate} />
+        <AddColumn template={template} setTemplate={setTemplate} />
       </ControlContainer>
-        <br />
-        <button
-          onClick={() => { setAction("save"); setModalActive(true) }}
-        >
-          Save current template
+      <br />
+      <button
+        onClick={() => { setAction("save"); setModalActive(true) }}
+      >
+        Save current template
         </button>
-        <br />
-        <button
-          onClick={() => { setAction("load"); setModalActive(true) }}
-        >
-          Load template
+      <br />
+      <button
+        onClick={() => { setAction("load"); setModalActive(true) }}
+      >
+        Load template
         </button>
-        {modalActive ?
-          <Modal visibility={"visible"}>
-            {action === "save" ?
-              <SaveTemplateBox template={template} setModalActive={setModalActive} />
-              :
-              <LoadTemplateBox setTemplate={setTemplate} setModalActive={setModalActive} />
-            }
-          </Modal>
-          : null}
+      {modalActive ?
+        <Modal visibility={"visible"}>
+          {action === "save" ?
+            <SaveTemplateBox template={template} setModalActive={setModalActive} />
+            :
+            <LoadTemplateBox setTemplate={setTemplate} setModalActive={setModalActive} />
+          }
+        </Modal>
+        : null}
     </div>
   )
 }
 
 const FlexCell = (props) => {
-  const [value, setValue] = useState(props.value)
+  const value = props.value
+  const [tempvalue, setTempvalue] = useState(props.value)
   const [isEditing, setIsEditing] = useState(false)
-  const [size, setSize] = useState({width: 0, height: 0})
-  const [position, setPosition] = useState({x: 0, y: 0})
+  const [size, setSize] = useState({ width: 0, height: 0 })
+  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const components = {
+    header: HeaderCell,
+    normal: Cell
+  }
+  const CellType = components[props.cellType || 'normal']
   const thisRef = React.createRef(null)
   const activeCellRef = React.createRef(null)
-  let visibility 
-  let thisX, 
+  let visibility
+  let thisX,
     thisY,
     thisWidth,
     thisHeight
-  
+
   function handleCellClick(e) {
     let winX = window.pageXOffset
     let winY = window.pageYOffset
@@ -516,8 +455,8 @@ const FlexCell = (props) => {
     thisWidth = thisRef.current.offsetWidth
     thisHeight = thisRef.current.offsetHeight
     // set spawn size and position of ActiveCell
-    setSize({width: thisWidth, height: thisHeight})
-    setPosition({x: winX + thisX, y: winY + thisY})
+    setSize({ width: thisWidth, height: thisHeight })
+    setPosition({ x: winX + thisX, y: winY + thisY })
     setIsEditing(true)
   }
 
@@ -526,7 +465,7 @@ const FlexCell = (props) => {
   }, [])
 
   return (
-    <Column
+    <CellType
       ref={thisRef}
       key={props.id}
       width={props.width}
@@ -543,31 +482,29 @@ const FlexCell = (props) => {
           visibility={visibility}
           setIsEditing={setIsEditing}
           value={value}
-          setValue={setValue}
         />
         : null}
-    </Column>
-  ) 
+    </CellType>
+  )
 }
 
-const ActiveCell = ({ parentKey, size, position, visibility, value, setValue, setIsEditing }) => {
-  // const [tempValue, setTempValue] = useState(defaultValue)
-  // const initialValue = defaultValue
+const ActiveCell = ({ parentKey, size, position, visibility, value: originalValue, setIsEditing }) => {
+  const [value, setValue] = useState(originalValue)
   const editCellRef = React.createRef(null)
-  let container
   const context = React.useContext(SpreadsheetContext)
+  let container
 
   function updateTemplate(temp) {
     let template = [...temp]
     let row, col
-    
+
     row = parentKey.split("-")[0].match(/\d/)[0] - 1
     col = parentKey.split("-")[1].match(/\d/)[0] - 1
 
-    template[row].cols[col].content = value
+    template[row][col].content = value
     context.setTemplate(template)
   }
-  
+
   function lockValue(e) {
     updateTemplate(context.template)
     setIsEditing(false)
@@ -655,7 +592,7 @@ const SaveTemplateBox = ({ template, setModalActive }) => {
         ref={inputRef}
         placeholder={"Template name"}
         onChange={e => setName(e.target.value)}
-        style={{outline: 'none'}}
+        style={{ outline: 'none' }}
       />
       <button onClick={() => saveTemplate()}>Save</button>
       <br />
@@ -688,7 +625,7 @@ const LoadTemplateBox = ({ setTemplate, setModalActive }) => {
           <button
             key={idx}
             onClick={() => setTemplate([...template.template])}
-            style={{display: 'block'}}
+            style={{ display: 'block' }}
           >
             {template.name}
           </button>
