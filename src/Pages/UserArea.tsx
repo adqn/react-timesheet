@@ -142,7 +142,7 @@ export default function UserArea({callbacks}: {callbacks: Callbacks}) {
   useEffect(() => {
     getProjects()
     customSelect()
-    callbacks.setTimerActivated(true)
+    // callbacks.setTimerActivated(true)
   }, [])
 
   return (

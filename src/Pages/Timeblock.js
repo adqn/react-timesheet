@@ -1,8 +1,22 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import * as d3 from 'd3'
 import styled from 'styled-components'
 import autosize from 'autosize'
 import Modal from '../components/Modal'
+
+const SpreadsheetContext = React.createContext()
+
+const ModalDialog = styled.div`
+  position: absolute;
+  top: 25%;
+  left: 40%;
+  // height: 300px;
+  // width: 300px;
+  // height: fit-content;
+  // width: fit-content
+  border-radius: 7px;
+  background: white;
+`
 
 const FlexContainer = styled.div`
   display: flex;
@@ -11,24 +25,28 @@ const FlexContainer = styled.div`
   padding-left: 6px;
   min-width: 50%;
   height: fit-content;
-  // background: green;
   // border: 1px solid black;
 `
 
 const ControlContainer = styled.div`
-  width: 100%;
+  display: flex;
+  width: fit-content;
   height: 100%;
+  // border: 1px solid;
 `
 
 const Column = styled.div`
   flex: 1;
   flex-grow: 1;
+  // flex-shrink: 0;
   line-height: 20px;
   font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 14px;
   // width: ${props => props.width};
+  width: 150px;
+  max-width: 200px;
   min-height: 20px;
-  min-width: 50px;
+  // min-width: 100px;
   padding: 7px;
   // padding-left: 10px;
   // padding-right: 10px;
@@ -42,12 +60,24 @@ const Column = styled.div`
   }
 `
 
-const LeftColumn = styled(Column)`
-  border-left: none;
-`
-
-const RightColumn = styled(Column)`
-  border-right: none;
+const HeaderCell = styled.div`
+  flex: 1;
+  flex-grow: 1;
+  line-height: 30px;
+  font-size: .9em;
+  font-weight: 100;
+  text-align: left;
+  padding-left: 10px;
+  color: grey;
+  height: 32px;
+  min-width: 100px;
+  margin-left: -1px;
+  border: solid 1px lightgrey;
+  border-left: ${props => props.omitLeftBorder ? "none" : "1px solid lightgrey"};
+  border-right: ${props => props.omitRightBorder ? "none" : "1px solid lightgrey"};
+  &:hover {
+    background: #F1F1F1;
+  }
 `
 
 const Row = styled.div`
@@ -61,52 +91,27 @@ const Row = styled.div`
   // border: 1px solid;
 `
 
-const HeaderCell = styled.div`
-  flex: 1;
-  // flex-grow: 1;
-  line-height: 30px;
-  font-size: .9em;
-  font-weight: 100;
-  text-align: left;
-  padding-left: 10px;
-  color: grey;
-  height: 32px;
-  margin-left: -1px;
-  border: solid 1px lightgrey;
-  border-left: ${props => props.omitLeftBorder ? "none" : "1px solid lightgrey"};
-  border-right: ${props => props.omitRightBorder ? "none" : "1px solid lightgrey"};
-  &:hover {
-    background: #F1F1F1;
-  }
-`
-
-const LeftHeader = styled(HeaderCell)`
-  border-left: none;
-`
-
-const RightHeader = styled(HeaderCell)`
-  border-right: none;
-`
-
 const AddButton = styled.div`
-  display: inline;
+  display: inline-block;
+  height: fit-content;
   width: fit-content;
   font: 1.5em bold;
   font-weight: 900;
   color: grey;
-  padding: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
   user-select: none;
   -moz-user-select: none;
   -khtml-user-select: none;
   -webkit-user-select: none;
   -o-user-select: none;
   &:hover {
-    // background: #F4F4F4;
+    background: #F4F4F4;
     cursor: pointer;
   }
 `
 
-const CellResizeBar = styled.div`
+const ColumnResizeBar = styled.div`
   // visibility: hidden;
   display: inline-block;
   position: absolute;
@@ -220,14 +225,15 @@ const BetterTemplate = [
   {
     cols: [
       {
-        id: 'time2',
+        id: 'row3-col1',
         content: '0800'
       },
       {
-        id: 'plan2',
+        id: 'row3-col2',
         content: 'wake up'
       },
       {
+        id: 'row2-col3',
         content: 'placeholder'
       }
     ]
@@ -235,13 +241,43 @@ const BetterTemplate = [
   {
     cols: [
       {
+        id: 'row4-col1',
         content: "Well"
       },
       {
+        id: 'row4-col2',
         content: "That was easier"
       },
       {
+        id: 'row4-col3',
         content: "Than expected"
+      }
+    ]
+  }
+]
+
+const defaultTemplate = [
+  {
+    cols: [
+      {
+        id: 'row1-col1',
+        content: ''
+      },
+      {
+        id: 'row1-col2',
+        content: ''
+      }
+    ]
+  },
+  {
+    cols: [
+      {
+        id: 'row2-col1',
+        content: ''
+      },
+      {
+        id: 'row2-col2',
+        content: ''
       }
     ]
   }
@@ -257,20 +293,41 @@ function getRows(template) {
 
     for (let j = 0; j < cols; j++) {
       if (i === 0) {
-        if (j === 0) rows[i].push(<Header omitLeftBorder>{template[i].cols[j].content}</Header>)
-        else if (j < cols - 1) rows[i].push(<Header>{template[i].cols[j].content}</Header>)
+        if (j === 0) rows[i].push(
+          <Header omitLeftBorder id={template[i].cols[j].id}>
+            {template[i].cols[j].content}
+          </Header>)
+        else if (j < cols - 1) rows[i].push(
+          <Header id={template[i].cols[j].id}>
+            {template[i].cols[j].content}
+          </Header>)
         else {
-          rows[i].push(<Header omitRightBorder>{template[i].cols[j].content}</Header>)
-          out.push(<Row>{rows[i]}</Row>)
+          rows[i].push(
+            <Header omitRightBorder id={template[i].cols[j].id}>
+              {template[i].cols[j].content}
+            </Header>)
+          out.push(<Row key={i}>{rows[i]}</Row>)
         }
       }
 
       if (i > 0) {
-        if (j === 0) rows[i].push(<FlexCell omitLeftBorder value={template[i].cols[j].content} />)
-        else if (j < cols - 1) rows[i].push(<FlexCell value={template[i].cols[j].content} />)
+        if (j === 0) rows[i].push(
+          <FlexCell omitLeftBorder
+            id={template[i].cols[j].id}
+            value={template[i].cols[j].content}
+          />)
+        else if (j < cols - 1) rows[i].push(
+          <FlexCell
+            id={template[i].cols[j].id}
+            value={template[i].cols[j].content}
+          />)
         else {
-          rows[i].push(<FlexCell omitRightBorder value={template[i].cols[j].content} />)
-          out.push(<Row>{rows[i]}</Row>)
+          rows[i].push(
+            <FlexCell omitRightBorder
+              id={template[i].cols[j].id}
+              value={template[i].cols[j].content}
+            />)
+          out.push(<Row key={i}>{rows[i]}</Row>)
         }
       }
     }
@@ -279,18 +336,35 @@ function getRows(template) {
   return out
 }
 
-const newRow = (template) => {
-  let id;
+const newRow = (temp) => {
+  let template = [...temp]
+  let newId, colId
+  let rowId = template.length + 1
   let newRow = {cols: []}
   let colTotal = template[0].cols.length
 
   for (let i = 0; i < colTotal; i++) {
-    // really need to ID/key every element
-    // id = cols - 1
-    newRow.cols.push({content: ""})
+    colId = i + 1
+    newId = `row${rowId}-col${colId}`
+    newRow.cols.push({id: newId, content: ""})
   }
 
   template.push(newRow)
+  return template
+}
+
+const newColumn = (temp) => {
+  let template = [...temp]
+  let newId, rowId;
+  let colId = template[0].cols.length + 1
+  let rowTotal = template.length
+
+  for (let i = 0; i < rowTotal; i++) {
+    rowId = i + 1
+    newId = `row${rowId}-col${colId}`
+    template[i].cols.push({id: newId, content: ""})
+  }
+
   return template
 }
 
@@ -298,27 +372,12 @@ const saveLayout = cols => {
   let layout = []
 }
 
-const Spreadsheet = (props) => { 
-  const [template, setTemplate] = useState(BetterTemplate)
-  const [rows, setRows] = useState(
-    getRows(template)
-  )
-
-  return (
-    <ControlContainer>
-      <FlexContainer>
-        {rows}
-      </FlexContainer>
-      <AddRow template={template} setRows={setRows} />
-    </ControlContainer>
-  )
-}
-
-const AddRow = ({ template, setRows }) => {
+const AddRow = ({ template, setTemplate }) => {
   function addRow() {
     const updatedTemplate = newRow(template)
-    const updatedRows = getRows(updatedTemplate)
-    setRows(updatedRows)
+    // const updatedRows = getRows(updatedTemplate)
+    // setRows(updatedRows)
+    setTemplate(updatedTemplate)
   }
 
   return (
@@ -330,7 +389,24 @@ const AddRow = ({ template, setRows }) => {
   )
 }
 
-const CellResize = () => {
+const AddColumn = ({ template, setTemplate }) => {
+  function addColumn() {
+    const updatedTemplate = newColumn(template)
+    // const updatedRows = getRows(updatedTemplate)
+    // setRows(updatedRows)
+    setTemplate(updatedTemplate)
+  }
+
+  return (
+    <AddButton
+      onClick={() => addColumn()}
+    >
+      +
+    </AddButton>
+  )
+}
+
+const ColumnResize = () => {
   const thisRef = React.createRef(null)
   let bar
 
@@ -351,7 +427,7 @@ const CellResize = () => {
       })
   })
 
-  return <CellResizeBar
+  return <ColumnResizeBar
     ref={thisRef}
         />
 }
@@ -367,12 +443,56 @@ const Header = (props) => {
   )
 }
 
-const Column_ = (props) => {
-  const [width, setWidth] = useState(props.width)
-}
+const Spreadsheet = () => { 
+  const [template, setTemplate] = useState(defaultTemplate)
+  const [rows, setRows] = useState(getRows(template))
+  // Reducer here?
+  const [action, setAction] = useState("save")
+  const [modalActive, setModalActive] = useState(false)
+  const templateContext = {
+    template,
+    setTemplate
+  }
 
-const Row_ = ({ cells }) => {
+  useEffect(() => {
+    const newRows = getRows(template)
+    setRows(newRows)
+  }, [template])
 
+  return (
+    <div>
+      <ControlContainer>
+        <FlexContainer>
+          <SpreadsheetContext.Provider value={templateContext}>
+            {rows}
+          </SpreadsheetContext.Provider>
+          <AddRow template={template} setTemplate={setTemplate} />
+        </FlexContainer>
+          <AddColumn template={template} setTemplate={setTemplate} />
+      </ControlContainer>
+        <br />
+        <button
+          onClick={() => { setAction("save"); setModalActive(true) }}
+        >
+          Save current template
+        </button>
+        <br />
+        <button
+          onClick={() => { setAction("load"); setModalActive(true) }}
+        >
+          Load template
+        </button>
+        {modalActive ?
+          <Modal visibility={"visible"}>
+            {action === "save" ?
+              <SaveTemplateBox template={template} setModalActive={setModalActive} />
+              :
+              <LoadTemplateBox setTemplate={setTemplate} setModalActive={setModalActive} />
+            }
+          </Modal>
+          : null}
+    </div>
+  )
 }
 
 const FlexCell = (props) => {
@@ -395,6 +515,7 @@ const FlexCell = (props) => {
     thisY = thisRef.current.getBoundingClientRect().y
     thisWidth = thisRef.current.offsetWidth
     thisHeight = thisRef.current.offsetHeight
+    // set spawn size and position of ActiveCell
     setSize({width: thisWidth, height: thisHeight})
     setPosition({x: winX + thisX, y: winY + thisY})
     setIsEditing(true)
@@ -407,6 +528,7 @@ const FlexCell = (props) => {
   return (
     <Column
       ref={thisRef}
+      key={props.id}
       width={props.width}
       omitLeftBorder={props.omitLeftBorder}
       omitRightBorder={props.omitRightBorder}
@@ -415,6 +537,7 @@ const FlexCell = (props) => {
       {value}
       {isEditing ?
         <ActiveCell
+          parentKey={props.id}
           size={size}
           position={position}
           visibility={visibility}
@@ -427,10 +550,28 @@ const FlexCell = (props) => {
   ) 
 }
 
-const ActiveCell = ({ size, position, visibility, value, setValue, setIsEditing }) => {
-  const [tempValue, setTempValue] = useState(value)
+const ActiveCell = ({ parentKey, size, position, visibility, value, setValue, setIsEditing }) => {
+  // const [tempValue, setTempValue] = useState(defaultValue)
+  // const initialValue = defaultValue
   const editCellRef = React.createRef(null)
   let container
+  const context = React.useContext(SpreadsheetContext)
+
+  function updateTemplate(temp) {
+    let template = [...temp]
+    let row, col
+    
+    row = parentKey.split("-")[0].match(/\d/)[0] - 1
+    col = parentKey.split("-")[1].match(/\d/)[0] - 1
+
+    template[row].cols[col].content = value
+    context.setTemplate(template)
+  }
+  
+  function lockValue(e) {
+    updateTemplate(context.template)
+    setIsEditing(false)
+  }
 
   function getCursorPosition(e) {
     editCellRef.current.setSelectionRange(
@@ -439,25 +580,25 @@ const ActiveCell = ({ size, position, visibility, value, setValue, setIsEditing 
     )
   }
 
-  function lockValue(e) {
-    setValue(tempValue)
-    setIsEditing(false)
+  function handleChange(e) {
+    // setTempValue(e.target.value)
+    setValue(e.target.value)
   }
 
   function keyListener(e) {
     if (e.key === "Enter") {
       lockValue()
     }
-    if (e.key === "Escape") {
-      setIsEditing(false)
-    }
+    // if (e.key === "Escape") {
+    //   setIsEditing(false)
+    // }
   }
 
   useEffect(() => {
     container = d3.select(editCellRef.current)
     editCellRef.current.focus()
     autosize(editCellRef.current)
-  })
+  }, [])
 
   return (
     <EditCell
@@ -468,30 +609,99 @@ const ActiveCell = ({ size, position, visibility, value, setValue, setIsEditing 
       width={size.width + "px"}
       minheight={size.height + "px"}
       height={size.height + "px"}
-      defaultValue={value}
-      value={tempValue}
+      value={value}
       onFocus={e => getCursorPosition(e)}
       onBlur={(e) => lockValue(e)}
       onKeyDown={(e) => keyListener(e)}
-      onChange={e => setTempValue(e.target.value)}
+      // onChange={e => setValue(e.target.value)}
+      onChange={e => handleChange(e)}
     />
   )
 }
 
-export default function Timeblock() {
-  const [template, setTemplate] = useState(BetterTemplate)
-  const thisRef = React.createRef(null)
+const SaveTemplateBox = ({ template, setModalActive }) => {
+  const [status, setStatus] = useState("")
+  const [name, setName] = useState("Untitled")
+  const inputRef = React.createRef(null)
+
+  function saveTemplate() {
+    const newTemplate = {
+      name,
+      template
+    }
+
+    const req = {
+      method: 'POST',
+      body: JSON.stringify(newTemplate)
+    }
+
+    fetch('/api/savetemplate', req)
+      .then(() => {
+        setStatus("Template saved!");
+        setTimeout(() => setModalActive(false), 2000)
+      })
+  }
 
   useEffect(() => {
-    // const newTemplate = newRow(template)
-    // setTemplate(newTemplate)
+    inputRef.current.focus()
+    window.onclick = e => {
+      if (e.target.id === "modal") setModalActive(false)
+    }
   }, [])
 
   return (
-    <div>
-      <Spreadsheet template={template} />
+    <ModalDialog>
+      <input
+        ref={inputRef}
+        placeholder={"Template name"}
+        onChange={e => setName(e.target.value)}
+        style={{outline: 'none'}}
+      />
+      <button onClick={() => saveTemplate()}>Save</button>
       <br />
-      <button>Save current layout</button>
+      {status}
+    </ModalDialog>
+  )
+}
+
+const LoadTemplateBox = ({ setTemplate, setModalActive }) => {
+  const [templates, setTemplates] = useState(null)
+  const dialogRef = React.createRef(null)
+
+  async function getTemplates() {
+    return (await fetch('/api/test')).json()
+  }
+
+  useEffect(async () => {
+    const data = await getTemplates()
+    const res = data.templates
+    setTemplates(res)
+    window.onclick = e => {
+      if (e.target.id === "modal") setModalActive(false)
+    }
+  }, [])
+
+  return (
+    <ModalDialog>
+      {templates ? templates.map((template, idx) => {
+        return (
+          <button
+            key={idx}
+            onClick={() => setTemplate([...template.template])}
+            style={{display: 'block'}}
+          >
+            {template.name}
+          </button>
+        )
+      }) : "Loading templates..."}
+    </ModalDialog>
+  )
+}
+
+export default function Timeblock() {
+  return (
+    <div>
+      <Spreadsheet />
     </div>
   )
 }

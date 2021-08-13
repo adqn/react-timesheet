@@ -5,7 +5,7 @@ import { makeServer } from './mirageServer'
 import styled from 'styled-components'
 import Sidebar from './components/Sidebar'
 import Timer from './components/Timer'
-import Auth from './components/Auth'
+import Modal from './components/Modal'
 import './App.css';
 
 makeServer();
