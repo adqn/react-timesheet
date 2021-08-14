@@ -129,12 +129,11 @@ const ColumnResizeBar = styled.div`
 `
 
 const cellSelectedOverlay = styled.div`
-  visibility: hidden;
-  position: absolute;
-  width: 100;
-  height: 100;
-  // border: 2px solid red;
   // visibility: hidden;
+  position: absolute;
+  width: ${props => props.width}
+  height: ${props => props.height}
+  border: 2px solid lightblue;
 `
 
 const CellLayer = styled.div`
@@ -177,73 +176,6 @@ const EditCell = styled.textarea`
   outline: none;
   resize: none;
 `
-
-const BetterTemplate = [
-  {
-    cols: [
-      {
-        id: 'row1-col1',
-        content: 'Time'
-      },
-      {
-        id: 'row1-col2',
-        content: 'Activity'
-      },
-      {
-        id: 'row1-col3',
-        content: 'Revision 1'
-      }
-    ]
-  },
-  {
-    cols: [
-      {
-        id: 'row2-col1',
-        content: '0000'
-      },
-      {
-        id: 'row2-col2',
-        content: 'sleep'
-      },
-      {
-        id: 'row2-col3',
-        content: `don't sleep actually also long long long long entry blab lahljkd ldakjfg lsdkfj klsdj f`
-      }
-    ]
-  },
-  {
-    cols: [
-      {
-        id: 'row3-col1',
-        content: '0800'
-      },
-      {
-        id: 'row3-col2',
-        content: 'wake up'
-      },
-      {
-        id: 'row2-col3',
-        content: 'placeholder'
-      }
-    ]
-  },
-  {
-    cols: [
-      {
-        id: 'row4-col1',
-        content: "Well"
-      },
-      {
-        id: 'row4-col2',
-        content: "That was easier"
-      },
-      {
-        id: 'row4-col3',
-        content: "Than expected"
-      }
-    ]
-  }
-]
 
 const defaultTemplate = [
   [
@@ -300,10 +232,6 @@ const newColumn = (temp) => {
   return template
 }
 
-const saveLayout = cols => {
-  let layout = []
-}
-
 const AddRow = ({ template, setTemplate }) => {
   function addRow() {
     const updatedTemplate = newRow(template)
@@ -335,8 +263,15 @@ const AddColumn = ({ template, setTemplate }) => {
 }
 
 const ColumnResize = () => {
+  const [isActive, setIsActive] = useState(false)
+  const [sliderValue, setSliderValue] = useState(150)
+  const minSliderValue = 50;
   const thisRef = React.createRef(null)
   let bar
+
+  function adjustSlider(e) {
+
+  }
 
   useEffect(() => {
     bar = d3.select(thisRef.current)
@@ -430,7 +365,6 @@ const Spreadsheet = () => {
 
 const FlexCell = (props) => {
   const value = props.value
-  const [tempvalue, setTempvalue] = useState(props.value)
   const [isEditing, setIsEditing] = useState(false)
   const [size, setSize] = useState({ width: 0, height: 0 })
   const [position, setPosition] = useState({ x: 0, y: 0 })
