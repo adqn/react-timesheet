@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
-import * as d3 from 'd3'
-import styled from 'styled-components'
 import autosize from 'autosize'
+import * as d3 from 'd3'
+import React, { useEffect, useState } from 'react'
+import styled from 'styled-components'
 import Modal from '../components/Modal'
 
 const SpreadsheetContext = React.createContext()
@@ -23,8 +23,9 @@ const FlexContainer = styled.div`
   flex-direction: column;
   // flex-flow: column wrap;
   padding-left: 6px;
-  min-width: 50%;
-  height: fit-content;
+  // min-width: 50%;
+  // width: fit-content;
+  // height: fit-content;
   // border: 1px solid black;
 `
 
@@ -44,7 +45,7 @@ const Cell = styled.div`
   font-size: 14px;
   // width: ${props => props.width};
   width: 150px;
-  max-width: 200px;
+  // max-width: 200px;
   min-height: 20px;
   // min-width: 100px;
   padding: 7px;
@@ -70,7 +71,8 @@ const HeaderCell = styled.div`
   padding-left: 10px;
   color: grey;
   height: 32px;
-  min-width: 100px;
+  width: 150px;
+  // min-width: 50px;
   margin-left: -1px;
   border: solid 1px lightgrey;
   border-left: ${props => props.omitLeftBorder ? "none" : "1px solid lightgrey"};
@@ -84,18 +86,19 @@ const HeaderCell = styled.div`
 const Row = styled.div`
   display: flex;
   // width: fit-content;
-  min-width: 420px;
-  width: 100%;
+  // min-width: 420px;
+  // width: 100%;
   min-height: 30px;
   margin-left: -1px;
   margin-top: -1px;
   // border: 1px solid;
 `
 
-const AddButton = styled.div`
+const AddRemoveButton = styled.div`
   display: inline-block;
   height: fit-content;
-  width: fit-content;
+  width: 20px;
+  text-align: center;
   font: 1.5em bold;
   font-weight: 900;
   color: grey;
@@ -112,8 +115,8 @@ const AddButton = styled.div`
   }
 `
 
-const ColumnResizeBar = styled.div`
-  // visibility: hidden;
+const ColumnResizeBar = styled.input`
+  visibility: hidden;
   display: inline-block;
   position: absolute;
   width: 5px;
@@ -122,7 +125,7 @@ const ColumnResizeBar = styled.div`
   margin-left: -12px;
   border: none;
   background: #27B7FF;
-  opacity: 0;
+  opacity: 1;
   &:hover {
     cursor: col-resize;
   }
@@ -177,7 +180,15 @@ const EditCell = styled.textarea`
   resize: none;
 `
 
-const defaultTemplate = [
+interface Cell {
+  id: string;
+  content: string;
+}
+
+type Spreadsheet = Array<Array<Cell>>
+// type Spreadsheet = Cell[][]
+
+const defaultTemplate: Spreadsheet = [
   [
     {
       id: 'row1-col1',
@@ -200,8 +211,8 @@ const defaultTemplate = [
   ]
 ]
 
-const newRow = (temp) => {
-  let template = [...temp]
+const newRow = (template: Spreadsheet) => {
+  let temp = [...template]
   let newId, colId
   let rowId = template.length + 1
   let newRow = []
@@ -213,12 +224,12 @@ const newRow = (temp) => {
     newRow.push({ id: newId, content: "" })
   }
 
-  template.push(newRow)
-  return template
+  temp.push(newRow)
+  return temp
 }
 
-const newColumn = (temp) => {
-  let template = [...temp]
+const newColumn = (template: Spreadsheet) => {
+  let temp = [...template]
   let newId, rowId;
   let colId = template[0].length + 1
   let rowTotal = template.length
@@ -226,43 +237,56 @@ const newColumn = (temp) => {
   for (let i = 0; i < rowTotal; i++) {
     rowId = i + 1
     newId = `row${rowId}-col${colId}`
-    template[i].push({ id: newId, content: "" })
+    temp[i].push({ id: newId, content: "" })
   }
 
-  return template
+  return temp
 }
 
-const AddRow = ({ template, setTemplate }) => {
+const ModifyRow = ({ remove, template, setTemplate }: {remove?: boolean, template: Spreadsheet, setTemplate: (t: Spreadsheet) => void}) => {
   function addRow() {
     const updatedTemplate = newRow(template)
     setTemplate(updatedTemplate)
   }
 
+  function removeRow() {
+    if (template.length < 2) return
+    const updatedTemplate = [...template].slice(0, -1)
+    setTemplate(updatedTemplate)
+  }
+
   return (
-    <AddButton
-      onClick={() => addRow()}
+    <AddRemoveButton
+      onClick={() => remove ? removeRow() : addRow()}
     >
-      +
-    </AddButton>
+      {remove ? "-" : "+"}
+    </AddRemoveButton>
   )
 }
 
-const AddColumn = ({ template, setTemplate }) => {
+const ModifyColumn = ({ remove, template, setTemplate }: {remove?: boolean | null, template: Spreadsheet, setTemplate: (t: Spreadsheet) => void}) => {
   function addColumn() {
     const updatedTemplate = newColumn(template)
     setTemplate(updatedTemplate)
   }
 
+  function removeColumn() {
+    if (template[0].length < 2) return
+    const updatedTemplate = [...template]
+    updatedTemplate.map((row, i) => updatedTemplate[i] = updatedTemplate[i].slice(0, -1))
+    setTemplate(updatedTemplate)
+  }
+
   return (
-    <AddButton
-      onClick={() => addColumn()}
+    <AddRemoveButton
+      onClick={() => remove ? removeColumn() : addColumn()}
     >
-      +
-    </AddButton>
+      {remove ? "-" : "+"}
+    </AddRemoveButton>
   )
 }
 
-const ColumnResize = () => {
+const ColumnResize = ({template, setTemplate}: {template: Spreadsheet, setTemplate: (t: Spreadsheet) => void}) => {
   const [isActive, setIsActive] = useState(false)
   const [sliderValue, setSliderValue] = useState(150)
   const minSliderValue = 50;
@@ -273,21 +297,30 @@ const ColumnResize = () => {
 
   }
 
+  // assuming each cell has a 'width' property 
+  // try not to use this
+  function resizeColumn(dx, colNum) {
+    let temp = [...template]
+    template.map((row, i) => 
+      row.map((col, j) => { if (j === colNum) temp[i][j].width += dx }))
+    setTemplate(temp)
+  }
+
   useEffect(() => {
     bar = d3.select(thisRef.current)
-    bar
-      .on("mouseover", function () {
-        d3.select(this)
-          .transition()
-          .duration(200)
-          .style("opacity", "1")
-      })
-      .on("mouseout", function () {
-        d3.select(this)
-          .transition()
-          .duration(200)
-          .style("opacity", "0")
-      })
+  //   bar
+  //     .on("mouseover", function () {
+  //       d3.select(this)
+  //         .transition()
+  //         .duration(200)
+  //         .style("opacity", "1")
+  //     })
+  //     .on("mouseout", function () {
+  //       d3.select(this)
+  //         .transition()
+  //         .duration(200)
+  //         .style("opacity", "0")
+  //     })
   })
 
   return <ColumnResizeBar
@@ -334,9 +367,11 @@ const Spreadsheet = () => {
               </Row>
             ))}
           </SpreadsheetContext.Provider>
-          <AddRow template={template} setTemplate={setTemplate} />
+          <ModifyRow template={template} setTemplate={setTemplate} />
+          <ModifyRow remove template={template} setTemplate={setTemplate} />
         </FlexContainer>
-        <AddColumn template={template} setTemplate={setTemplate} />
+        <ModifyColumn template={template} setTemplate={setTemplate} />
+        <ModifyColumn remove template={template} setTemplate={setTemplate} />
       </ControlContainer>
       <br />
       <button
@@ -359,11 +394,13 @@ const Spreadsheet = () => {
           }
         </Modal>
         : null}
+        <br />
+        <ColumnResize />
     </div>
   )
 }
 
-const FlexCell = (props) => {
+const FlexCell = (props: any) => {
   const value = props.value
   const [isEditing, setIsEditing] = useState(false)
   const [size, setSize] = useState({ width: 0, height: 0 })
@@ -490,7 +527,7 @@ const ActiveCell = ({ parentKey, size, position, visibility, value: originalValu
   )
 }
 
-const SaveTemplateBox = ({ template, setModalActive }) => {
+const SaveTemplateBox = ({ template, setModalActive }: {template: Spreadsheet, setModalActive: (b: boolean) => void}) => {
   const [status, setStatus] = useState("")
   const [name, setName] = useState("Untitled")
   const inputRef = React.createRef(null)
@@ -535,8 +572,8 @@ const SaveTemplateBox = ({ template, setModalActive }) => {
   )
 }
 
-const LoadTemplateBox = ({ setTemplate, setModalActive }) => {
-  const [templates, setTemplates] = useState(null)
+const LoadTemplateBox = ({ setTemplate, setModalActive }: {setTemplate: (t: Spreadsheet) => void, setModalActive: (b: boolean) => void}) => {
+  const [templates, setTemplates] = useState<Spreadsheet[] | null>(null)
   const dialogRef = React.createRef(null)
 
   async function getTemplates() {
