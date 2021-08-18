@@ -50,8 +50,9 @@
     ]
   },
   "devDependencies": {
+    "@types/autosize": "^4.0.0",
     "@types/d3": "^7.0.0",
-    "@types/react": "^17.0.15",
+    "@types/react": "^17.0.18",
     "@types/styled-components": "^5.1.11"
   }
 }
