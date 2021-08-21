@@ -10,7 +10,7 @@ const CollapseControl = styled.div`
   bottom: 0px;
 `
 
-export default function ResizeSidebar({ parentClass, setCollapsed }) {
+export default function ResizeSidebar({ parentClass, setCollapsed, collapseDirection }) {
   const [parentCollapsed, setParentCollapsed] = useState(false)
   parentClass = d3.select('.' + parentClass)
 
@@ -18,11 +18,19 @@ export default function ResizeSidebar({ parentClass, setCollapsed }) {
     const windowHeight = window.innerHeight;
 
     if (!parentCollapsed) {
-      parentClass
-        .style("height", windowHeight + "px")
-        .transition()
-        .duration(800)
-        .style("height", "30px")
+      if (collapseDirection === "left") {
+        parentClass
+          .transition()
+          .duration(800)
+          .style("left", "-200px")
+      }
+      else if (collapseDirection === "top") {
+        parentClass
+          .style("height", windowHeight + "px")
+          .transition()
+          .duration(800)
+          .style("height", "30px")
+      }
       setParentCollapsed(true)
     } else {
       parentClass
