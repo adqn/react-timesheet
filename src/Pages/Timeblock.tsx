@@ -6,12 +6,6 @@ import Modal from '../components/Modal'
 
 const SpreadsheetContext = React.createContext()
 
-interface CellStyles {
-  width: number;
-  omitLeftBorder: boolean;
-  omitRightBorder: boolean;
-}
-
 const ModalDialog = styled.div`
   position: absolute;
   top: 25%;
@@ -41,6 +35,12 @@ const ControlContainer = styled.div`
   height: 100%;
   // border: 1px solid;
 `
+
+interface CellStyles {
+  width: number;
+  omitLeftBorder: boolean;
+  omitRightBorder: boolean;
+}
 
 const Cell = styled.div<CellStyles>`
   flex: 1;
@@ -310,7 +310,7 @@ const ColumnResize = ({template, setTemplate}: {template: Spreadsheet, setTempla
   const [isActive, setIsActive] = useState(false)
   const [sliderValue, setSliderValue] = useState(150)
   const minSliderValue = 50;
-  const thisRef = React.createRef<React.ElementRef<typeof ColumnResize>>(null)
+  const thisRef = React.createRef<React.ElementRef<typeof ColumnResize>>()
   let bar
 
   function adjustSlider(e: any) {
@@ -404,7 +404,7 @@ const Spreadsheet = () => {
         </Modal>
         : null}
         <br />
-      <ColumnResize template={template} setTemplate={setTemplate} />
+      {/* <ColumnResize template={template} setTemplate={setTemplate} /> */}
     </div>
   )
 }
@@ -419,7 +419,7 @@ const FlexCell = (props: any) => {
     normal: Cell
   }
   const CellType = components[props.cellType || 'normal']
-  const thisRef = React.createRef(null)
+  const thisRef = React.createRef()
   let visibility
   let thisX,
     thisY,
@@ -478,13 +478,14 @@ interface ActiveCellProps {
 
 const ActiveCell = ({ parentKey, size, position, visibility, originalValue, setIsEditing }: ActiveCellProps) => {
   const [value, setValue] = useState(originalValue)
-  const editCellRef = React.createRef(null)
+  const editCellRef = React.createRef()
   const context = React.useContext(SpreadsheetContext)
   let container
 
   function updateTemplate(template: Spreadsheet) {
     let temp = [...template]
-    let row, col
+    let row
+    let col
 
     row = parentKey.split("-")[0].match(/\d/)[0] - 1
     col = parentKey.split("-")[1].match(/\d/)[0] - 1
@@ -547,7 +548,7 @@ const ActiveCell = ({ parentKey, size, position, visibility, originalValue, setI
 const SaveTemplateBox = ({ template, setModalActive }: {template: Spreadsheet, setModalActive: (b: boolean) => void}) => {
   const [status, setStatus] = useState("")
   const [name, setName] = useState("Untitled")
-  const inputRef = React.createRef<React.ElementRef<typeof SaveTemplateBox>>(null)
+  const inputRef = React.createRef<React.ElementRef<typeof SaveTemplateBox>>()
 
   function saveTemplate() {
     const newTemplate = {
