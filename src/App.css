@@ -12,8 +12,8 @@ body {
   /* display: block; */
   /* width: 80%; */
   /* border: 1px solid black;  */
-  margin-top: 50px;
-  margin-left: 223px;
+  margin-top: 80px;
+  margin-left: 35px;
   margin-right: 35px;  
   /* background-color: rgb(255, 0, 0); */
 }
@@ -22,10 +22,15 @@ body {
   margin: 0;
   padding: 0;
   position: fixed;
-  width: 200px;
+  top: 50px;
+  left: -160px;
+  width: 160px;
   height: 100%;
+  border: none;
+  border-right: 1px solid lightgrey;
   overflow: hidden;
-  background-color: lightgrey;
+  background: rgb(255, 255, 255);
+  z-index: 2;
 }
 
 .Sidebar a {
@@ -41,20 +46,20 @@ body {
 }
 
 .Sidebar a:hover:not(.active) {
-  background-color: #555;
+  background-color: rgb(80, 79, 79);
   color: white;
 }
 
 @media screen and (max-width: 700px) {
-  .Sidebar {
+  /* .Sidebar {
     width: 100%;
     height: auto;
     position: relative;
-  }
-  .sidebar a {float: left;}
+  } */
+  /* .sidebar a {float: left;} */
   .ViewArea {
     margin-left: 2px;
-    margin-right: 15px;
+    margin-right: 4px;
   }
 }
 
