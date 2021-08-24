@@ -24,6 +24,27 @@ let daily2 = [
   }
 ]
 
+let projects2 = [
+  {
+    name: "test project 1",
+    client: "moose",
+    contributors: ["a duck"],
+    tags: [
+      "duck_approved",
+      "fried_duck",
+      "not_geese"
+    ],
+    segments: [
+      {
+        date: "2021-08-23",
+        start: "10:17AM",
+        end: "10:19AM",
+        duration: "00:03:33",
+        description: "made good soup"
+      }
+    ]
+  }
+]
 let templates = []
 
 export function makeServer() {
@@ -61,6 +82,7 @@ export function makeServer() {
             ]
           }
         ],
+        projects2,
         templates
       }))
 
