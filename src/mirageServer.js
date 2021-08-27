@@ -43,6 +43,25 @@ let projects2 = [
         description: "made good soup"
       }
     ]
+  },
+  {
+    name: "test project 2",
+    client: "horse",
+    contributors: ["a duck"],
+    tags: [
+      "duck_approved",
+      "fried_duck",
+      "not_geese"
+    ],
+    segments: [
+      {
+        date: "2021-08-23",
+        start: "10:17AM",
+        end: "10:19AM",
+        duration: "00:03:33",
+        description: "made good soup"
+      }
+    ]
   }
 ]
 let templates = []

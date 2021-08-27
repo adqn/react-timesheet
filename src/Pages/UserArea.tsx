@@ -221,6 +221,16 @@ const Stopwatch = ({ setTotalTime }: { setTotalTime: (t:string) => void}) => {
     reset,
   } = useStopwatch({autoStart: false})
 
+  function handleToggle() {
+    if (isRunning) {
+      pause()
+      const totalTime = `${hours}:${minutes}:${seconds}`
+      setTotalTime(totalTime)
+    } else {
+
+    }
+  }
+
   return (
     <div>
       <ElapsedTime>
@@ -246,11 +256,11 @@ const AddProject = ({ projects, setProjects }: {projects: Project[], setProjects
   const thisRef = React.createRef()
 
   useEffect(() => {
-    window.onclick = (e: any) => {
-      if (projectMenuActive) 
-        if (e.target.className != "ProjectMenu") 
-          setProjectMenuActive(false)
-    }
+    // window.onclick = (e: any) => {
+    //   if (projectMenuActive) 
+    //     if (e.target.className != "ProjectMenu") 
+    //       setProjectMenuActive(false)
+    // }
   })
 
   return (
@@ -263,7 +273,7 @@ const AddProject = ({ projects, setProjects }: {projects: Project[], setProjects
       >
         + Project
       </AddProjectButton>
-      {projectMenuActive ? <ProjectMenu projects={projects} projectMenuActive={projectMenuActive} setProjects={setProjects} /> : null}
+      {projectMenuActive ? <ProjectMenu projects={projects} projectMenuActive={projectMenuActive} /> : null}
     </div>
   )
 }
@@ -272,9 +282,7 @@ const ProjectEntry = ({ project }: { project: Project }) =>
   <div>
     client: {project.client}
     <br />
-    <LittleBullet color={"red"} size={"4px"}>
-      {project.name}
-    </LittleBullet>
+      &bull; {project.name}
   </div>
 
 
@@ -287,6 +295,7 @@ const ProjectMenu = ({projects, projectMenuActive, setProjects}: {projects: Proj
     >
       <UserBarInputHeader>
         <ProjectMenuInput
+          projects={projects}
         />
       </UserBarInputHeader>
       {projects ? projects.map(project => <ProjectEntry project={project} />) : "No projects"}
@@ -364,6 +373,13 @@ const SubmitStatus = ({ didSubmit }: { didSubmit: boolean }) =>
 
 const UserBar = ({current}: {current? : boolean | undefined}) => {
   const [totalTime, setTotalTime] = useState("00:00:00")
+  const [name, setName] = useState("")
+  const [client, setClient] = useState("")
+  const [contributors, setContributors] = useState([])
+  const [tags, setTags] = useState("")
+  const [segments, setSegments] = useState<ProjectSegment>()
+  const [description, setDescription] = useState("")
+  const [project, setProject] = useState<Project[]>([])
   const [projects, setProjects] = useState<Project[] | null>(null)
 
   const fetchMe = async (): Promise<Me> => {
@@ -374,6 +390,25 @@ const UserBar = ({current}: {current? : boolean | undefined}) => {
     const data = await fetchMe();
     const res = data.projects2
     setProjects(res)
+  }
+
+  const addProject = () => {
+    const epoch = Date.now()
+
+    const entry: Project = {
+      name,
+      client,
+      contributors: [],
+      tags: [],
+      segments: [],
+    }
+
+    const req = {
+      method: 'POST',
+      body: JSON.stringify(entry)
+    }
+
+    fetch('/api/newentry2', req)
   }
 
   useEffect(() => {
