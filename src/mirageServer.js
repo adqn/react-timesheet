@@ -26,6 +26,7 @@ let daily2 = [
 
 let projects2 = [
   {
+    id: "project1",
     name: "test project 1",
     client: "moose",
     contributors: ["a duck"],
@@ -34,8 +35,9 @@ let projects2 = [
       "fried_duck",
       "not_geese"
     ],
-    segments: [
+    tasks: [
       {
+        id: "task1",
         date: "2021-08-23",
         start: "10:17AM",
         end: "10:19AM",
@@ -44,27 +46,35 @@ let projects2 = [
       }
     ]
   },
+]
+
+let tasks = [
   {
-    name: "test project 2",
-    client: "horse",
-    contributors: ["a duck"],
-    tags: [
-      "duck_approved",
-      "fried_duck",
-      "not_geese"
-    ],
-    segments: [
-      {
-        date: "2021-08-23",
-        start: "10:17AM",
-        end: "10:19AM",
-        duration: "00:03:33",
-        description: "made good soup"
-      }
-    ]
+    id: "task1",
+    date: "2021-08-23",
+    start: "10:17AM",
+    end: "10:19AM",
+    duration: "00:03:33",
+    description: "made good soup"
   }
 ]
+
 let templates = []
+let timers = []
+
+const startTimer = (projectId, taskId) => { 
+  const foundTask = tasks.find(task => task.id === taskId)
+
+  if (!foundTask) {
+    // start new task
+  }
+
+
+}
+
+const stopTimer = (projectId, taskId) => {
+}
+
 
 export function makeServer() {
   // return {};
@@ -105,11 +115,32 @@ export function makeServer() {
         templates
       }))
 
-      this.post('/api/newentry', (schema, req) => {
+      this.post('/api/newentry', req => {
         let attrs = JSON.parse(req.requestBody)
         attrs.user = "Test user"
         daily2.push(attrs)
         console.log(attrs)
+      })
+
+      this.post('/api/newentry2', req => {
+        let attrs = JSON.parse(req.requestBody)
+        projects2.push(attrs)
+        console.log(attrs)
+      })
+
+      // takes project and task ID
+      this.post('/api/requesttimer', req => {
+        let attrs = JSON.parse(req.requestBody)
+        const projectId = attrs.projectId
+        const taskId = attrs.taskId 
+        const foundTimer = timers.find(timer => timer.taskId === taskId)
+
+        if (foundTimer) {
+
+        }
+
+        const newTimer = {projectId, taskId}
+        timers.push(newTimer)
       })
 
       this.post(`/api/savetemplate`, (schema, req) => {

@@ -8,10 +8,25 @@ import {
   LittleBullet
 } from '../components/styles/SomeWidgets'
 
-const UserBarFlexContainer = styled.div`
+const MutableUserBarFlexContainer = styled.div`
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: 99%;
+  margin-top: 30px;
+  margin-bottom: 20px;
+  background: white;
+  border: 1px solid grey;
+  box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
+`
+
+const UserBarFlexContainer = styled.div`
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  width: 99%;
+  margin-top: -180px;
+  margin-bottom: 20px;
+  background: white;
   border: 1px solid grey;
   box-shadow: rgba(15, 15, 15, 0.05) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px;
 `
@@ -180,14 +195,16 @@ const AddProjectButton = styled.div`
 `
 
 interface Project {
+  id: string,
   name: string,
   client: string,
   contributors: string[];
   tags: string[];
-  segments: ProjectSegment[]
+  tasks: ProjectTask[]
 }
 
-interface ProjectSegment {
+interface ProjectTask {
+  id: string;
   date: string;
   start: string;
   end: string;
@@ -209,26 +226,30 @@ interface Callbacks {
   [name: string]: React.Dispatch<React.SetStateAction<boolean>> | (() => void);
 }
 
-const Stopwatch = ({ setTotalTime }: { setTotalTime: (t:string) => void}) => {
+const Stopwatch = ({ submitProjectData, setTotalTime }: { submitProjectData: () => void, setTotalTime: (t:string) => void}) => {
+  const [isRunning, setIsRunning] = useState(false)
   const {
     seconds,
     minutes,
     hours,
     days,
-    isRunning,
     start,
     pause,
     reset,
   } = useStopwatch({autoStart: false})
 
-  function handleToggle() {
-    if (isRunning) {
-      pause()
-      const totalTime = `${hours}:${minutes}:${seconds}`
-      setTotalTime(totalTime)
-    } else {
+  function handleStop() {
+    setIsRunning(false)
+    reset()
+    pause()
+    const totalTime = `${hours}:${minutes}:${seconds}`
+    setTotalTime(totalTime)
+    submitProjectData()
+  }
 
-    }
+  function handleStart() {
+    setIsRunning(true)
+    start()
   }
 
   return (
@@ -240,7 +261,7 @@ const Stopwatch = ({ setTotalTime }: { setTotalTime: (t:string) => void}) => {
       </ElapsedTime>
       <StopwatchButton
         background={isRunning ? "orange" : "#008CBA"}
-        onClick={isRunning ? pause : start}
+        onClick={isRunning ? handleStop : handleStart}
       >
         {isRunning ? "STOP" : "START"}
       </StopwatchButton>
@@ -371,28 +392,22 @@ const projectsDropDown = (projects: Project[], setProject: (s:string) => void) =
 const SubmitStatus = ({ didSubmit }: { didSubmit: boolean }) =>
   didSubmit ? <div>Entry submitted!</div> : <div>Submitting...</div>
 
-const UserBar = ({current}: {current? : boolean | undefined}) => {
+const UserBar = ({ projects }: {projects: Project[] | null}) => {
+  const [timerRunning, setTimerRunning] = useState(false)
   const [totalTime, setTotalTime] = useState("00:00:00")
   const [name, setName] = useState("")
   const [client, setClient] = useState("")
   const [contributors, setContributors] = useState([])
   const [tags, setTags] = useState("")
-  const [segments, setSegments] = useState<ProjectSegment>()
+  const [tasks, setTasks] = useState<ProjectTask>()
   const [description, setDescription] = useState("")
   const [project, setProject] = useState<Project[]>([])
-  const [projects, setProjects] = useState<Project[] | null>(null)
 
   const fetchMe = async (): Promise<Me> => {
     return (await fetch('/api/test')).json();
   }
 
-  const getProjects = async () => {
-    const data = await fetchMe();
-    const res = data.projects2
-    setProjects(res)
-  }
-
-  const addProject = () => {
+  const submitProjectData = () => {
     const epoch = Date.now()
 
     const entry: Project = {
@@ -400,7 +415,7 @@ const UserBar = ({current}: {current? : boolean | undefined}) => {
       client,
       contributors: [],
       tags: [],
-      segments: [],
+      tasks: [],
     }
 
     const req = {
@@ -410,13 +425,11 @@ const UserBar = ({current}: {current? : boolean | undefined}) => {
 
     fetch('/api/newentry2', req)
   }
-
-  useEffect(() => {
-    getProjects()
-  }, [])
   
   return (
-    <UserBarFlexContainer>
+    <UserBarFlexContainer
+      position={"fixed"}
+    >
       {/* <UserBarHeader>
       </UserBarHeader> */}
       <UserBarInputHeader>
@@ -425,7 +438,6 @@ const UserBar = ({current}: {current? : boolean | undefined}) => {
         />
         <AddProject
           projects={projects}
-          setProjects={setProjects}
         />
       </UserBarInputHeader>
       <UserBarTimer>
@@ -446,7 +458,9 @@ const UserBar = ({current}: {current? : boolean | undefined}) => {
           minwidth={"130px"}
           justify={"right"}
         >
-          <Stopwatch setTotalTime={setTotalTime} />
+          <Stopwatch
+            submitProjectData={submitProjectData} 
+            setTotalTime={setTotalTime} />
         </UserBarInfoItem>
         <UserBarInfoItem
           // width={"25%"}
@@ -461,6 +475,16 @@ const UserBar = ({current}: {current? : boolean | undefined}) => {
   )
 }
 
+const MutableUserBar = () => {
+  return (
+    <MutableUserBarFlexContainer>
+      <UserBarHeader>
+
+      </UserBarHeader>
+    </MutableUserBarFlexContainer>
+  )
+}
+
 export default function UserArea({callbacks}: {callbacks: Callbacks}) {
   const [submitting, setSubmitting] = useState(false)
   const [didSubmit, setDidSubmit] = useState(false)
@@ -470,57 +494,36 @@ export default function UserArea({callbacks}: {callbacks: Callbacks}) {
   const [hours, setHours] = useState(0)
   const [description, setDescription] = useState('')
 
-  const dummyProjects = [{
-    name: "Getting projects...",
-    contributors: []
-  }]
-
   const fetchMe = async (): Promise<Me> => {
     return (await fetch('/api/test')).json();
   }
 
   const getProjects = async () => {
     const data = await fetchMe();
-    const res = data.projects
+    const res = data.projects2
     setProjects(res)
-    setProject(res[0].name)
-  }
-
-  const addEntry = () => {
-    const epoch = Date.now()
-
-    const entry = {
-      project,
-      description,
-      hours,
-      date: epoch,
-      minutes
-    }
-
-    const req = {
-      method: 'POST',
-      body: JSON.stringify(entry)
-    }
-
-    setSubmitting(true)
-    fetch('/api/newentry', req)
-      .then(() => {
-        setProject(projects?.[0].name ?? null)
-        setHours(0)
-        setMinutes(0)
-        setDescription('')
-        setDidSubmit(true)
-      })
   }
 
   useEffect(() => {
-    // getProjects()
+    getProjects()
     // callbacks.setTimerActivated(true)
   }, [])
 
   return (
     <div>
-      <UserBar />
+      <UserBar projects={projects} />
+
+      <div
+        style={{
+          marginTop: "170px",
+          // display: "flex",
+          alignItems: "center"
+        }}
+      >
+        {projects?.map(project => {
+          return <MutableUserBar />
+        })}
+      </div>
       <br />
       {/* <br />
       {projects ?
