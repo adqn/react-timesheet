@@ -358,6 +358,18 @@ const Spreadsheet = () => {
     setTemplate
   }
 
+  const copyAsMarkdown = async () => {
+    const ret: string[] = [];
+    template.forEach((row, index) => {
+      ret.push(`|${row.map((cell) => cell.content).join("|")}|`);
+      if (index === 0) {
+        ret.push(`|${row.map((_, col) => col === 0 ? ":-:" : "-").join("|")}|`)
+      }
+    })
+    await navigator.clipboard.writeText(ret.join("\n"));
+    console.log("Copied to clipboard");
+  };
+
   return (
     <div>
       <ControlContainer>
@@ -393,6 +405,12 @@ const Spreadsheet = () => {
         onClick={() => { setAction("load"); setModalActive(true) }}
       >
         Load template
+        </button>
+      <br />
+      <button
+        onClick={copyAsMarkdown}
+      >
+        Copy as markdown
         </button>
       {modalActive ?
         <Modal visibility={"visible"}>
