@@ -51,6 +51,7 @@ let projects2 = [
 let tasks = [
   {
     id: "task1",
+    projectId: "project1",
     date: "2021-08-23",
     start: "10:17AM",
     end: "10:19AM",
@@ -62,11 +63,23 @@ let tasks = [
 let templates = []
 let timers = []
 
+const getTimer = taskId => {
+}
+
 const startTimer = (projectId, taskId) => { 
   const foundTask = tasks.find(task => task.id === taskId)
 
   if (!foundTask) {
     // start new task
+    const date = Date.now()
+    const newTask = {
+      taskId,
+      projectId,
+      date
+    }
+
+    tasks.push(newTask)
+    // send confirmation to client to begin timer?
   }
 
 
