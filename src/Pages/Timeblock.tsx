@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { isTemplateExpression } from 'typescript'
 import Modal from '../components/Modal'
+// import Spreadsheet from 'components/Spreadsheet'
 
 const SpreadsheetContext = React.createContext()
 
@@ -53,7 +54,7 @@ const Cell = styled.div<CellStyles>`
   font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 14px;
   width: ${props => props.width};
-  // width: 150px;
+  min-width: 150px;
   // max-width: 200px;
   min-height: 20px;
   // min-width: 100px;
@@ -65,6 +66,11 @@ const Cell = styled.div<CellStyles>`
   border-left: ${props => props.omitLeftBorder ? "none" : "1px solid lightgrey"};
   border-right: ${props => props.omitRightBorder ? "none" : "1px solid lightgrey"};
   overflow-wrap: anywhere;
+  user-select: none; 
+  -webkit-user-select: none; 
+  -khtml-user-select: none; 
+  -moz-user-select: none; 
+  -ms-user-select: none; 
   &:hover {
     cursor: default;
   }
@@ -88,6 +94,11 @@ const HeaderCell = styled.div<CellStyles>`
   border: solid 1px lightgrey;
   border-left: ${props => props.omitLeftBorder ? "none" : "1px solid lightgrey"};
   border-right: ${props => props.omitRightBorder ? "none" : "1px solid lightgrey"};
+  user-select: none; 
+  -webkit-user-select: none; 
+  -khtml-user-select: none; 
+  -moz-user-select: none; 
+  -ms-user-select: none; 
   &:hover {
     cursor: default;
     background: #F1F1F1;
@@ -97,14 +108,15 @@ const HeaderCell = styled.div<CellStyles>`
 // Crazy offsets that I'm not sure will work on every device???
 const SelectedCell = styled.div`
   position: absolute;
-  top: ${props => props.top - 80 + "px"};
-  left: ${props => props.left - 6 + "px"};
-  height: ${props => props.height - 4 + "px"};
-  width: ${props => props.width - 4 + "px"};
-  border: solid 2px #33ccff;
-  background: #33ccff;
-  opacity: .3;
+  top: ${props => props.top + "px"};
+  left: ${props => props.left + "px"};
+  height: ${props => props.height - 2 + "px"};
+  width: ${props => props.width - 2 + "px"};
+  border: solid 1px #0099ff;
+  background: rgb(51, 204, 255, .25);
+  // opacity: .3;
   z-index: 1;
+  pointer-events: none;
 `
 
 const Row = styled.div`
@@ -287,7 +299,7 @@ const newColumn = (template: Spreadsheet) => {
   return temp
 }
 
-const ModifyRow = ({ remove, template, setTemplate }: {remove?: boolean, template: Spreadsheet, setTemplate: (t: Spreadsheet) => void}) => {
+const ModifyRow = ({ remove, template, setTemplate }: { remove?: boolean, template: Spreadsheet, setTemplate: (t: Spreadsheet) => void }) => {
   function addRow() {
     const updatedTemplate = newRow(template)
     setTemplate(updatedTemplate)
@@ -308,7 +320,7 @@ const ModifyRow = ({ remove, template, setTemplate }: {remove?: boolean, templat
   )
 }
 
-const ModifyColumn = ({ remove, template, setTemplate }: {remove?: boolean | undefined, template: Spreadsheet, setTemplate: (t: Spreadsheet) => void}) => {
+const ModifyColumn = ({ remove, template, setTemplate }: { remove?: boolean | undefined, template: Spreadsheet, setTemplate: (t: Spreadsheet) => void }) => {
   function addColumn() {
     const updatedTemplate = newColumn(template)
     setTemplate(updatedTemplate)
@@ -330,7 +342,7 @@ const ModifyColumn = ({ remove, template, setTemplate }: {remove?: boolean | und
   )
 }
 
-const ColumnResize = ({template, setTemplate}: {template: Spreadsheet, setTemplate: (t: Spreadsheet) => void}) => {
+const ColumnResize = ({ template, setTemplate }: { template: Spreadsheet, setTemplate: (t: Spreadsheet) => void }) => {
   const [isActive, setIsActive] = useState(false)
   const [sliderValue, setSliderValue] = useState(150)
   const minSliderValue = 50;
@@ -355,19 +367,19 @@ const ColumnResize = ({template, setTemplate}: {template: Spreadsheet, setTempla
 
   useEffect(() => {
     bar = d3.select(thisRef.current)
-  //   bar
-  //     .on("mouseover", function () {
-  //       d3.select(this)
-  //         .transition()
-  //         .duration(200)
-  //         .style("opacity", "1")
-  //     })
-  //     .on("mouseout", function () {
-  //       d3.select(this)
-  //         .transition()
-  //         .duration(200)
-  //         .style("opacity", "0")
-  //     })
+    //   bar
+    //     .on("mouseover", function () {
+    //       d3.select(this)
+    //         .transition()
+    //         .duration(200)
+    //         .style("opacity", "1")
+    //     })
+    //     .on("mouseout", function () {
+    //       d3.select(this)
+    //         .transition()
+    //         .duration(200)
+    //         .style("opacity", "0")
+    //     })
   })
 
   return <ColumnResizeBar
@@ -379,56 +391,114 @@ const ColumnResize = ({template, setTemplate}: {template: Spreadsheet, setTempla
 // get cell ID also somehow enter active cell mode on keypress
 const CellSelectionLayer = (props) => {
   const [isActive, setIsActive] = useState(props.isActive)
-  const [isEditing, setIsEdition] = useState(false)
-  const [selectedCell, setSelectedCell] = useState('')
-  const cellProps = {
-    width: props.selectedCellProps.width,
-    height: props.selectedCellProps.height,
-    top: props.selectedCellProps.y,
-    left: props.selectedCellProps.x
-  } 
-
-  //uhhh 
+  const [isEditing, setIsEditing] = useState(false)
+  const [currentCell, setCurrentCell] = useState<null | number[]>(null)
   const selectedCellRef = React.createRef()
+  const context = React.useContext(SpreadsheetContext)
+  const rowId = parseInt(props.selectedCellId.split("-")[0].match(/\d/)[0])
+  const colId = parseInt(props.selectedCellId.split("-")[1].match(/\d/)[0])
+  let newCellId, newCellProps
 
-  function editSelectedCell() {
+  const handleKeyPress = (e: any) => {
+    if (!isActive || isEditing) return
+    console.log(props.selectedCellId)
+    console.log(rowId, colId)
 
+    if (e.key === "ArrowLeft") {
+      if (colId > 1) {
+        newCellId = `row${rowId}-col${colId - 1}`
+        newCellProps = { ...props.selectedCellProps }
+        newCellProps.x -= newCellProps.width - 1
+      } else return
+    }
+
+    else if (e.key === "ArrowRight") {
+      if (colId < props.template[0].length) {
+        newCellId = `row${rowId}-col${colId + 1}`
+        newCellProps = { ...props.selectedCellProps }
+        newCellProps.x += newCellProps.width - 1
+      } else return
+    }
+
+    else if (e.key === "ArrowUp") {
+      if (rowId > 2) { 
+        newCellId = `row${rowId - 1}-col${colId}`
+        newCellProps = { ...props.selectedCellProps }
+        newCellProps.y -= newCellProps.height - 1
+      }
+    }
+
+    else if (e.key === "ArrowDown") {
+      if (rowId < props.template.length) { 
+        newCellId = `row${rowId + 1}-col${colId}`
+        newCellProps = { ...props.selectedCellProps }
+        newCellProps.y += newCellProps.height - 1
+      }
+    }
+
+    // add row
+    else if (e.ctrlKey && e.key === "a") {
+      const newTemplate = newRow(context.template)
+      context.setTemplate(newTemplate)
+    }
+
+    // remove last row
+    else if (e.ctrlKey && e.key === "r") {
+      e.preventDefault()
+      if (context.template.length > 2) {
+
+      const newTemplate = context.template.slice(0, -1)
+      context.setTemplate(newTemplate)
+      }
+    }
+
+    else if (e.key === "Enter") {
+      setCurrentCell([rowId - 1, colId - 1])
+      isEditing ? setIsEditing(false) : setIsEditing(true)
+    }
+
+    else return
+
+    if (newCellId) {
+      props.setSelectedCellProps(newCellProps)
+      props.setSelectedCellId(newCellId)
+      console.log(newCellId, newCellProps)
+    }
   }
 
   useEffect(() => {
-    if (props.isActive && props.selectedCellId != null) {
-      // alert(props.selectedCellId)
-      // document.getElementById(props.selectedCellId).innerHTML = "what"
+    window.addEventListener('keydown', handleKeyPress)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
     }
   })
 
-  // just put Spreadsheet here?
   return (
-    <div
-      style={{position: "relative"}}
-      id="CellSelectionLayer"
-    >
+    <div>
       {isActive ?
         isEditing ?
-          <ActiveCell 
+          <ActiveCell
             parentKey={props.selectedCellId}
-            size={{width: cellProps.width, height: cellProps.height}}
-            position={{x: cellProps.left, y: cellProps.top}}
+            size={{ width: props.selectedCellProps.width, height: props.selectedCellProps.height }}
+            position={{ x: props.selectedCellProps.x, y: props.selectedCellProps.y }}
+            setIsEditing={setIsEditing}
+            originalValue={currentCell ? props.template[currentCell[0]][currentCell[1]].content : null}
+            setTempValue={context.setTempValue}
           />
           :
-      <div>
-        <SelectedCell
-          ref={selectedCellRef}
-          width={cellProps.width}
-          height={cellProps.height}
-          top={cellProps.top}
-          left={cellProps.left}
-        />
-        </div>
+          <div>
+            <SelectedCell
+              ref={selectedCellRef}
+              width={props.selectedCellProps.width}
+              height={props.selectedCellProps.height}
+              top={props.selectedCellProps.y}
+              left={props.selectedCellProps.x}
+            />
+          </div>
         : null}
-      {props.children}
     </div>
-  )  
+  )
 }
 
 const Spreadsheet = () => {
@@ -437,13 +507,18 @@ const Spreadsheet = () => {
   const [selectedCellId, setSelectedCellId] = useState<string | null>(null)
   const [selectedCellProps, setSelectedCellProps] = useState({})
   const [action, setAction] = useState("save")
+  const [isEditing, setIsEditing] = useState(false)
+  const [tempValue, setTempValue] = useState(null)
   const [modalActive, setModalActive] = useState(false)
   const templateContext = {
     template,
     setTemplate,
     setCellSelectionLayerActive,
     setSelectedCellId,
-    setSelectedCellProps
+    setSelectedCellProps,
+    setIsEditing,
+    tempValue,
+    setTempValue
   }
 
   const copyAsMarkdown = async () => {
@@ -458,73 +533,36 @@ const Spreadsheet = () => {
     console.log("Copied to clipboard");
   };
 
-  const handleKeypress = React.useCallback((e: any) => {
-    if (!cellSelectionLayerActive) return
-
-    const rowId = selectedCellId.split("-")[0].match(/\d/)[0] as unknown as number
-    const colId = selectedCellId.split("-")[1].match(/\d/)[0] as unknown as number
-
-    if (e.key === "ArrowLeft") {
-      alert("WHAT")
-      //askdjfhd
-      if (colId > 0) {
-        const newCellId = `row${rowId}-col${colId - 1}`
-        const newCellProps = {...selectedCellProps} 
-        newCellProps.left -= newCellProps.width
-        console.log(newCellProps)
-        setSelectedCellProps(newCellProps)
-        // setSelectedCell(colId)
-      }
-    }
-    else if (e.key === "ArrowRight") {
-      if (colId < template[0].length) {
-        const newCellId = `row${rowId}-col${colId + 1}`
-      }
-    }
-    else if (e.key === "ArrowUp") {
-      if (rowId > 0) {}
-    }
-    else if (e.key === "ArrowDown") {
-      if (rowId < template.length) {}
-    }
-    else return
-  }, [])
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeypress)
-
-    // return () => {
-    //   window.removeEventListener('keydown', handleKeypress);
-    // }
-  }, [])
-
   return (
     <div>
       <ControlContainer>
         <FlexContainer>
           <SpreadsheetContext.Provider value={templateContext}>
-            {cellSelectionLayerActive ? 
-            <CellSelectionLayer
-              template={template}
-              isActive={cellSelectionLayerActive}
-              selectedCellId={selectedCellId}
-              selectedCellProps={selectedCellProps}
-              onClick={null}
-            />
-            : null}
-              {template.map((row, i) => (
-                <Row key={i}>
-                  {row.map((cell, j) => (
-                    <FlexCell key={j}
-                      omitLeftBorder={j === 0}
-                      omitRightBorder={j === row.length - 1}
-                      cellType={i === 0 ? "header" : undefined}
-                      id={cell.id}
-                      width={cell.width}
-                      value={cell.content} />)
-                  )}
-                </Row>
-              ))}
+            {cellSelectionLayerActive ?
+              <CellSelectionLayer
+                template={template}
+                isActive={cellSelectionLayerActive}
+                selectedCellId={selectedCellId}
+                setSelectedCellId={setSelectedCellId}
+                selectedCellProps={selectedCellProps}
+                setSelectedCellProps={setSelectedCellProps}
+                onClick={null}
+              />
+              : null}
+            {template.map((row, i) => (
+              <Row key={i}>
+                {row.map((cell, j) => (
+                  <FlexCell key={j}
+                    omitLeftBorder={j === 0}
+                    omitRightBorder={j === row.length - 1}
+                    cellType={i === 0 ? "header" : undefined}
+                    id={cell.id}
+                    width={cell.width}
+                    value={cell.content}
+                  />)
+                )}
+              </Row>
+            ))}
           </SpreadsheetContext.Provider>
           <ModifyRow template={template} setTemplate={setTemplate} />
           <ModifyRow remove template={template} setTemplate={setTemplate} />
@@ -559,11 +597,12 @@ const Spreadsheet = () => {
           }
         </Modal>
         : null}
-        <br />
+      <br />
       <ColumnResize template={template} setTemplate={setTemplate} />
     </div>
   )
 }
+
 
 const FlexCell = (props: any) => {
   const value = props.value
@@ -579,12 +618,23 @@ const FlexCell = (props: any) => {
   const thisRef = React.createRef()
   const context = React.useContext(SpreadsheetContext)
   let visibility
-  let thisX,
+  let cellProps
+  let winX,
+    winY,
+    thisX,
     thisY,
     thisWidth,
     thisHeight
-  
-  // const resizeObserver = new
+
+  const resizeObserver = new ResizeObserver(entries => {
+    for (let entry of entries) {
+      if (entry.contextBoxSize) {
+        const newSize = {...size}
+        newSize.height = entry.contextBoxSize[0].blockSize
+        setSize(newSize)
+      }
+    }
+  })
 
   function handleCellClick(e) {
     let winX = window.pageXOffset
@@ -595,13 +645,14 @@ const FlexCell = (props: any) => {
     thisHeight = thisRef.current.offsetHeight
     // set spawn size and position of ActiveCell
     setSize({ width: thisWidth, height: thisHeight })
-    setPosition({ x: winX + thisX, y: winY + thisY })
+    setPosition({ x: thisX, y: thisY })
     setIsEditing(true)
-    // context.setCellSelectionLayerActive(false)
+    context.setCellSelectionLayerActive(false)
   }
 
   useEffect(() => {
     visibility = isEditing ? "visible" : "hidden"
+    resizeObserver.observe(thisRef.current)
   }, [])
 
   return (
@@ -615,19 +666,15 @@ const FlexCell = (props: any) => {
     >
       {tempValue ? tempValue : value}
       {isEditing ?
-        <Modal
-          background={"none"}
-        >
-          <ActiveCell
-            parentKey={props.id}
-            size={size}
-            position={position}
-            visibility={visibility}
-            setIsEditing={setIsEditing}
-            originalValue={value}
-            setTempValue={setTempValue}
-            />
-        </Modal>
+        <ActiveCell
+          parentKey={props.id}
+          size={size}
+          position={position}
+          visibility={visibility}
+          setIsEditing={setIsEditing}
+          originalValue={value}
+          setTempValue={setTempValue}
+        />
         : null}
     </CellType>
   )
@@ -639,7 +686,7 @@ interface ActiveCellProps {
   position: { x: number, y: number };
   visibility: string | undefined;
   originalValue: string;
-  setIsEditing: React.Dispatch<React.SetStateAction<boolean>> 
+  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const ActiveCell = ({ parentKey, size, position, visibility, originalValue, setIsEditing, setTempValue }: ActiveCellProps) => {
@@ -647,38 +694,18 @@ const ActiveCell = ({ parentKey, size, position, visibility, originalValue, setI
   const editCellRef = React.createRef()
   const context = React.useContext(SpreadsheetContext)
   let container
+  const rowId = parseInt(parentKey.split("-")[0].match(/\d/)[0])
+  const colId = parseInt(parentKey.split("-")[1].match(/\d/)[0])
 
   function updateTemplate(template: Spreadsheet) {
     let temp = [...template]
-    let row
-    let col
-
-    row = parentKey.split("-")[0].match(/\d/)[0] - 1
-    col = parentKey.split("-")[1].match(/\d/)[0] - 1
-
-    temp[row][col].content = value
+    temp[rowId - 1][colId - 1].content = value
     context.setTemplate(temp)
   }
 
-  function lockValue(e?: any) {
-    window.onclick = (e: any) => {
-      if (e.target.id === "modal") {
-        const cellProps = {
-          x: position.x,
-          y: position.y,
-          height: size.height,
-          width: size.width
-        }
-
-        context.setSelectedCellId(parentKey)
-        context.setSelectedCellProps(cellProps)
-        context.setCellSelectionLayerActive(true)
-        updateTemplate(context.template)
-        setIsEditing(false)
-        // make currently active cell target of selection 
-        // drop into cell selection mode here somehow (?)
-      }
-    }
+  function lockValue() {
+    updateTemplate(context.template)
+    setIsEditing(false)
   }
 
   function getCursorPosition(e?: any) {
@@ -695,40 +722,70 @@ const ActiveCell = ({ parentKey, size, position, visibility, originalValue, setI
 
   function keyListener(e: any) {
     if (e.key === "Enter") {
+      if (rowId < context.template.length) {
+        position.y += size.height - 1
+        parentKey = `row${rowId + 1}-col${colId}`
+      }
+
       lockValue()
     }
-    // if (e.key === "Escape") {
-    //   setIsEditing(false)
-    // }
+
+    else if (e.key === "Escape") {
+      setTempValue(originalValue)
+      setIsEditing(false)
+    }
   }
 
   useEffect(() => {
-    context.setCellSelectionLayerActive(false)
     container = d3.select(editCellRef.current)
     editCellRef.current.focus()
     autosize(editCellRef.current)
+
+    window.onclick = (e: any) => {
+      if (e.target.id === "modal") {
+        lockValue()
+      }
+    }
+
+    return () => {
+      const cellProps = {
+        x: position.x,
+        y: position.y,
+        height: size.height,
+        width: size.width
+      }
+
+      if (rowId > 1) {
+      context.setSelectedCellId(parentKey)
+      context.setSelectedCellProps(cellProps)
+      context.setCellSelectionLayerActive(true)
+
+      }
+    }
   }, [])
 
   return (
-    <EditCell
-      ref={editCellRef}
-      visibility={visibility}
-      left={position.x + 3 + "px"}
-      top={position.y + 3 + "px"}
-      width={size.width + "px"}
-      minheight={size.height + "px"}
-      height={size.height + "px"}
-      value={value}
-      onFocus={e => getCursorPosition(e)}
-      onBlur={(e) => lockValue(e)}
-      onKeyDown={(e) => keyListener(e)}
-      // onChange={e => setValue(e.target.value)}
-      onChange={e => handleChange(e)}
-    />
+    <Modal background="none">
+      <EditCell
+        ref={editCellRef}
+        visibility={visibility}
+        left={position.x + 3 + "px"}
+        top={position.y + 3 + "px"}
+        width={size.width + "px"}
+        minheight={size.height + "px"}
+        height={size.height + "px"}
+        value={value}
+        onFocus={e => getCursorPosition(e)}
+        onBlur={(e) => lockValue(e)}
+        onKeyDown={(e) => keyListener(e)}
+        // onChange={e => setValue(e.target.value)}
+        onChange={e => handleChange(e)}
+      />
+    </Modal>
   )
 }
 
-const SaveTemplateBox = ({ template, setModalActive }: {template: Spreadsheet, setModalActive: (b: boolean) => void}) => {
+const SaveTemplateBox = ({ template, setModalActive }: { template: Spreadsheet, setModalActive: (b: boolean) => void }) => {
   const [status, setStatus] = useState("")
   const [name, setName] = useState("Untitled")
   const inputRef = React.createRef<React.ElementRef<typeof SaveTemplateBox>>()
@@ -773,7 +830,7 @@ const SaveTemplateBox = ({ template, setModalActive }: {template: Spreadsheet, s
   )
 }
 
-const LoadTemplateBox = ({ setTemplate, setModalActive }: {setTemplate: (t: Spreadsheet) => void, setModalActive: (b: boolean) => void}) => {
+const LoadTemplateBox = ({ setTemplate, setModalActive }: { setTemplate: (t: Spreadsheet) => void, setModalActive: (b: boolean) => void }) => {
   const [templates, setTemplates] = useState<TemplateEntry[] | null>(null)
 
   interface TestData {
@@ -811,7 +868,7 @@ const LoadTemplateBox = ({ setTemplate, setModalActive }: {setTemplate: (t: Spre
   )
 }
 
-export default function Timeblock() {
+export function Timeblock() {
   return (
     <div>
       <Spreadsheet />
