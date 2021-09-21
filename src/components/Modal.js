@@ -9,12 +9,16 @@ const ModalOverlay = styled.div`
   top: 0;
   width: 100%;
   height: 100%;
-  background: black;
-  background-color: rgba(0,0,0,0.4);
+  // background: black;
+  background-color: ${props => props.background || "rgba(0,0,0,0.4)"};
 `
 
 export default function Modal(props) {
   return <ModalOverlay
-    id="modal"
-    visibility={props.visibility}>{props.children}</ModalOverlay>
+      id="modal"
+      visibility={props.visibility}
+      background={props.background}
+      >
+      {props.children}
+    </ModalOverlay>
 }
