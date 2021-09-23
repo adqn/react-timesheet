@@ -2,7 +2,6 @@ import * as d3 from 'd3'
 import React, { useEffect, useState } from 'react'
 import { isTemplateExpression } from 'typescript'
 import Modal from '../../components/Modal'
-// import Spreadsheet from 'components/Spreadsheet'
 import * as Styled from './Timeblock.styled'
 
 import { ActiveCell } from './ActiveCell'
@@ -19,11 +18,13 @@ const defaultTemplate: Spreadsheet = [
     {
       id: 'row1-col1',
       width: Styled.cellWidth,
+      height: Styled.headerHeight,
       content: ''
     },
     {
       id: 'row1-col2',
       width: Styled.cellWidth,
+      height: Styled.headerHeight,
       content: ''
     }
   ],
@@ -31,11 +32,13 @@ const defaultTemplate: Spreadsheet = [
     {
       id: 'row2-col1',
       width: Styled.cellWidth,
+      height: Styled.cellHeight,
       content: ''
     },
     {
       id: 'row2-col2',
       width: Styled.cellWidth,
+      height: Styled.cellHeight,
       content: ''
     }
   ]
@@ -185,7 +188,8 @@ const Sheet = () => {
                     omitRightBorder={j === row.length - 1}
                     cellType={i === 0 ? "header" : undefined}
                     id={cell.id}
-                    width={cell.width}
+                    initialWidth={cell.width}
+                    initialHeight={cell.height}
                     value={cell.content}
                   />)
                 )}
@@ -236,13 +240,15 @@ const FlexCell = (props: any) => {
   const value = props.value
   const [tempValue, setTempValue] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
-  const [size, setSize] = useState({ width: 0, height: 0 })
+  const [size, setSize] = useState({ width: props.initialWidth, height: props.initialHeight })
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const components = {
     header: Styled.HeaderCell,
     normal: Styled.Cell
   }
   const CellType = components[props.cellType || 'normal']
+  const rowIdx = parseInt(props.id.split("-")[0].match(/\d+/)[0]) - 1
+  const colIdx = parseInt(props.id.split("-")[1].match(/\d+/)[0]) - 1
   const thisRef = React.createRef()
   const context = React.useContext(SpreadsheetContext)
   let visibility
@@ -256,10 +262,11 @@ const FlexCell = (props: any) => {
 
   const resizeObserver = new ResizeObserver(entries => {
     for (let entry of entries) {
-      if (entry.contextBoxSize) {
-        const newSize = {...size}
-        newSize.height = entry.contextBoxSize[0].blockSize
-        setSize(newSize)
+      if (entry.target.offsetHeight != props.initialHeight) {
+        // console.log(entry.target.offsetHeight)
+        // const newSize = { ...size }
+        // newSize.height = entry.target.offsetHeight
+        // setSize(newSize)
       }
     }
   })
@@ -282,14 +289,14 @@ const FlexCell = (props: any) => {
 
   useEffect(() => {
     visibility = isEditing ? "visible" : "hidden"
-    resizeObserver.observe(thisRef.current)
+    // resizeObserver.observe(thisRef.current)
   }, [])
 
   return (
     <CellType
       ref={thisRef}
       key={props.id}
-      width={props.width}
+      width={props.initialWidth}
       omitLeftBorder={props.omitLeftBorder}
       omitRightBorder={props.omitRightBorder}
       onClick={(e: any) => handleCellClick(e)}

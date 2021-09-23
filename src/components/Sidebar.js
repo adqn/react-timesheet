@@ -12,7 +12,6 @@ import * as d3 from 'd3'
 import DailyView from '../Pages/DailyView'
 import Metrics from '../Pages/Metrics'
 import UserArea from '../Pages/UserArea'
-import { Timeblock as TimeblockOld } from '../Pages/TimeblockOld'
 import { Timeblock } from '../Pages/Timeblock'
 import ResizeSidebar from '../components/elements/ResizeSidebar'
 import { style } from 'd3';
@@ -43,12 +42,6 @@ const routes = [
     main: ({callbacks}) => <UserArea callbacks={callbacks} />
   },
   {
-    path: "/timeblock-old",
-    exact: true,
-    sidebar: () => <a>Timeblock Old</a>,
-    main: () => <TimeblockOld />
-  },
-  {
     path: "/timeblock",
     exact: true,
     sidebar: () => <a>Timeblock</a>,
@@ -64,7 +57,6 @@ const Sidebar = ({callbacks}) => {
         <NavLink to="/projects" activeClassName="a active">Projects</NavLink>
         <NavLink to="/metrics" activeClassName="a active">Metrics</NavLink>
         <NavLink to="/userarea" activeClassName="a active">User area</NavLink>
-        <NavLink to="/timeblock-old" activeClassName="a active">Timeblock Old</NavLink>
         <NavLink to="/timeblock" activeClassName="a active">Timeblock</NavLink>
 
         <Switch>
