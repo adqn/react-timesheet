@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useStopwatch} from 'react-timer-hook'
 import styled from 'styled-components'
 import customSelect from '../components/elements/CustomSelect'
 import "../App.css"
@@ -7,6 +6,8 @@ import {
   SettingsButton,
   LittleBullet
 } from '../components/styles/SomeWidgets'
+
+import { useServerStopwatch } from '../hooks/ServerStopwatch';
 
 const MutableUserBarFlexContainer = styled.div`
   display: flex;
@@ -227,29 +228,24 @@ interface Callbacks {
 }
 
 const Stopwatch = ({ submitProjectData, setTotalTime }: { submitProjectData: () => void, setTotalTime: (t:string) => void}) => {
-  const [isRunning, setIsRunning] = useState(false)
+  // TODO: get currently running timer from API
   const {
     seconds,
     minutes,
     hours,
-    days,
-    start,
-    pause,
+    isRunning,
     reset,
-  } = useStopwatch({autoStart: false})
+  } = useServerStopwatch()
 
   function handleStop() {
-    setIsRunning(false)
-    reset()
-    pause()
     const totalTime = `${hours}:${minutes}:${seconds}`
     setTotalTime(totalTime)
+    reset(undefined, false)
     submitProjectData()
   }
 
   function handleStart() {
-    setIsRunning(true)
-    start()
+    reset(undefined, true)
   }
 
   return (
@@ -265,8 +261,6 @@ const Stopwatch = ({ submitProjectData, setTotalTime }: { submitProjectData: () 
       >
         {isRunning ? "STOP" : "START"}
       </StopwatchButton>
-      {/* <button onClick={pause}>Pause</button>
-      <button onClick={() => reset()}>Reset</button> */}
     </div>
   )
 }
