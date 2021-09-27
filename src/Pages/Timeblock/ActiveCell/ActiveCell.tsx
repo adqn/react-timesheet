@@ -25,8 +25,10 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
 
   function updateTemplate(template: Spreadsheet) {
     let temp = [...template]
+    // if (value === "") thisHeight = 36
     temp[rowId - 1][colId - 1].content = value
-    temp[rowId - 1][colId - 1].height = thisHeight
+    // temp[rowId - 1][colId - 1].height = thisHeight
+    temp.map((row) => row.map((col, i) => temp[rowId - 1][i].height = thisHeight))
     context.setTemplate(temp)
   }
 
@@ -67,6 +69,11 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
     editCellRef.current.focus()
     autosize(editCellRef.current)
     thisHeight = editCellRef.current.offsetHeight
+    // editCellRef.current.addEventListener('autosize:resized', function () {
+      // add 8 to height because text input thing
+      // thisHeight = this.offsetHeight 
+    //   console.log(this.offsetHeight)
+    // })
 
     window.onclick = (e: any) => {
       if (e.target.id === "modal") {

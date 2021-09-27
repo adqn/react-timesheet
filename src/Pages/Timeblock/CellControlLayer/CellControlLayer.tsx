@@ -18,6 +18,12 @@ export const CellControlLayer = (props) => {
   const newCellProps = { ...props.selectedCellProps }
   let newCellId = props.selectedCellId
 
+  // if (newCellProps.height != props.template[rowId - 1].height) {
+  //   const newTemplate = [...props.template]
+  //   newTemplate[rowId - 1].map((col, i) => newTemplate[rowId - 1][i].height = newCellProps.height)
+  //   context.setTemplate(newTemplate)
+  // }
+
   const handleKeyPress = (e: any) => {
     let winX = window.pageXOffset
     let winY = window.pageYOffset
