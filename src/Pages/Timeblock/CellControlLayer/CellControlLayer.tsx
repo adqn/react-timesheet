@@ -75,6 +75,7 @@ export const CellControlLayer = (props) => {
           if (rowId > props.template.length - 1) {
             const newRowId = props.template.length - 1
             newCellProps.y -= 35
+            newCellProps.height = props.template[newRowId - 1][colId].height
             newCellId = `row${newRowId}-col${colId}`
             setCurrentCell([newRowId, colId])
             props.setSelectedCellId(newCellId)
