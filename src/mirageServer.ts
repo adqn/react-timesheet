@@ -1,4 +1,5 @@
-import { createServer } from "miragejs";
+=import { createServer } from "miragejs";
+import { Response } from "miragejs"
 
 // import { Octokit } from "octokit";
 
@@ -24,9 +25,11 @@ let daily2 = [
   }
 ]
 
-let projects2 = [
+let templates = []
+
+let projects = [
   {
-    id: "project1",
+    id: "1",
     name: "test project 1",
     client: "moose",
     contributors: ["a duck"],
@@ -34,60 +37,56 @@ let projects2 = [
       "duck_approved",
       "fried_duck",
       "not_geese"
-    ],
-    tasks: [
-      {
-        id: "task1",
-        date: "2021-08-23",
-        start: "10:17AM",
-        end: "10:19AM",
-        duration: "00:03:33",
-        description: "made good soup"
-      }
     ]
-  },
+  }
 ]
 
-let tasks = [
+type DateTime = string | number;
+
+interface Stopwatch {
+  id: string;
+  projectId: string;
+  start: DateTime;
+  end: DateTime | null;
+  description: string;
+}
+
+const stopwatches: Stopwatch[] = [
   {
-    id: "task1",
-    projectId: "project1",
-    date: "2021-08-23",
-    start: "10:17AM",
-    end: "10:19AM",
-    duration: "00:03:33",
+    id: "1",
+    projectId: "1",
+    start: "2021-08-23 10:17AM",
+    end: "2021-08-23 10:19AM",
     description: "made good soup"
   }
 ]
 
-let templates = []
-let timers = []
+const startTimer = (projectId: string, timerId: string, startTime: number) => { 
+  const foundTimerIdx = stopwatches.findIndex(stopwatch => stopwatch.id === timerId && stopwatch.projectId === projectId)
 
-const getTimer = taskId => {
-}
-
-const startTimer = (projectId, taskId) => { 
-  const foundTask = tasks.find(task => task.id === taskId)
-
-  if (!foundTask) {
+  if (foundTimerIdx === -1) {
     // start new task
-    const date = Date.now()
-    const newTask = {
-      taskId,
+    const newTimerId: string = (stopwatches.length + 1).toString()
+    const newTimer: Stopwatch = {
+      id: newTimerId,
       projectId,
-      date
+      start: startTime,
+      end: null
     }
 
-    tasks.push(newTask)
-    // send confirmation to client to begin timer?
+    stopwatches.push(newTimer)
+  } else {
+    // do resume timer thing
+    const timerIdx = stopwatches.find(stopwatch => stopwatch.id === timerId && stopwatch.projectId === projectId)
+    stopwatches[foundTimerIdx].start = startTime
   }
-
-
 }
 
-const stopTimer = (projectId, taskId) => {
+const stopTimer = (projectId: string, timerId: string, endTime: number) => {
+  const foundTimerIdx = stopwatches.findIndex(stopwatch => stopwatch.id === timerId && stopwatch.projectId === projectId)
+  if (!foundTimerIdx) return
+  stopwatches[foundTimerIdx].end = endTime
 }
-
 
 export function makeServer() {
   // return {};
@@ -115,16 +114,7 @@ export function makeServer() {
           }
         ],
         daily2,
-        projects: [
-          {
-            name: 'React timesheet',
-            contributors: [
-              'adqn',
-              'ksiondag'
-            ]
-          }
-        ],
-        projects2,
+        projects,
         templates
       }))
 
@@ -142,18 +132,16 @@ export function makeServer() {
       })
 
       // takes project and task ID
-      this.post('/api/requesttimer', req => {
+      this.post('/api/timer', req => {
         let attrs = JSON.parse(req.requestBody)
         const projectId = attrs.projectId
-        const taskId = attrs.taskId 
-        const foundTimer = timers.find(timer => timer.taskId === taskId)
+        const timerId = attrs.timerId 
 
-        if (foundTimer) {
-
+        if (attrs.timerAction === 'start') {
+          startTimer(projectId, timerId, attrs.startTime)
         }
-
-        const newTimer = {projectId, taskId}
-        timers.push(newTimer)
+        else stopTimer(projectId, timerId, attrs.endTime)
+        return new Response(200)
       })
 
       this.post(`/api/savetemplate`, (schema, req) => {

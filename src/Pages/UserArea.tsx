@@ -216,7 +216,7 @@ interface ProjectTask {
 type FIXME = any;
 
 interface Me {
-  projects2: Project[];
+  projects: Project[];
   daily: FIXME;
   daily2: FIXME;
 }
@@ -235,7 +235,7 @@ const Stopwatch = ({ submitProjectData, setTotalTime }: { submitProjectData: () 
     hours,
     isRunning,
     reset,
-  } = useServerStopwatch()
+  } = useServerStopwatch({projectId: "1", timerId: "1"})
 
   function handleStop() {
     const totalTime = `${hours}:${minutes}:${seconds}`
@@ -494,7 +494,7 @@ export default function UserArea({callbacks}: {callbacks: Callbacks}) {
 
   const getProjects = async () => {
     const data = await fetchMe();
-    const res = data.projects2
+    const res = data.projects
     setProjects(res)
   }
 
