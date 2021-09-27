@@ -53,7 +53,7 @@ export const CellControlLayer = (props) => {
     else if (e.key === "ArrowDown") {
       if (rowId < props.template.length) {
         newCellId = `row${rowId + 1}-col${colId}`
-        newCellProps.y += newCellProps.height //+ window.scrollY
+        newCellProps.y += newCellProps.height - 1//+ window.scrollY
         newCellProps.height = props.template[rowId][colId - 1].height
         // newCellProps.y += newCellProps.height - 1
       }
