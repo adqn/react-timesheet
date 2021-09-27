@@ -1,8 +1,8 @@
 import styled from 'styled-components'
 
 export const cellWidth: string = "150px"
-export const cellHeight: string = "36px"
-export const headerHeight: string = "32px"
+export const cellHeight: number = 36
+export const headerHeight: number = 32
 
 export const ModalDialog = styled.div`
   position: absolute;

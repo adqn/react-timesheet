@@ -23,7 +23,7 @@ export const newRow = (template: Spreadsheet) => {
   for (let i = 0; i < colTotal; i++) {
     colId = i + 1
     newId = `row${rowId}-col${colId}`
-    newRow.push({ id: newId, width: Styled.cellWidth, content: "" })
+    newRow.push({ id: newId, width: Styled.cellWidth, height: Styled.cellHeight, content: "" })
   }
 
   temp.push(newRow)

@@ -25,6 +25,7 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
   function updateTemplate(template: Spreadsheet) {
     let temp = [...template]
     temp[rowId - 1][colId - 1].content = value
+    // temp[rowId - 1][colId - 1].height = 
     context.setTemplate(temp)
   }
 
@@ -49,6 +50,7 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
     if (e.key === "Enter") {
       if (rowId < context.template.length) {
         position.y += size.height - 1
+        size.height = (context.template[rowId][colId - 1].height)
         parentKey = `row${rowId + 1}-col${colId}`
       }
       lockValue()
@@ -71,12 +73,12 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
     }
 
     return () => {
+      // console.log(editCell)
       const cellProps = {
         x: position.x + window.scrollX,
         y: position.y + window.scrollY,
         height: size.height,
         width: size.width,
-        coords
       }
 
       if (rowId > 1) {
