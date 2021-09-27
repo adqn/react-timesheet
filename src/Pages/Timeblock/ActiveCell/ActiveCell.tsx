@@ -21,11 +21,12 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
   const context = React.useContext(SpreadsheetContext)
   const rowId = parseInt(parentKey.split("-")[0].match(/\d+/)[0])
   const colId = parseInt(parentKey.split("-")[1].match(/\d+/)[0])
+  let thisHeight
 
   function updateTemplate(template: Spreadsheet) {
     let temp = [...template]
     temp[rowId - 1][colId - 1].content = value
-    // temp[rowId - 1][colId - 1].height = 
+    temp[rowId - 1][colId - 1].height = thisHeight
     context.setTemplate(temp)
   }
 
@@ -50,7 +51,7 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
     if (e.key === "Enter") {
       if (rowId < context.template.length) {
         position.y += size.height - 1
-        size.height = (context.template[rowId][colId - 1].height)
+        size.height = (context.template[rowId][colId - 1].height) 
         parentKey = `row${rowId + 1}-col${colId}`
       }
       lockValue()
@@ -65,6 +66,7 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
   useEffect(() => {
     editCellRef.current.focus()
     autosize(editCellRef.current)
+    thisHeight = editCellRef.current.offsetHeight
 
     window.onclick = (e: any) => {
       if (e.target.id === "modal") {

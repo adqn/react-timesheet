@@ -45,14 +45,17 @@ export const CellControlLayer = (props) => {
     else if (e.key === "ArrowUp") {
       if (rowId > 2) {
         newCellId = `row${rowId - 1}-col${colId}`
-        newCellProps.y -= newCellProps.height - 1
+        newCellProps.y -= props.template[rowId - 2][colId - 1].height - 1
+        newCellProps.height = props.template[rowId - 2][colId - 1].height
       }
     }
 
     else if (e.key === "ArrowDown") {
       if (rowId < props.template.length) {
         newCellId = `row${rowId + 1}-col${colId}`
-        newCellProps.y += newCellProps.height - 1
+        newCellProps.y += newCellProps.height //+ window.scrollY
+        newCellProps.height = props.template[rowId][colId - 1].height
+        // newCellProps.y += newCellProps.height - 1
       }
     }
 
