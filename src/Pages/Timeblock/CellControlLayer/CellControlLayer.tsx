@@ -70,8 +70,16 @@ export const CellControlLayer = (props) => {
       // remove last row
       else if (e.key === "r") {
         e.preventDefault()
+        const newTemplate = props.template.slice(0, -1)
         if (props.template.length > 2) {
-          const newTemplate = props.template.slice(0, -1)
+          if (rowId > props.template.length - 1) {
+            const newRowId = props.template.length - 1
+            newCellProps.y -= 35
+            newCellId = `row${newRowId}-col${colId}`
+            setCurrentCell([newRowId, colId])
+            props.setSelectedCellId(newCellId)
+          }
+          props.setSelectedCellProps(newCellProps)
           context.setTemplate(newTemplate)
         }
       }
