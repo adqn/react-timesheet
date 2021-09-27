@@ -82,6 +82,7 @@ export const CellControlLayer = (props) => {
       newCellProps.y -= scrollY
       newCellProps.x -= scrollX
       setCurrentCell([rowId - 1, colId - 1])
+      props.setSelectedCellId(newCellId)
       props.setSelectedCellProps(newCellProps)
       setIsEditing(true)
     }
