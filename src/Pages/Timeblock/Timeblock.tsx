@@ -242,6 +242,7 @@ const FlexCell = (props: any) => {
   const [isEditing, setIsEditing] = useState(false)
   const [size, setSize] = useState({ width: props.initialWidth, height: props.initialHeight })
   const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [coords, setCoords] = useState(position)
   const components = {
     header: Styled.HeaderCell,
     normal: Styled.Cell
@@ -281,6 +282,7 @@ const FlexCell = (props: any) => {
     thisWidth = thisRef.current.offsetWidth
     thisHeight = thisRef.current.offsetHeight
     // set spawn size and position of ActiveCell
+    setCoords({x: thisX, y: thisY})
     setSize({ width: thisWidth, height: thisHeight })
     setPosition({ x: winX + thisX - scrollX, y: winY + thisY - scrollY})
     setIsEditing(true)
@@ -307,6 +309,7 @@ const FlexCell = (props: any) => {
           parentKey={props.id}
           size={size}
           position={position}
+          coords={coords}
           visibility={visibility}
           setIsEditing={setIsEditing}
           originalValue={value}

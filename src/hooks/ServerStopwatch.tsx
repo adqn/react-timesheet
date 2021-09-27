@@ -16,62 +16,62 @@ interface Me {
   daily2: FIXME;
 }
 
-interface TimerRequest {
+interface TaskRequest {
   projectId: string,
-  timerId: string,
+  taskId: string,
   action: string
 }
 
 interface StopwatchResult {
-    seconds: number;
-    minutes: number;
-    hours: number;
-    days: number;
-    isRunning: boolean;
-    start: () => void;
-    pause: () => void;
-    reset: (offsetTimestamp?: number, autoStart?: boolean) => void;
+  seconds: number;
+  minutes: number;
+  hours: number;
+  days: number;
+  isRunning: boolean;
+  start: () => void;
+  pause: () => void;
+  reset: (offsetTimestamp?: number, autoStart?: boolean) => void;
 }
 
-export const useServerStopwatch = async ({ projectId, timerId }: { projectId: string, timerId: string }): Promise<StopwatchResult> => {
+export const useServerStopwatch = async ({ projectId, taskId }: { projectId: string, taskId: string }): Promise<StopwatchResult> => {
   // TODO: use API to know autostart and offset values
   const req = {
     method: 'POST',
     body: ''
   }
 
-  const timerReq = {
+  const taskReq = {
     projectId,
-    timerId,
+    taskId,
     action: ''
   }
 
-  const getTimer = async (): Promise<Me> => {
-     return (await fetch('/api/test')).json();
-   }
+  const getTask = async (): Promise<Me> => {
+    return (await fetch('/api/test')).json();
+  }
 
-  const stopwatches = (await getTimer()).stopwatches
-  const currentStopwatch = stopwatches[parseInt(timerId) - 1]
+  const stopwatches = (await getTask()).stopwatches
+  const currentStopwatch = stopwatches[parseInt(taskId) - 1]
 
   const reactStopwatch = useStopwatch({ autoStart: false })
 
   const start = () => {
     // Just use reset here
-    // Do server thing here where we start a timer with projectId and timerId
-    // Check for existing timerId
+    // Do server thing here where we start a task with projectId and taskId
+    // Check for existing taskId
     // Wait for response
-    timerReq.action = 'start'
+    taskReq.action = 'start'
     reactStopwatch.start()
   }
 
   const pause = () => {
-    // Do server thing here where we stop a timer with projectId and timerId
-    timerReq.action = 'pause'
+    // Do server thing here where we stop a task with projectId and taskId
+    taskReq.action = 'pause'
     reactStopwatch.pause()
   }
 
   const reset = (offsetTimestamp?: number, autoStart?: boolean) => {
-    // Do server thing here where we stop a timer with projectId and timerId
+    // Do server thing here where we stop a task with projectId and taskId
     reactStopwatch.reset(offsetTimestamp, autoStart)
   }
 

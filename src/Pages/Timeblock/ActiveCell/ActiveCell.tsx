@@ -15,7 +15,7 @@ interface ActiveCellProps {
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-export const ActiveCell = ({ parentKey, size, position, visibility, originalValue, setIsEditing, setTempValue }: ActiveCellProps) => {
+export const ActiveCell = ({ parentKey, size, position, coords, visibility, originalValue, setIsEditing, setTempValue}: ActiveCellProps) => {
   const [value, setValue] = useState(originalValue)
   const editCellRef = React.createRef()
   const context = React.useContext(SpreadsheetContext)
@@ -72,10 +72,11 @@ export const ActiveCell = ({ parentKey, size, position, visibility, originalValu
 
     return () => {
       const cellProps = {
-        x: position.x,
-        y: position.y,
+        x: position.x + window.scrollX,
+        y: position.y + window.scrollY,
         height: size.height,
-        width: size.width
+        width: size.width,
+        coords
       }
 
       if (rowId > 1) {

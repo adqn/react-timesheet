@@ -1,4 +1,4 @@
-=import { createServer } from "miragejs";
+import { createServer } from "miragejs";
 import { Response } from "miragejs"
 
 // import { Octokit } from "octokit";
@@ -43,7 +43,7 @@ let projects = [
 
 type DateTime = string | number;
 
-interface Stopwatch {
+interface Task {
   id: string;
   projectId: string;
   start: DateTime;
@@ -51,7 +51,7 @@ interface Stopwatch {
   description: string;
 }
 
-const stopwatches: Stopwatch[] = [
+const tasks: Task[] = [
   {
     id: "1",
     projectId: "1",
@@ -61,31 +61,31 @@ const stopwatches: Stopwatch[] = [
   }
 ]
 
-const startTimer = (projectId: string, timerId: string, startTime: number) => { 
-  const foundTimerIdx = stopwatches.findIndex(stopwatch => stopwatch.id === timerId && stopwatch.projectId === projectId)
+const startTask = (projectId: string, taskId: string, startTime: number) => { 
+  const foundTaskIdx = tasks.findIndex(task => task.id === taskId && task.projectId === projectId)
 
-  if (foundTimerIdx === -1) {
+  if (foundTaskIdx === -1) {
     // start new task
-    const newTimerId: string = (stopwatches.length + 1).toString()
-    const newTimer: Stopwatch = {
-      id: newTimerId,
+    const newTaskId: string = (tasks.length + 1).toString()
+    const newTask: Task = {
+      id: newTaskId,
       projectId,
       start: startTime,
       end: null
     }
 
-    stopwatches.push(newTimer)
+    tasks.push(newTask)
   } else {
-    // do resume timer thing
-    const timerIdx = stopwatches.find(stopwatch => stopwatch.id === timerId && stopwatch.projectId === projectId)
-    stopwatches[foundTimerIdx].start = startTime
+    // do resume task thing
+    const taskIdx = tasks.find(task => task.id === taskId && task.projectId === projectId)
+    tasks[foundTaskIdx].start = startTime
   }
 }
 
-const stopTimer = (projectId: string, timerId: string, endTime: number) => {
-  const foundTimerIdx = stopwatches.findIndex(stopwatch => stopwatch.id === timerId && stopwatch.projectId === projectId)
-  if (!foundTimerIdx) return
-  stopwatches[foundTimerIdx].end = endTime
+const stopTask = (projectId: string, taskId: string, endTime: number) => {
+  const foundTaskIdx = tasks.findIndex(task => task.id === taskId && task.projectId === projectId)
+  if (!foundTaskIdx) return
+  tasks[foundTaskIdx].end = endTime
 }
 
 export function makeServer() {
@@ -132,15 +132,14 @@ export function makeServer() {
       })
 
       // takes project and task ID
-      this.post('/api/timer', req => {
+      this.post('/api/task', req => {
         let attrs = JSON.parse(req.requestBody)
         const projectId = attrs.projectId
-        const timerId = attrs.timerId 
+        const taskId = attrs.taskId 
 
-        if (attrs.timerAction === 'start') {
-          startTimer(projectId, timerId, attrs.startTime)
-        }
-        else stopTimer(projectId, timerId, attrs.endTime)
+        if (attrs.taskAction === 'start') startTask(projectId, taskId, attrs.startTime)
+        if (attrs.taskAction === 'stop') stopTask(projectId, taskId, attrs.endTime)
+        if (attrs.taskAction === 'list') return tasks 
         return new Response(200)
       })
 

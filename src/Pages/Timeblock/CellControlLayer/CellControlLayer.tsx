@@ -10,20 +10,23 @@ export const CellControlLayer = (props) => {
   const [isActive, setIsActive] = useState(props.isActive)
   const [isEditing, setIsEditing] = useState(false)
   const [currentCell, setCurrentCell] = useState<null | number[]>(null)
+  const [fromController, setFromController] = useState(false)
   const selectedCellRef = React.createRef()
   const context = React.useContext(SpreadsheetContext)
   const rowId = parseInt(props.selectedCellId.split("-")[0].match(/\d+/)[0])
   const colId = parseInt(props.selectedCellId.split("-")[1].match(/\d+/)[0])
   const newCellProps = { ...props.selectedCellProps }
-  let scrollX, scrollY
   let newCellId = props.selectedCellId
 
   const handleKeyPress = (e: any) => {
+    let winX = window.pageXOffset
+    let winY = window.pageYOffset
+    let scrollX = window.scrollX
+    let scrollY = window.scrollY
+
     if (!isActive || isEditing) return
-    scrollX = window.scrollX
-    scrollY = window.scrollY
     console.log(props.selectedCellId)
-    console.log(rowId, colId)
+    // console.log(rowId, colId)
 
     if (e.key === "ArrowLeft") {
       if (colId > 1) {
@@ -54,16 +57,16 @@ export const CellControlLayer = (props) => {
     }
 
     else if (e.ctrlKey) {
-      e.preventDefault()
-
       // add row
       if (e.key === "a") {
-      const newTemplate = newRow(props.template)
-      context.setTemplate(newTemplate)
+        e.preventDefault()
+        const newTemplate = newRow(props.template)
+        context.setTemplate(newTemplate)
       }
 
       // remove last row
       else if (e.key === "r") {
+        e.preventDefault()
         if (props.template.length > 2) {
           const newTemplate = props.template.slice(0, -1)
           context.setTemplate(newTemplate)
@@ -72,9 +75,11 @@ export const CellControlLayer = (props) => {
     }
 
     else if (e.key === "Enter") {
+      e.preventDefault()
       newCellProps.y -= scrollY
       newCellProps.x -= scrollX
       setCurrentCell([rowId - 1, colId - 1])
+      props.setSelectedCellProps(newCellProps)
       setIsEditing(true)
     }
 
@@ -94,7 +99,9 @@ export const CellControlLayer = (props) => {
   })
 
   return (
-    <div>
+    <div
+      // style={{position: 'absolute'}}
+    >
       {isActive ?
         isEditing ?
           <ActiveCell
