@@ -13,36 +13,20 @@ interface TemplateEntry {
   template: Spreadsheet;
 }
 
-const defaultTemplate: Spreadsheet = [
-  [
-    {
-      id: 'row1-col1',
-      width: Styled.cellWidth,
-      height: Styled.headerHeight,
-      content: ''
-    },
-    {
-      id: 'row1-col2',
-      width: Styled.cellWidth,
-      height: Styled.headerHeight,
-      content: ''
-    }
-  ],
-  [
-    {
-      id: 'row2-col1',
-      width: Styled.cellWidth,
-      height: Styled.cellHeight,
-      content: ''
-    },
-    {
-      id: 'row2-col2',
-      width: Styled.cellWidth,
-      height: Styled.cellHeight,
-      content: ''
-    }
-  ]
-]
+const defaultTemplate: Spreadsheet = Array.apply(null, Array(49)).map((_, index) => [
+  {
+    id: `row${index+1}-col1`,
+    width: Styled.cellWidth,
+    height: Styled.headerHeight,
+    content: index === 0 ? 'Time' : `${Math.floor((index - 1) / 2)}${index % 2 === 1 ? '00' : '30'}`
+  },
+  {
+    id: `row${index+1}-col2`,
+    width: Styled.cellWidth,
+    height: Styled.headerHeight,
+    content: index === 0 ? 'Plan' : ''
+  }
+])
 
 const ModifyRow = ({ remove, template, setTemplate }: { remove?: boolean, template: Spreadsheet, setTemplate: (t: Spreadsheet) => void }) => {
   function addRow() {
