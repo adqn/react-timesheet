@@ -18,7 +18,7 @@ const defaultTemplate: Spreadsheet = Array.apply(null, Array(49)).map((_, index)
     id: `row${index+1}-col1`,
     width: Styled.cellWidth,
     height: Styled.headerHeight,
-    content: index === 0 ? 'Time' : `${Math.floor((index - 1) / 2)}${index % 2 === 1 ? '00' : '30'}`
+    content: index === 0 ? 'Time' : `${index < 21 ? '0' : ''}${Math.floor((index - 1) / 2)}${index % 2 === 1 ? '00' : '30'}`
   },
   {
     id: `row${index+1}-col2`,
