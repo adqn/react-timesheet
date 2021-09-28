@@ -38,20 +38,20 @@ export const CellControlLayer = (props) => {
       if (colId > 1) {
         newCellId = `row${rowId}-col${colId - 1}`
         newCellProps.x -= newCellProps.width - 1
-      } else return
+      } 
     }
 
     else if (e.key === "ArrowRight") {
       if (colId < props.template[0].length) {
         newCellId = `row${rowId}-col${colId + 1}`
         newCellProps.x += newCellProps.width - 1
-      } else return
+      } 
     }
 
     else if (e.key === "ArrowUp") {
       if (rowId > 2) {
         newCellId = `row${rowId - 1}-col${colId}`
-        newCellProps.y -= props.template[rowId - 2][colId - 1].height - 1
+        newCellProps.y -= props.template[rowId - 2][colId - 1].height - 1 //- scrollY
         newCellProps.height = props.template[rowId - 2][colId - 1].height
       }
     }
@@ -59,7 +59,7 @@ export const CellControlLayer = (props) => {
     else if (e.key === "ArrowDown") {
       if (rowId < props.template.length) {
         newCellId = `row${rowId + 1}-col${colId}`
-        newCellProps.y += newCellProps.height - 1//+ window.scrollY
+        newCellProps.y += newCellProps.height - 1 //- scrollY
         newCellProps.height = props.template[rowId][colId - 1].height
         // newCellProps.y += newCellProps.height - 1
       }
@@ -80,8 +80,8 @@ export const CellControlLayer = (props) => {
         if (props.template.length > 2) {
           if (rowId > props.template.length - 1) {
             const newRowId = props.template.length - 1
-            newCellProps.y -= 35
-            newCellProps.height = props.template[newRowId - 1][colId].height
+            newCellProps.y -= Styled.cellHeight - 1
+            newCellProps.height = props.template[newRowId - 1][colId - 1].height
             newCellId = `row${newRowId}-col${colId}`
             setCurrentCell([newRowId, colId])
             props.setSelectedCellId(newCellId)

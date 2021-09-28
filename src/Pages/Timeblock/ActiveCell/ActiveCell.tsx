@@ -28,7 +28,7 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
     // if (value === "") thisHeight = 36
     temp[rowId - 1][colId - 1].content = value
     // temp[rowId - 1][colId - 1].height = thisHeight
-    temp.map((row) => row.map((col, i) => temp[rowId - 1][i].height = thisHeight))
+    temp.map((row) => row.map((col, i) => temp[rowId - 1][i].height = size.height))
     context.setTemplate(temp)
   }
 
@@ -68,12 +68,12 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
   useEffect(() => {
     editCellRef.current.focus()
     autosize(editCellRef.current)
-    thisHeight = editCellRef.current.offsetHeight
-    // editCellRef.current.addEventListener('autosize:resized', function () {
+    // thisHeight = editCellRef.current.offsetHeight
+    editCellRef.current.addEventListener('autosize:resized', function () {
       // add 8 to height because text input thing
-      // thisHeight = this.offsetHeight 
-    //   console.log(this.offsetHeight)
-    // })
+      thisHeight = this.offsetHeight 
+      console.log(this.offsetHeight)
+    })
 
     window.onclick = (e: any) => {
       if (e.target.id === "modal") {

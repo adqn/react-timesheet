@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-export const cellWidth: string = "150px"
+export const cellWidth: number = "150px" 
 export const cellHeight: number = 36
 export const headerHeight: number = 32
 
