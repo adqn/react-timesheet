@@ -28,6 +28,5 @@ data
 
 # pjstuff.txt
 
-/api/runserver.sh
 .vscode
 .env
