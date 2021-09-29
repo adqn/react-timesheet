@@ -1,17 +1,18 @@
-
-const path = require("path");
-const express = require("express");
+const path = require('path');
+const express = require('express');
 // const fileUpload = require("express-fileupload");
-const fs = require("fs")
-const url = require("url");
+const fs = require('fs')
+const url = require('url');
 // const formidable = require("formidable");
 
 const api = require('./api/api.js');
-const { ppid } = require("process");
+const { ppid } = require('process');
 
 const app = express();
 
-app.use(express.urlencoded());
+app.use(express.urlencoded({
+  extended: true
+}));
 app.use(express.json());
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");

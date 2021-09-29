@@ -317,10 +317,17 @@ const SaveTemplateBox = ({ template, setModalActive }: { template: Spreadsheet, 
 
     const req = {
       method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify(newTemplate)
     }
 
-    fetch('/api/savetemplate', req)
+    console.log(JSON.stringify(newTemplate))
+
+    // fetch('/api/savetemplate', req)
+    fetch('http://localhost:5001/api/savetemplate', req)
       .then(() => {
         setStatus("Template saved!");
         setTimeout(() => setModalActive(false), 2000)
@@ -350,21 +357,15 @@ const SaveTemplateBox = ({ template, setModalActive }: { template: Spreadsheet, 
 }
 
 const LoadTemplateBox = ({ setTemplate, setModalActive }: { setTemplate: (t: Spreadsheet) => void, setModalActive: (b: boolean) => void }) => {
-  const [templates, setTemplates] = useState<TemplateEntry[] | null>(null)
+  const [templates, setTemplates] = useState<TemplateEntry[]>([])
 
-  interface TestData {
-    daily: any;
-    daily2: any;
-    projects: any;
-    templates: TemplateEntry[]
-  }
-
-  async function getData(): Promise<TestData> {
-    return (await fetch('/api/test')).json()
+  async function getData(): Promise<TemplateEntry[]> {
+    // return (await fetch('/api/test')).json()
+    return (await fetch('http://localhost:5001/api/templates')).json()
   }
 
   useEffect(() => {
-    getData().then(res => setTemplates(res.templates))
+    getData().then(res => setTemplates(res))
     window.onclick = (e: any) => {
       if (e.target.id === "modal") setModalActive(false)
     }
@@ -372,17 +373,17 @@ const LoadTemplateBox = ({ setTemplate, setModalActive }: { setTemplate: (t: Spr
 
   return (
     <Styled.ModalDialog>
-      {templates ? templates.map((templateEntry, idx) => {
+      {templates.length > 0 ? templates.map((templateEntry, idx) => {
         return (
           <button
             key={idx}
-            onClick={() => setTemplate([...templateEntry.template])}
+            onClick={() => setTemplate([...templateEntry.template.template])}
             style={{ display: 'block' }}
           >
-            {templateEntry.name}
+            {templateEntry.template.name}
           </button>
         )
-      }) : "Loading templates..."}
+      }) : "Fetching templates..."}
     </Styled.ModalDialog>
   )
 }

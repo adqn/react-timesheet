@@ -15,4 +15,10 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "timesheet-dev" <<-
         info json NOT NULL,
         PRIMARY KEY (id)
     );
+
+    CREATE TABLE templates (
+        id uuid DEFAULT uuid_generate_v4 (),
+        template json NOT NULL
+    );
+
 EOSQL

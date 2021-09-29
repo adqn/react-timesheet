@@ -25,6 +25,16 @@ const pool = new Pool({
 //   console.log('pool has been drained')
 // })()
 
+const newTemplate = template => {
+  const sql = `INSERT INTO templates (template) VALUES ($1);`
+
+  // have to enclose in array !
+  pool.query(sql, [template], err => {
+    if (err) throw err
+    else console.log("saved a template?")
+  })
+}
+
 router.get("/testdata", (req, res) => {
   const sql = `
     SELECT * from accounts;  
@@ -36,5 +46,18 @@ router.get("/testdata", (req, res) => {
   })
 })
 
+router.get("/templates", (req, res) => {
+  const sql = `SELECT * FROM templates;`
+
+  pool.query(sql, (err, rows) => {
+    if (err) throw err;
+    res.send(rows.rows)
+  })
+})
+
+router.post("/savetemplate", (req, res) => {
+  newTemplate(req.body)
+  res.sendStatus(200)
+})
 
 module.exports = router;
