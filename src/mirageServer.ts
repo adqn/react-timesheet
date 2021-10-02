@@ -149,6 +149,7 @@ export function makeServer() {
       })
 
       this.passthrough('api.github.com')
+      this.passthrough('localhost:5001')
     },
   });
 }

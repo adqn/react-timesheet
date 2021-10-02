@@ -227,15 +227,15 @@ interface Callbacks {
   [name: string]: React.Dispatch<React.SetStateAction<boolean>> | (() => void);
 }
 
-const Stopwatch = ({ submitProjectData, setTotalTime }: { submitProjectData: () => void, setTotalTime: (t:string) => void}) => {
-  // TODO: get currently running timer from API
+const Stopwatch = ({ projectId, taskId, submitProjectData, setTotalTime }: { projectId: string, taskId: string, submitProjectData: () => void, setTotalTime: (t:string) => void}) => {
   const {
+    currentTask,
     seconds,
     minutes,
     hours,
     isRunning,
     reset,
-  } = useServerStopwatch({projectId: "1", timerId: "1"})
+  } = useServerStopwatch({projectId: "1", taskId: "1"})
 
   function handleStop() {
     const totalTime = `${hours}:${minutes}:${seconds}`
@@ -251,9 +251,9 @@ const Stopwatch = ({ submitProjectData, setTotalTime }: { submitProjectData: () 
   return (
     <div>
       <ElapsedTime>
-        {hours < 10 ? "0" + hours : hours}:
-        {minutes < 10 ? "0" + minutes : minutes}:
-        {seconds < 10 ? "0" + seconds : seconds}
+        {hours ? hours < 10 ? "0" + hours : hours : "00"}:
+        {minutes ? minutes < 10 ? "0" + minutes : minutes : "00"}:
+        {seconds ? seconds < 10 ? "0" + seconds : seconds : "00"}
       </ElapsedTime>
       <StopwatchButton
         background={isRunning ? "orange" : "#008CBA"}

@@ -1,6 +1,5 @@
 import * as d3 from 'd3'
 import React, { useEffect, useState } from 'react'
-import { isTemplateExpression } from 'typescript'
 import Modal from '../../components/Modal'
 import * as Styled from './Timeblock.styled'
 

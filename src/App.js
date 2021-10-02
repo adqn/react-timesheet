@@ -5,7 +5,7 @@ import Sidebar from './components/Sidebar'
 import Timer from './components/Timer'
 import './App.css';
 
-makeServer();
+// makeServer();
 
 const App = () => {
   const [timerActivated, setTimerActivated] = useState(false)

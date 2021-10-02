@@ -73,7 +73,7 @@ const DailyView = () => {
   }
 
   useEffect(() => {
-    getTestData()
+    // getTestData()
   }, [])
 
   return (

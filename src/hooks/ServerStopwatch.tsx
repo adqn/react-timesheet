@@ -11,7 +11,7 @@ interface Stopwatch {
 
 interface Me {
   projects2: Project[];
-  stopwatches: Stopwatch[];
+  tasks: Stopwatch[];
   daily: FIXME;
   daily2: FIXME;
 }
@@ -35,23 +35,23 @@ interface StopwatchResult {
 
 export const useServerStopwatch = async ({ projectId, taskId }: { projectId: string, taskId: string }): Promise<StopwatchResult> => {
   // TODO: use API to know autostart and offset values
-  const req = {
-    method: 'POST',
-    body: ''
-  }
-
   const taskReq = {
     projectId,
     taskId,
     action: ''
   }
 
-  const getTask = async (): Promise<Me> => {
-    return (await fetch('/api/test')).json();
+  const req = {
+    method: 'POST',
+    body: JSON.stringify(taskReq)
   }
 
-  const stopwatches = (await getTask()).stopwatches
-  const currentStopwatch = stopwatches[parseInt(taskId) - 1]
+  const getTask = async (): Promise<Me> => {
+    return (await fetch('/api/tasks')).json();
+  }
+
+  const tasks = (await getTask()).tasks
+  const currentTask = tasks[parseInt(taskId) - 1]
 
   const reactStopwatch = useStopwatch({ autoStart: false })
 
@@ -76,6 +76,7 @@ export const useServerStopwatch = async ({ projectId, taskId }: { projectId: str
   }
 
   return {
+    currentTask,
     ...reactStopwatch,
     start,
     pause,

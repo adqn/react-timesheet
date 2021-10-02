@@ -35,23 +35,25 @@ const newTemplate = template => {
   })
 }
 
-router.get("/testdata", (req, res) => {
-  const sql = `
-    SELECT * from accounts;  
-  `
-  pool.query(sql, (err, rows) => {
-    if (err) throw err;
-    console.log(rows.rows)
-    res.send(rows.rows)
+const getTasks = callback => {
+  pool.query(`SELECT * FROM tasks;`, (err, res) => {
+    if (err) throw err
+    else callback.send(res.rows)
   })
+}
+
+router.get("/tasks", (req, res) => {
+  let attrs = JSON.parse(req.body)
+  getTasks(res)
+  res.sendStatus(200)
 })
 
 router.get("/templates", (req, res) => {
   const sql = `SELECT * FROM templates;`
 
-  pool.query(sql, (err, rows) => {
+  pool.query(sql, (err, res) => {
     if (err) throw err;
-    res.send(rows.rows)
+    res.send(res.rows)
   })
 })
 
