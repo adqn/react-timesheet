@@ -32,32 +32,33 @@ const startTask = (projectId, taskId, startTime) => {
                             ORDER BY task->'id' DESC LIMIT 1`
   const sqlUpdateTask = `UPDATE tasks 
                          SET task = jsonb_set(task, '{start}', '${startTime}', false)
-                         WHERE CAST (task->>${taskId} AS INTEGER) = ${taskId}`
+                         WHERE CAST (task->>'id' AS INTEGER) = ${parseInt(taskId)}
+                         AND CAST (task->>'projectId' AS INTEGER) = ${parseInt(projectId)}`
                       
 pool.query(sqlGetTasks, (err, res) => {
     if (err) throw err
     else {
-      console.log(res.rows)
+      // console.log(res.rows)
       // Check if we have the given task ID, if not then create new task
       // Project ID should always be valid, however
       if (res.rows.length === 0) {
         pool.query(sqlGetLastTaskId, (err, res) => {
           if (err) throw err
           else {
-            const newTaskId = (parseInt(res.rows[0]['?column?']) + 1).toString()
+            const newTaskId = res.rows[0] ? (parseInt(res.rows[0]['?column?']) + 1).toString() : "1"
             const newTask = {
               id: newTaskId,
               projectId,
               start: startTime,
-              end: null
+              end: null,
+              description: null
             }
             const sqlInsertNewTask = `INSERT INTO tasks (task) VALUES ($1)`
 
             pool.query(sqlInsertNewTask, [JSON.stringify(newTask)], (err, res) => {
               if (err) throw err
+              else console.log("Successfully created new task")
             })
-
-            console.log(newTask)
           }
         })
       } else {
@@ -114,7 +115,7 @@ router.get("/starttask", (req, res) => {
   const currentTime = Date.now()
   // let attrs = JSON.parse(req.body)
   // startTask(attrs.projectId, attrs.timerId, currentTime)
-  startTask("1", "3", currentTime)
+  startTask("1", "1", currentTime)
 
   // const sql = `INSERT INTO tasks (task) VALUES ($1)` 
   // pool.query(sql, [JSON.stringify(testTask)], err => { if (err) throw err })
