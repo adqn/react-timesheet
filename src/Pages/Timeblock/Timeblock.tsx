@@ -1,11 +1,13 @@
 import * as d3 from 'd3'
 import React, { useEffect, useState } from 'react'
+
 import Modal from '../../components/Modal'
 import * as Styled from './Timeblock.styled'
 
 import { ActiveCell } from './ActiveCell'
 import { CellControlLayer } from './CellControlLayer'
 import { SpreadsheetContext, Cell, Spreadsheet, newColumn, newRow } from './utils'
+import { GoogleCalendarBlocks } from './GoogleCalendarBlocks/GoogleCalendarBlocks'
 
 interface TemplateEntry {
   name: string;
@@ -203,6 +205,7 @@ const Sheet = () => {
       >
         Copy as markdown
         </button>
+      <GoogleCalendarBlocks />
       {modalActive ?
         <Modal visibility={"visible"}>
           {action === "save" ?
