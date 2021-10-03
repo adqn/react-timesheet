@@ -24,7 +24,7 @@ const pool = new Pool({
 const tasks = []
 
 const startTask = (projectId, taskId, startTime) => { 
-  const foundTaskIdx = tasks.findIndex(task => task.id === taskId && task.projectId === projectId)
+  const sqlInsertNewTask = `INSERT INTO tasks (task) VALUES ($1)`
   const sqlGetTasks = `SELECT task from tasks
                        WHERE CAST (task->>'id' AS INTEGER) = ${taskId}
                        AND CAST (task->>'projectId' AS INTEGER) = ${projectId}`
@@ -32,46 +32,45 @@ const startTask = (projectId, taskId, startTime) => {
                             ORDER BY task->'id' DESC LIMIT 1`
   const sqlUpdateTask = `UPDATE tasks 
                          SET task = jsonb_set(task, '{start}', '${startTime}', false)
-                         WHERE CAST (task->>'id' AS INTEGER) = ${parseInt(taskId)}
-                         AND CAST (task->>'projectId' AS INTEGER) = ${parseInt(projectId)}`
+                         WHERE CAST (task->>'id' AS INTEGER) = ${taskId}
+                         AND CAST (task->>'projectId' AS INTEGER) = ${projectId}`
                       
-pool.query(sqlGetTasks, (err, res) => {
-    if (err) throw err
-    else {
-      // console.log(res.rows)
-      // Check if we have the given task ID, if not then create new task
-      // Project ID should always be valid, however
-      if (res.rows.length === 0) {
-        pool.query(sqlGetLastTaskId, (err, res) => {
-          if (err) throw err
-          else {
-            const newTaskId = res.rows[0] ? (parseInt(res.rows[0]['?column?']) + 1).toString() : "1"
-            const newTask = {
-              id: newTaskId,
-              projectId,
-              start: startTime,
-              end: null,
-              description: null
-            }
-            const sqlInsertNewTask = `INSERT INTO tasks (task) VALUES ($1)`
+  // Check if we have the given task ID, if not then create new task
+  // Project ID should always be valid, however
+  pool.query(sqlGetTasks, (err, res) => {
+      if (err) throw err
+      else {
+        // console.log(res.rows)
+        if (res.rows.length === 0) {
+          pool.query(sqlGetLastTaskId, (err, res) => {
+            if (err) throw err
+            else {
+              const newTaskId = res.rows[0] ? (parseInt(res.rows[0]['?column?']) + 1).toString() : "1"
+              const newTask = {
+                id: newTaskId,
+                projectId,
+                start: startTime,
+                end: null,
+                description: null
+              }
 
-            pool.query(sqlInsertNewTask, [JSON.stringify(newTask)], (err, res) => {
-              if (err) throw err
-              else console.log("Successfully created new task")
-            })
-          }
-        })
-      } else {
-        // do resume task thing
-        // const taskIdx = tasks.find(task => task.id === taskId && task.projectId === projectId)
-        // tasks[foundTaskIdx].start = startTime
-        pool.query(sqlUpdateTask, (err, res) => {
-          if (err) throw err
-          else console.log("Successfully updated task")
-        })
+              pool.query(sqlInsertNewTask, [JSON.stringify(newTask)], (err, res) => {
+                if (err) throw err
+                else console.log("Successfully created new task")
+              })
+            }
+          })
+        } else {
+          // do resume task thing
+          // const taskIdx = tasks.find(task => task.id === taskId && task.projectId === projectId)
+          // tasks[foundTaskIdx].start = startTime
+          pool.query(sqlUpdateTask, (err, res) => {
+            if (err) throw err
+            else console.log("Successfully updated task")
+          })
+        }
       }
-    }
-  })
+    })
 }
 
 const stopTask = (projectId, taskId, endTime) => {
@@ -98,27 +97,16 @@ const getTasks = callback => {
 }
 
 router.get("/tasks", (req, res) => {
-  let attrs = JSON.parse(req.body)
+  // let attrs = JSON.parse(req.body)
   getTasks(res)
-  res.sendStatus(200)
+  // res.sendStatus(200)
 })
-
-const testTask = {
-  id: "1",
-  projectId: "1",
-  start: "2021-08-23 10:17AM",
-  end: "2021-08-23 10:19AM",
-  description: "made good soup"
-}
 
 router.get("/starttask", (req, res) => {
   const currentTime = Date.now()
   // let attrs = JSON.parse(req.body)
   // startTask(attrs.projectId, attrs.timerId, currentTime)
   startTask("1", "1", currentTime)
-
-  // const sql = `INSERT INTO tasks (task) VALUES ($1)` 
-  // pool.query(sql, [JSON.stringify(testTask)], err => { if (err) throw err })
 })
 
 router.get("/stoptask", (req, res) => {
