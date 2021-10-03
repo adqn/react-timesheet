@@ -201,10 +201,10 @@ interface Project {
   client: string,
   contributors: string[];
   tags: string[];
-  tasks: ProjectTask[]
+  tasks: Task[]
 }
 
-interface ProjectTask {
+interface Task {
   id: string;
   date: string;
   start: string;
@@ -241,7 +241,7 @@ const Stopwatch = ({ projectId, taskId, submitProjectData, setTotalTime }: { pro
     const totalTime = `${hours}:${minutes}:${seconds}`
     setTotalTime(totalTime)
     reset(undefined, false)
-    submitProjectData()
+    // submitProjectData()
   }
 
   function handleStart() {
@@ -386,14 +386,14 @@ const projectsDropDown = (projects: Project[], setProject: (s:string) => void) =
 const SubmitStatus = ({ didSubmit }: { didSubmit: boolean }) =>
   didSubmit ? <div>Entry submitted!</div> : <div>Submitting...</div>
 
-const UserBar = ({ projects }: {projects: Project[] | null}) => {
+const UserBar = ({ projects, tasks }: {projects: Project[] | null, tasks}) => {
   const [timerRunning, setTimerRunning] = useState(false)
   const [totalTime, setTotalTime] = useState("00:00:00")
   const [name, setName] = useState("")
   const [client, setClient] = useState("")
   const [contributors, setContributors] = useState([])
   const [tags, setTags] = useState("")
-  const [tasks, setTasks] = useState<ProjectTask>()
+  // const [tasks, setTasks] = useState<Task>()
   const [description, setDescription] = useState("")
   const [project, setProject] = useState<Project[]>([])
 
@@ -403,15 +403,13 @@ const UserBar = ({ projects }: {projects: Project[] | null}) => {
 
   const submitProjectData = () => {
     const epoch = Date.now()
-
     const entry: Project = {
       name,
       client,
       contributors: [],
       tags: [],
-      tasks: [],
+      tasks,
     }
-
     const req = {
       method: 'POST',
       body: JSON.stringify(entry)
@@ -469,11 +467,13 @@ const UserBar = ({ projects }: {projects: Project[] | null}) => {
   )
 }
 
-const MutableUserBar = () => {
+const MutableUserBar = ({task}) => {
   return (
     <MutableUserBarFlexContainer>
       <UserBarHeader>
-
+        project ID: {task.projectId} <br />
+        task ID: {task.id} <br />
+        task start: {task.start} <br />
       </UserBarHeader>
     </MutableUserBarFlexContainer>
   )
@@ -484,12 +484,13 @@ export default function UserArea({callbacks}: {callbacks: Callbacks}) {
   const [didSubmit, setDidSubmit] = useState(false)
   const [projects, setProjects] = useState<Project[] | null>(null)
   const [project, setProject] = useState<string | null>(null)
+  const [tasks, setTasks] = useState([])
   const [minutes, setMinutes] = useState(0)
   const [hours, setHours] = useState(0)
   const [description, setDescription] = useState('')
 
   const fetchMe = async (): Promise<Me> => {
-    return (await fetch('/api/test')).json();
+    return (await fetch('http://localhost:5001/api/tasks')).json();
   }
 
   const getProjects = async () => {
@@ -498,8 +499,15 @@ export default function UserArea({callbacks}: {callbacks: Callbacks}) {
     setProjects(res)
   }
 
+  const getTasks = async () => {
+    const data = await fetchMe();
+    console.log(data)
+    setTasks(data)
+  }
+
   useEffect(() => {
-    getProjects()
+    // getProjects()
+    getTasks()
     // callbacks.setTimerActivated(true)
   }, [])
 
@@ -514,25 +522,11 @@ export default function UserArea({callbacks}: {callbacks: Callbacks}) {
           alignItems: "center"
         }}
       >
-        {projects?.map(project => {
-          return <MutableUserBar />
+        {tasks?.map(row => {
+          return <MutableUserBar task={row.task}/>
         })}
       </div>
       <br />
-      {/* <br />
-      {projects ?
-        projectsDropDown(projects, setProject) :
-        projectsDropDown(dummyProjects, setProject)}
-      {timeDropDown(12, "h", setHours, hours)}
-      {timeDropDown(60, "m", setMinutes, minutes)}
-      <br />
-      Description/additional information:
-      <TextInput
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
-      <button onClick={() => addEntry()}>Add entry</button>
-      {submitting ? <SubmitStatus didSubmit={didSubmit} /> : null} */}
     </div>
   )
 }
