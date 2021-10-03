@@ -112,7 +112,7 @@ export const GitStats = () => {
     <div>
       {contributorActivity.map(data => {
         let commitColorTotal = Math.ceil(data.total / availColors)
-        let commitColorLatestWeek = Math.ceil(data.weeks[data.weeks.length - 1].c/availColors)
+        let commitColorLatestWeek = Math.ceil(data.weeks[data.weeks.length - 2].c/availColors)
 
         if (commitColorTotal > 4) commitColorTotal = 4;
         if (commitColorLatestWeek > 4) commitColorLatestWeek = 4;
@@ -132,7 +132,7 @@ export const GitStats = () => {
               <Section>
                 <CommitFrequency
                   freqColor={colorBuckets[commitColorLatestWeek]} />
-                {data.weeks[data.weeks.length - 1].c} <Desc>this week</Desc>
+                {data.weeks[data.weeks.length - 2].c} <Desc>this week</Desc>
               </Section>
             </div>
 
