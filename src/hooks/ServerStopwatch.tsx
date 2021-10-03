@@ -33,25 +33,32 @@ interface StopwatchResult {
   reset: (offsetTimestamp?: number, autoStart?: boolean) => void;
 }
 
-export const useServerStopwatch = async ({ projectId, taskId }: { projectId: string, taskId: string }): Promise<StopwatchResult> => {
+export const useServerStopwatch = ({ projectId, taskId }: { projectId: string, taskId: string }) => {
   // TODO: use API to know autostart and offset values
+  // no offset? just create new task for each timer use
   const taskReq = {
     projectId,
     taskId,
-    action: ''
   }
 
   const req = {
     method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify(taskReq)
   }
 
-  const getTask = async (): Promise<Me> => {
-    return (await fetch('/api/tasks')).json();
+  const startTask = async (): Promise<Me> => {
+    return (await fetch('http://localhost:5001/api/starttask', req)).json();
   }
 
-  const tasks = (await getTask()).tasks
-  const currentTask = tasks[parseInt(taskId) - 1]
+  const stopTask = async (): Promise<Me> => {
+    return (await fetch('http://localhost:5001/api/stoptask', req)).json();
+  }
+  // const tasks = (await getTask()).tasks
+  // const currentTask = tasks[parseInt(taskId) - 1]
 
   const reactStopwatch = useStopwatch({ autoStart: false })
 
@@ -60,26 +67,19 @@ export const useServerStopwatch = async ({ projectId, taskId }: { projectId: str
     // Do server thing here where we start a task with projectId and taskId
     // Check for existing taskId
     // Wait for response
-    taskReq.action = 'start'
+    startTask().then(res => console.log(res))
     reactStopwatch.start()
   }
 
-  const pause = () => {
-    // Do server thing here where we stop a task with projectId and taskId
-    taskReq.action = 'pause'
-    reactStopwatch.pause()
-  }
-
   const reset = (offsetTimestamp?: number, autoStart?: boolean) => {
-    // Do server thing here where we stop a task with projectId and taskId
+    stopTask()
     reactStopwatch.reset(offsetTimestamp, autoStart)
   }
 
   return {
-    currentTask,
+    // currentTask,
     ...reactStopwatch,
     start,
-    pause,
     reset,
   }
 }

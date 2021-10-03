@@ -234,6 +234,7 @@ const Stopwatch = ({ projectId, taskId, submitProjectData, setTotalTime }: { pro
     minutes,
     hours,
     isRunning,
+    start,
     reset,
   } = useServerStopwatch({projectId: "1", taskId: "1"})
 
@@ -241,11 +242,6 @@ const Stopwatch = ({ projectId, taskId, submitProjectData, setTotalTime }: { pro
     const totalTime = `${hours}:${minutes}:${seconds}`
     setTotalTime(totalTime)
     reset(undefined, false)
-    // submitProjectData()
-  }
-
-  function handleStart() {
-    reset(undefined, true)
   }
 
   return (
@@ -257,7 +253,7 @@ const Stopwatch = ({ projectId, taskId, submitProjectData, setTotalTime }: { pro
       </ElapsedTime>
       <StopwatchButton
         background={isRunning ? "orange" : "#008CBA"}
-        onClick={isRunning ? handleStop : handleStart}
+        onClick={isRunning ? handleStop : start}
       >
         {isRunning ? "STOP" : "START"}
       </StopwatchButton>
@@ -501,7 +497,6 @@ export default function UserArea({callbacks}: {callbacks: Callbacks}) {
 
   const getTasks = async () => {
     const data = await fetchMe();
-    console.log(data)
     setTasks(data)
   }
 
