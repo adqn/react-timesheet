@@ -1,9 +1,6 @@
-// import { Pool, Client } from 'pg';
-// ^ ES6 import (keep in mind);
 const express = require("express");
-const { Pool, Client } = require('pg')
-
 const router = express.Router();
+const { Pool, Client } = require('pg')
 
 const pool = new Pool({
   user: 'rory',
@@ -64,8 +61,6 @@ const startTask = (projectId, taskId, startTime) => {
           // do resume task thing
           // just create duplicate tasks with different start/end and combine durations?
           // but then removing tasks is ambiguous...
-          // const taskIdx = tasks.find(task => task.id === taskId && task.projectId === projectId)
-          // tasks[foundTaskIdx].start = startTime
           pool.query(sqlUpdateTask, err => {
             if (err) throw err
             else console.log("Successfully updated task")
@@ -100,10 +95,8 @@ const stopTask = (projectId, taskId, endTime) => {
 const newTemplate = template => {
   const sql = `INSERT INTO templates (template) VALUES ($1);`
 
-  // have to enclose in array !
   pool.query(sql, [template], err => {
     if (err) throw err
-    else console.log("saved a template?")
   })
 }
 
@@ -115,7 +108,7 @@ const getTasks = callback => {
 }
 
 router.get("/tasks", (req, res) => {
-  // let attrs = JSON.parse(req.body)
+  let attrs = JSON.parse(req.body)
   getTasks(res)
   // res.sendStatus(200)
 })
