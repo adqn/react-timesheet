@@ -58,9 +58,10 @@ const startTask = (projectId, taskId, startTime) => {
             }
           })
         } else {
-          // do resume task thing
-          // just create duplicate tasks with different start/end and combine durations?
-          // but then removing tasks is ambiguous...
+          // TODO: start/end applicable to grouped tasks, add "duration" property
+          // requires duplicate records, which is OK in this case 
+          // total task time (but not duration) based on earliest and latest duplicate entries
+          // may need sub IDs? or delete tasks in groups based on timestamp?
           pool.query(sqlUpdateTask, err => {
             if (err) throw err
             else console.log("Successfully updated task")
@@ -108,21 +109,20 @@ const getTasks = callback => {
 }
 
 router.get("/tasks", (req, res) => {
-  let attrs = JSON.parse(req.body)
   getTasks(res)
   // res.sendStatus(200)
 })
 
-router.get("/starttask", (req, res) => {
+router.post("/starttask", (req, res) => {
   const currentTime = Date.now()
-  let attrs = JSON.parse(req.body)
-  startTask(attrs.projectId, attrs.timerId, currentTime)
+  let attrs = req.body
+  startTask(attrs.projectId, attrs.taskId, currentTime)
 })
 
-router.get("/stoptask", (req, res) => {
+router.post("/stoptask", (req, res) => {
   const currentTime = Date.now()
-  let attrs = JSON.parse(req.body)
-  stopTask(attrs.projectId, attrs.timerId, currentTime)
+  let attrs = req.body
+  stopTask(attrs.projectId, attrs.taskId, currentTime)
 })
 
 router.get("/templates", (req, res) => {
