@@ -26,7 +26,7 @@ package-lock.json
 # Local docker database stuff
 data
 
-# pjstuff.txt
+pjstuff.txt
 
 .vscode
 .env
