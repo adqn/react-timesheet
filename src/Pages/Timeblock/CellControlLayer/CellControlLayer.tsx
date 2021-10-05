@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 
-import { SpreadsheetContext, newRow } from '../utils'
+import { SpreadsheetContext, newRow, newColumn } from '../utils'
 import { ActiveCell } from '../ActiveCell'
 import * as Styled from '../Timeblock.styled'
 
@@ -18,12 +18,6 @@ export const CellControlLayer = (props) => {
   const newCellProps = { ...props.selectedCellProps }
   let newCellId = props.selectedCellId
 
-  // if (newCellProps.height != props.template[rowId - 1].height) {
-  //   const newTemplate = [...props.template]
-  //   newTemplate[rowId - 1].map((col, i) => newTemplate[rowId - 1][i].height = newCellProps.height)
-  //   context.setTemplate(newTemplate)
-  // }
-
   const handleKeyPress = (e: any) => {
     let winX = window.pageXOffset
     let winY = window.pageYOffset
@@ -32,7 +26,6 @@ export const CellControlLayer = (props) => {
 
     if (!isActive || isEditing) return
     console.log(props.selectedCellId)
-    // console.log(rowId, colId)
 
     if (e.key === "ArrowLeft") {
       if (colId > 1) {
@@ -63,6 +56,18 @@ export const CellControlLayer = (props) => {
         newCellProps.height = props.template[rowId][colId - 1].height
         // newCellProps.y += newCellProps.height - 1
       }
+    }
+
+    else if (e.key === "Tab") {
+      e.preventDefault()
+      if (colId < props.template[0].length) {
+        newCellId = `row${rowId}-col${colId + 1}`
+        newCellProps.x += newCellProps.width - 1
+      } else {
+        newColumn(props.template)
+        newCellId = `row${rowId}-col${colId + 1}`
+        newCellProps.x += newCellProps.width - 1
+      } 
     }
 
     else if (e.ctrlKey) {
@@ -109,6 +114,10 @@ export const CellControlLayer = (props) => {
     console.log(newCellId, newCellProps)
   }
 
+  // initialization
+  useEffect(() => {
+  }, [])
+  
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress)
 
