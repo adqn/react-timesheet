@@ -16,11 +16,19 @@ interface ActiveCellProps {
 }
 
 export const ActiveCell = ({ parentKey, size, position, coords, visibility, originalValue, setIsEditing, setTempValue}: ActiveCellProps) => {
+  const [, forceRender] = useState()
+  const [currentParentKey, setCurrentParentKey] = useState(parentKey)
   const [value, setValue] = useState(originalValue)
   const editCellRef = React.createRef()
   const context = React.useContext(SpreadsheetContext)
   const rowId = parseInt(parentKey.split("-")[0].match(/\d+/)[0])
   const colId = parseInt(parentKey.split("-")[1].match(/\d+/)[0])
+  const cellProps = {
+    x: position.x + window.scrollX,
+    y: position.y + window.scrollY,
+    height: size.height,
+    width: size.width,
+  }
   let thisHeight
 
   function updateTemplate(template: Spreadsheet) {
@@ -52,9 +60,16 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
   function keyListener(e: any) {
     if (e.key === "Enter") {
       if (rowId < context.template.length) {
-        position.y += size.height - 1
-        size.height = (context.template[rowId][colId - 1].height) 
-        parentKey = `row${rowId + 1}-col${colId}`
+        const newParentKey = `row${rowId + 1}-col${colId}`
+        cellProps.y += size.height - 1
+        cellProps.height = (context.template[rowId][colId - 1].height) 
+        setCurrentParentKey(newParentKey)
+
+        if (rowId > 1) {
+          context.setSelectedCellId(newParentKey)
+          context.setSelectedCellProps(cellProps)
+          context.setCellSelectionLayerActive(true)
+        }
       }
       lockValue()
     }
@@ -66,6 +81,8 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
   }
 
   useEffect(() => {
+    context.setSelectedCellId(parentKey)
+    context.setSelectedCellProps(cellProps)
     editCellRef.current.focus()
     autosize(editCellRef.current)
     // thisHeight = editCellRef.current.offsetHeight
@@ -82,19 +99,7 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
     }
 
     return () => {
-      // console.log(editCell)
-      const cellProps = {
-        x: position.x + window.scrollX,
-        y: position.y + window.scrollY,
-        height: size.height,
-        width: size.width,
-      }
-
-      if (rowId > 1) {
-        context.setSelectedCellId(parentKey)
-        context.setSelectedCellProps(cellProps)
         context.setCellSelectionLayerActive(true)
-      }
     }
   }, [])
 
