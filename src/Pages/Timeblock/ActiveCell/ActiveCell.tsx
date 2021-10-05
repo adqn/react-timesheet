@@ -16,8 +16,6 @@ interface ActiveCellProps {
 }
 
 export const ActiveCell = ({ parentKey, size, position, coords, visibility, originalValue, setIsEditing, setTempValue}: ActiveCellProps) => {
-  const [, forceRender] = useState()
-  const [currentParentKey, setCurrentParentKey] = useState(parentKey)
   const [value, setValue] = useState(originalValue)
   const editCellRef = React.createRef()
   const context = React.useContext(SpreadsheetContext)
@@ -36,7 +34,7 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
     // if (value === "") thisHeight = 36
     temp[rowId - 1][colId - 1].content = value
     // temp[rowId - 1][colId - 1].height = thisHeight
-    temp.map((row) => row.map((col, i) => temp[rowId - 1][i].height = size.height))
+    temp.map((row) => row.map((col, i) => temp[rowId - 1][i].height = cellProps.height))
     context.setTemplate(temp)
   }
 
@@ -63,12 +61,10 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
         const newParentKey = `row${rowId + 1}-col${colId}`
         cellProps.y += size.height - 1
         cellProps.height = (context.template[rowId][colId - 1].height) 
-        setCurrentParentKey(newParentKey)
 
         if (rowId > 1) {
           context.setSelectedCellId(newParentKey)
           context.setSelectedCellProps(cellProps)
-          context.setCellSelectionLayerActive(true)
         }
       }
       lockValue()
@@ -86,11 +82,11 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
     editCellRef.current.focus()
     autosize(editCellRef.current)
     // thisHeight = editCellRef.current.offsetHeight
-    editCellRef.current.addEventListener('autosize:resized', function () {
-      // add 8 to height because text input thing
-      thisHeight = this.offsetHeight 
-      console.log(this.offsetHeight)
-    })
+    // editCellRef.current.addEventListener('autosize:resized', function () {
+    //   // add 8 to height because text input thing
+    //   thisHeight = this.offsetHeight 
+    //   console.log(this.offsetHeight)
+    // })
 
     window.onclick = (e: any) => {
       if (e.target.id === "modal") {
