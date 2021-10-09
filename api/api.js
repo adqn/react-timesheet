@@ -18,19 +18,7 @@ const pool = new Pool({
 //   description: string;
 // }
 
-// const psqlCreateNewTask = `INSERT INTO tasks (task) VALUES ($1)`
-// const psqlGetLastTaskId = `SELECT task->'id' FROM tasks
-//                           ORDER BY task->'id' DESC LIMIT 1`
-// const psqlGetTasks = `SELECT task from tasks
-//                       WHERE CAST (task->>'id' AS INTEGER) = ${taskId}
-//                       AND CAST (task->>'projectId' AS INTEGER) = ${projectId}`
-// const psqlUpdateTask = `UPDATE tasks 
-//                         SET task = jsonb_set(task, '{start}', '${startTime}', false)
-//                         WHERE CAST (task->>'id' AS INTEGER) = ${taskId}
-//                         AND CAST (task->>'projectId' AS INTEGER) = ${projectId}`
-
 // set first task's end time to the start time of next task in queue
-// tasks go to queue before db update?
 let taskQueue = []
 
 const startTask = task => {
@@ -39,15 +27,15 @@ const startTask = task => {
     && foundTask.start === task.start
   )
 
+  // start new task and end first task in queue
   if (foundTaskIdx === -1) {
-    // start new task and end first task in queue
     taskQueue.push(task)
     if (taskQueue.length > 1) {
       taskQueue[0].end = task.start
       stopTask(taskQueue[0])
     }
   } else stopTask(task)
-  console.log(taskQueue)
+  console.log("task queue: ", taskQueue)
 }
 
 const stopTask = task => {
@@ -65,40 +53,62 @@ const stopTask = task => {
       let tempTaskQueue = []
       taskQueue.forEach((task, index) => { if (index !== foundTaskIdx) tempTaskQueue.push(task) })
       taskQueue = tempTaskQueue
-      console.log("Successfully created new task")
+      console.log("Successfully created new task: ", task)
     }
   })
 }
 
-const updateTask = task => {
+// TODO: query by 24h buckets - only update tasks occurring on same day
+// no standalone tasks - must have project ID; ungrouped if not
+const updateTask = (task, query) => {
   const psqlUpdateTaskDescriptionByTime = `UPDATE tasks 
                         SET task = jsonb_set(task, '{description}', '${task.description}', false)
                         WHERE task->>'start' = ${task.start}`
   const psqlUpdateTaskDescriptionById = `UPDATE tasks 
                         SET task = jsonb_set(task, '{description}', '${task.description}', false)
-                        WHERE CAST (task->>'id' AS INTEGER) = ${task.id}`
+                        WHERE CAST (task->>'projectId' AS INTEGER) = ${task.projectId}
+                        AND CAST (task->>'id' AS INTEGER) = ${task.id}`
   const psqlUpdateTaskDescriptionByProjectId = `UPDATE tasks 
                         SET task = jsonb_set(task, '{description}', '${task.description}', false)
                         WHERE CAST (task->>'projectId' AS INTEGER) = ${task.projectId}`
   const psqlUpdateTaskByProjectId = `UPDATE tasks 
                         SET task = jsonb_set(task, '{id}', '${task.id}', false)
-                        WHERE CAST (task->>'projectId' AS INTEGER) = {task.projectId}`
+                        WHERE CAST (task->>'projectId' AS INTEGER) = ${task.projectId}`
   const psqlUpdateTaskById = `UPDATE tasks 
                         SET task = jsonb_set(task, '{projectId}', '${task.projectId}', false)
-                        WHERE CAST (task->>'id' AS INTEGER) = {task.id}`
+                        WHERE CAST (task->>'id' AS INTEGER) = ${task.id}`
 
-  if (!task.id) {
-    if (!task.projectId) {
-      pool.query(psqlUpdateTaskDescriptionByTime, (err, res) => {
-        if (err) console.log(err)
-        else console.log("Successfully updated task description")
-      })
+  if (query === 'updateDescription') {
+    if (!task.id) {
+      if (!task.projectId) {
+        pool.query(psqlUpdateTaskDescriptionByTime, (err, res) => {
+          if (err) console.log(err)
+          else console.log("Successfully updated task description")
+        })
+      } else {
+        pool.query(psqlUpdateTaskDescriptionByProjectId, (err, res) => {
+          if (err) console.log(err)
+          else console.log("Successfully updated task description")
+        })
+      }
     } else {
-      pool.query(psqlUpdateTaskByProjectId, (err, res) => {
+      pool.query(psqlUpdateTaskDescriptionById, (err, res) => {
         if (err) console.log(err)
         else console.log("Successfully updated task description")
       })
     }
+  }
+  else if (query === 'updateProjectId') {
+    pool.query(psqlUpdateTaskByProjectId, (err, res) => {
+      if (err) console.log(err)
+      else console.log("Successfully updated project")
+    })
+  }
+  else if (query === 'updateTaskId') {
+    pool.query(psqlUpdateTaskById, (err, res) => {
+      if (err) console.log(err)
+      else console.log("Successfully updated task")
+    })
   }
 }
 

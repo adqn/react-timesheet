@@ -249,14 +249,14 @@ const Stopwatch = ({fromTopBar}: {fromTopbar}) => {
 
   function handleStart() {
     // context.setCurrentTask(task)
-    if (isRunning) reset(undefined, false)
+    if (isRunning) reset(undefined, false, false)
     start()
     context.setStopwatchRunning(true)
   }
 
   function handleStop() {
     // setTotalTime(totalTime)
-    reset(undefined, false)
+    reset(undefined, false, false)
     context.setStopwatchRunning(false)
   }
 
