@@ -11,7 +11,7 @@ import styled from 'styled-components'
 import * as d3 from 'd3'
 import DailyView from '../Pages/DailyView'
 import Metrics from '../Pages/Metrics'
-import UserArea from '../Pages/UserArea'
+import { UserArea } from '../Pages/UserArea'
 import { Timeblock } from '../Pages/Timeblock'
 import ResizeSidebar from '../components/elements/ResizeSidebar'
 import { style } from 'd3';
