@@ -21,6 +21,7 @@ const pool = new Pool({
 // set first task's end time to the start time of next task in queue
 let taskQueue = []
 
+// TODO: fix issue where this just flat out stops working
 const startTask = task => {
   const foundTaskIdx = taskQueue.findIndex(foundTask => foundTask.id === task.id
     && foundTask.projectId === task.projectId
@@ -30,15 +31,16 @@ const startTask = task => {
   // start new task and end first task in queue
   if (foundTaskIdx === -1) {
     taskQueue.push(task)
+    console.log("task queue: ", taskQueue)
     if (taskQueue.length > 1) {
       taskQueue[0].end = task.start
       stopTask(taskQueue[0])
     }
   } else stopTask(task)
-  console.log("task queue: ", taskQueue)
 }
 
-const stopTask = task => {
+const stopTask = async (task) => {
+  let tempTaskQueue = []
   const psqlCreateNewTask = `INSERT INTO tasks (task) VALUES ($1)`
   const foundTaskIdx = taskQueue.findIndex(foundTask => foundTask.id === task.id
     && foundTask.projectId === task.projectId
@@ -46,13 +48,12 @@ const stopTask = task => {
   )
 
   if (foundTaskIdx === -1) return
+  taskQueue.forEach((task, index) => { if (index !== foundTaskIdx) tempTaskQueue.push(task) })
+  taskQueue = [...tempTaskQueue]
 
-  pool.query(psqlCreateNewTask, [JSON.stringify(task)], (err, res) => {
+  await pool.query(psqlCreateNewTask, [JSON.stringify(task)], (err, res) => {
     if (err) throw err
     else {
-      let tempTaskQueue = []
-      taskQueue.forEach((task, index) => { if (index !== foundTaskIdx) tempTaskQueue.push(task) })
-      taskQueue = tempTaskQueue
       console.log("Successfully created new task: ", task)
     }
   })
@@ -129,24 +130,16 @@ const getTasks = callback => {
 
 router.get("/tasks", (req, res) => {
   getTasks(res)
-  // res.sendStatus(200)
 })
 
 router.post("/starttask", (req, res) => {
-  if (taskQueue.length <= 1) {
-    const currentTime = Date.now()
-    startTask(req.body)
-  } else {
-    for (let task of taskQueue) stopTask(task)
-    res.send("clearTaskQueue")
-  }
+  startTask(req.body)
+  res.sendStatus(200)
 })
 
 router.post("/stoptask", (req, res) => {
-  const currentTime = Date.now()
-  let attrs = req.body
   stopTask(req.body)
-  res.sendStatus(200)
+    .then(() => res.sendStatus(200))
 })
 
 router.post("/updatetask", (req, res) => {

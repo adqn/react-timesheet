@@ -1,5 +1,6 @@
 const path = require('path');
 const express = require('express');
+const cors = require('cors')
 // const fileUpload = require("express-fileupload");
 const fs = require('fs')
 const url = require('url');
@@ -10,18 +11,12 @@ const { ppid } = require('process');
 
 const app = express();
 
+// app.use(cors())
+app.use(cors({ origin: 'http://localhost:3000' , credentials :  true }))
 app.use(express.urlencoded({
   extended: true
 }));
 app.use(express.json());
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
-});
 // app.use(fileUpload({ createParentPath: true }))
 
 app.get("/test", (req, res) => {
