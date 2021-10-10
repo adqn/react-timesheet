@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { useStopwatch } from 'react-timer-hook'
-import { StopwatchContext } from '../Pages/UserArea/utils'
 
 interface Stopwatch {
   id: string;
@@ -31,18 +30,14 @@ interface StopwatchResult {
   reset: (offsetTimestamp?: number, autoStart?: boolean) => void;
 }
 
-//TODO: figure out good way to alert current timer of task queue and stop on new request 
-// Context might be useful here and elsewhere for API stuff
-export const useServerStopwatch = ({task}: {task: Task}) => {
-  const context = React.useContext(StopwatchContext)
+export const useServerStopwatch = ({setTasks}: {setTasks: () => void}) => {
   const fetchMe = async () => {
     return (await fetch('http://localhost:5001/api/tasks')).json();
   }
 
   const getTasks = async () => {
     const data = await fetchMe();
-    context.setTasks(data)
-    // setTasks(data)
+    setTasks(data)
   }
 
   const startTask = async (task) => {
@@ -71,34 +66,31 @@ export const useServerStopwatch = ({task}: {task: Task}) => {
     return (await fetch('http://localhost:5001/api/stoptask', req))
   }
 
-  // const tasks = (await getTask()).tasks
-  // const currentTask = tasks[parseInt(taskId) - 1]
-
   const reactStopwatch = useStopwatch({ autoStart: false })
 
-  const start = () => {
-    console.log(task)
-    const startTime = Date.now()
-    task.start = startTime
-    startTask(task).then(res => console.log(res))
-    reactStopwatch.start()
+  const start = (task) => {
+    startTask(task)
+      .then(resp => {
+        if (resp.status === 200) {
+          reactStopwatch.start()
+        }
+      })
+      .catch(err => console.log(err))
   }
 
-  const reset = (offsetTimestamp?: number, autoStart?: boolean, noSubmit) => {
-    if (noSubmit === false) {
-      const endTime = Date.now()
-      task.end = endTime
-      stopTask(task)
-        .then(res => console.log(res))
-        .then(() => getTasks())
-    }
+  const stop = (task) => {
+    stopTask(task)
+      .then(() => getTasks())
+      .catch(err => console.log(err))
+  }
 
+  const reset = (offsetTimestamp?: number, autoStart?: boolean) => {
     reactStopwatch.reset(offsetTimestamp, autoStart)
   }
 
   return {
-    // currentTask,
     ...reactStopwatch,
+    stop,
     start,
     reset,
   }

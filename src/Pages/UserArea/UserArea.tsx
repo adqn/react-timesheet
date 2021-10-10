@@ -229,62 +229,62 @@ interface Callbacks {
   [name: string]: React.Dispatch<React.SetStateAction<boolean>> | (() => void);
 }
 
-const testTask = {
-  id: "1",
-  projectId: "1"
-}
-
-// needs to be same instance in all cases
-const Stopwatch = ({fromTopBar}: {fromTopbar}) => {
+// TODO: end current task and begin new one on successive fromMutable starts
+const Stopwatch = ({ task, setTasks }: { task, setTasks: () => void }) => {
+  // const [currentTask, setCurrentTask] = useState(task)
   const context = React.useContext(StopwatchContext)
-  const task = context.currentTask
   const {
     seconds,
     minutes,
     hours,
     isRunning,
+    stop,
     start,
     reset,
-  } = useServerStopwatch({ task })
+  } = useServerStopwatch({setTasks})
+  const defaultTask = {
+    id: 0,
+    projectId: 0,
+    description: null
+  }
 
   function handleStart() {
-    // context.setCurrentTask(task)
-    if (isRunning) reset(undefined, false, false)
-    start()
-    context.setStopwatchRunning(true)
+    if (isRunning) {
+      handleStop()
+    }
+    const startTime = Date.now()
+    context.currentTask.start = startTime
+    console.log(context.currentTask)
+    start(context.currentTask)
   }
 
   function handleStop() {
-    // setTotalTime(totalTime)
-    reset(undefined, false, false)
-    context.setStopwatchRunning(false)
+    const endTime = Date.now()
+    context.currentTask.end = endTime
+    stop(context.currentTask)
+    reset(undefined, false)
+
+    if (context.fromMutable) context.setFromMutable(false)
   }
 
-  // making sure only main (top) timer shows elapsed time
-  // really not an optimal setup
   useEffect(() => {
-    if (context.stopwatchRunning) {
-      const formattedHours = hours ? hours < 10 ? "0" + hours : hours : "00"
-      const formattedMinutes = minutes ? minutes < 10 ? "0" + minutes : minutes : "00"
-      const formattedSeconds = seconds ? seconds < 10 ? "0" + seconds : seconds : "00"
-      const currentFormattedTime = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`
-      context.setRunningTime(currentFormattedTime)
-    } else {
-      reset(undefined, false, true)
-      context.setRunningTime("00:00:00")
-    }
-  }, [seconds])
+    if (context.fromMutable) {
+      handleStart()
+    } else context.setCurrentTask(defaultTask)
+  }, [context.fromMutable, context.fromMutableToggle])
 
   return (
     <div>
       <ElapsedTime>
-        {fromTopBar ? context.runningTime : null}
+      {hours < 10 ? "0" + hours : hours}:
+      {minutes < 10 ? "0" + minutes : minutes}:
+      {seconds < 10 ? "0" + seconds : seconds}
       </ElapsedTime>
       <StopwatchButton
-        background={fromTopBar ? context.stopwatchRunning ? "orange" : "#008CBA": "#008CBA"}
-        onClick={fromTopBar ? context.stopwatchRunning ? handleStop : handleStart : handleStart}
+        background={isRunning ? "orange" : "#008CBA"}
+        onClick={isRunning ? handleStop : handleStart}
       >
-        {fromTopBar ? context.stopwatchRunning ? "STOP" : "START" : "START"}
+        {isRunning ? "STOP" : "START"}
       </StopwatchButton>
     </div>
   )
@@ -411,7 +411,7 @@ const projectsDropDown = (projects: Project[], setProject: (s:string) => void) =
 const SubmitStatus = ({ didSubmit }: { didSubmit: boolean }) =>
   didSubmit ? <div>Entry submitted!</div> : <div>Submitting...</div>
 
-const UserBar = ({ projects, tasks }: {projects: Project[] | null, tasks, setTasks }) => {
+const UserBar = ({ projects, setTasks }: {projects: Project[] | null, setTasks }) => {
   const [timerRunning, setTimerRunning] = useState(false)
   const [name, setName] = useState("")
   const [client, setClient] = useState("")
@@ -421,11 +421,6 @@ const UserBar = ({ projects, tasks }: {projects: Project[] | null, tasks, setTas
   const [description, setDescription] = useState("")
   const [project, setProject] = useState<Project[]>([])
   const context = React.useContext(StopwatchContext)
-  const defaultTask = {
-    id: null,
-    projectId: null,
-    description: null
-  }
 
   return (
     <UserBarFlexContainer
@@ -460,8 +455,7 @@ const UserBar = ({ projects, tasks }: {projects: Project[] | null, tasks, setTas
           justify={"right"}
         >
           <Stopwatch
-            fromTopBar={true}
-            onClick={() => context.setCurrentTask(defaultTask)}
+            setTasks={setTasks}
           />
         </UserBarInfoItem>
         <UserBarInfoItem
@@ -482,18 +476,29 @@ const MutableUserBar = ({task}) => {
   const endDate = new Date(task.end)
   const context = React.useContext(StopwatchContext)
 
+  function handleStartFromMutable() {
+    const taskFromMutable = {...task}
+    // taskFromMutable.end = null
+    context.setCurrentTask(taskFromMutable)
+    context.setFromMutableToggle(!context.fromMutableToggle)
+    context.setFromMutable(true)
+  }
+
   return (
     <MutableUserBarFlexContainer>
       <UserBarHeader>
-        <Stopwatch
-          fromTopBar={false}
-          onClick={() => context.setCurrentTask(task)}
-        />
+        <button
+          onClick={() => handleStartFromMutable()}
+        >
+          start
+        </button>
       </UserBarHeader>
         project ID: {task.projectId} <br />
         task ID: {task.id} <br /> 
-        task start: {startDate.toTimeString().slice(0, 8)} <br /> 
-        task end: {endDate.toTimeString().slice(0, 8)} <br /> 
+        {/* task start: {startDate.toTimeString().slice(0, 8)} <br /> 
+        task end: {endDate.toTimeString().slice(0, 8)} <br />  */}
+        task start: {task.start} <br /> 
+        task end: {task.end} <br /> 
         description: {task.description} <br />
         duration: {(task.end - task.start)/1000}
     </MutableUserBarFlexContainer>
@@ -506,17 +511,16 @@ export function UserArea({callbacks}: {callbacks: Callbacks}) {
   const [projects, setProjects] = useState<Project[] | null>(null)
   const [project, setProject] = useState<string | null>(null)
   const [tasks, setTasks] = useState([])
-  const [currentTask, setCurrentTask] = useState(testTask)
-  const [stopwatchRunning, setStopwatchRunning] = useState(false)
-  const [runningTime, setRunningTime] = useState("00:00:00")
+  const [currentTask, setCurrentTask] = useState<Task | null>(null)
+  const [fromMutable, setFromMutable] = useState(false)
+  const [fromMutableToggle, setFromMutableToggle] = useState(false)
   const context = {
     currentTask,
     setCurrentTask,
-    setTasks,
-    stopwatchRunning,
-    setStopwatchRunning,
-    runningTime,
-    setRunningTime
+    fromMutable,
+    setFromMutable,
+    fromMutableToggle,
+    setFromMutableToggle
   }
 
   const fetchMe = async (): Promise<Me> => {
@@ -544,7 +548,9 @@ export function UserArea({callbacks}: {callbacks: Callbacks}) {
     <div>
       <StopwatchContext.Provider value={context}>
         <UserBar
-          projects={projects} />
+          projects={projects}
+          setTasks={setTasks}
+        />
 
         <div
           style={{
