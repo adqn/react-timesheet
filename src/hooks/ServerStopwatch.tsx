@@ -30,7 +30,7 @@ interface StopwatchResult {
   reset: (offsetTimestamp?: number, autoStart?: boolean) => void;
 }
 
-export const useServerStopwatch = ({setTasks}: {setTasks: () => void}) => {
+export const useServerStopwatch = ({setTasks}: {setTasks: (tasks: Task[]) => void}) => {
   const fetchMe = async () => {
     return (await fetch('http://localhost:5001/api/tasks')).json();
   }
@@ -40,7 +40,7 @@ export const useServerStopwatch = ({setTasks}: {setTasks: () => void}) => {
     setTasks(data)
   }
 
-  const startTask = async (task) => {
+  const startTask = async (task: Task) => {
     const req = {
       method: 'POST',
       headers: {
@@ -53,7 +53,7 @@ export const useServerStopwatch = ({setTasks}: {setTasks: () => void}) => {
     return (await fetch('http://localhost:5001/api/starttask', req))
   }
 
-  const stopTask = async (task) => {
+  const stopTask = async (task: Task) => {
     const req = {
       method: 'POST',
       headers: {
@@ -68,7 +68,7 @@ export const useServerStopwatch = ({setTasks}: {setTasks: () => void}) => {
 
   const reactStopwatch = useStopwatch({ autoStart: false })
 
-  const start = (task) => {
+  const start = (task: Task) => {
     startTask(task)
       .then(resp => {
         if (resp.status === 200) {
@@ -78,13 +78,13 @@ export const useServerStopwatch = ({setTasks}: {setTasks: () => void}) => {
       .catch(err => console.log(err))
   }
 
-  const stop = (task) => {
+  const stop = (task: Task) => {
     stopTask(task)
       .then(() => getTasks())
       .catch(err => console.log(err))
   }
 
-  const reset = (offsetTimestamp?: number, autoStart?: boolean) => {
+  const reset = (offsetTimestamp?: Date, autoStart?: boolean) => {
     reactStopwatch.reset(offsetTimestamp, autoStart)
   }
 
