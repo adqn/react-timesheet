@@ -127,10 +127,7 @@ export const CellControlLayer = (props) => {
   
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress)
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyPress);
-    }
+    return () => window.removeEventListener('keydown', handleKeyPress);
   }, [props.selectedCellProps])
 
   return (
