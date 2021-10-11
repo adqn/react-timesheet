@@ -7,7 +7,7 @@ export const SpreadsheetContext = React.createContext(CONTEXT_TITLE)
 
 export interface Cell {
   id: string;
-  width: string;
+  width: number;
   height: number;
   content: string;
 }
@@ -18,7 +18,7 @@ export const newRow = (template: Spreadsheet) => {
   let temp = [...template]
   let newId, colId
   let rowId = template.length + 1
-  let newRow = []
+  let newRow: Cell[] = []
   let colTotal = template[0].length
 
   for (let i = 0; i < colTotal; i++) {
