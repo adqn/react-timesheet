@@ -5,7 +5,6 @@ import { ActiveCell } from '../ActiveCell'
 import * as Styled from '../Timeblock.styled'
 
 // control layer for cell selection/navigation
-// get cell ID also somehow enter active cell mode on keypress
 export const CellControlLayer = (props) => {
   const [isActive, setIsActive] = useState(props.isActive)
   const [isEditing, setIsEditing] = useState(false)
@@ -25,9 +24,10 @@ export const CellControlLayer = (props) => {
     let scrollY = window.scrollY
 
     if (!isActive || isEditing) return
-    console.log(props.selectedCellId)
+    // console.log(props.selectedCellId)
 
     if (e.key === "ArrowLeft") {
+      e.preventDefault()
       if (colId > 1) {
         newCellId = `row${rowId}-col${colId - 1}`
         newCellProps.x -= newCellProps.width - 1
@@ -35,13 +35,19 @@ export const CellControlLayer = (props) => {
     }
 
     else if (e.key === "ArrowRight") {
+      e.preventDefault()
       if (colId < props.template[0].length) {
         newCellId = `row${rowId}-col${colId + 1}`
         newCellProps.x += newCellProps.width - 1
+      } else {
+        // may need to be setting cell position in template for cursor wraparound 
+        // newCellId = `row${rowId + 1}-col${1}`
+        // newCellProps.x += newCellProps.width - 1
       } 
     }
 
     else if (e.key === "ArrowUp") {
+      e.preventDefault()
       if (rowId > 2) {
         newCellId = `row${rowId - 1}-col${colId}`
         newCellProps.y -= props.template[rowId - 2][colId - 1].height - 1 //- scrollY
@@ -50,6 +56,7 @@ export const CellControlLayer = (props) => {
     }
 
     else if (e.key === "ArrowDown") {
+      e.preventDefault()
       if (rowId < props.template.length) {
         newCellId = `row${rowId + 1}-col${colId}`
         newCellProps.y += newCellProps.height - 1 //- scrollY
@@ -64,7 +71,8 @@ export const CellControlLayer = (props) => {
         newCellId = `row${rowId}-col${colId + 1}`
         newCellProps.x += newCellProps.width - 1
       } else {
-        newColumn(props.template)
+        const newTemplate = newColumn(props.template)
+        context.setTemplate(newTemplate)
         newCellId = `row${rowId}-col${colId + 1}`
         newCellProps.x += newCellProps.width - 1
       } 
@@ -99,11 +107,14 @@ export const CellControlLayer = (props) => {
 
     else if (e.key === "Enter") {
       e.preventDefault()
-      newCellProps.y -= scrollY
-      newCellProps.x -= scrollX
+      // hmm
+      // newCellProps.y -= 2 * window.scrollY
+      // newCellProps.x -= 2 * window.scrollX
+      props.selectedCellProps.y -= 2 * window.scrollY
+      props.selectedCellProps.x -= 2 * window.scrollX
       setCurrentCell([rowId - 1, colId - 1])
       props.setSelectedCellId(newCellId)
-      props.setSelectedCellProps(newCellProps)
+      // props.setSelectedCellProps(newCellProps)
       setIsEditing(true)
     }
 
@@ -113,10 +124,6 @@ export const CellControlLayer = (props) => {
     props.setSelectedCellProps(newCellProps)
     console.log(newCellId, newCellProps)
   }
-
-  // initialization
-  useEffect(() => {
-  }, [])
   
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress)
@@ -124,12 +131,10 @@ export const CellControlLayer = (props) => {
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     }
-  })
+  }, [props.selectedCellProps])
 
   return (
-    <div
-      // style={{position: 'absolute'}}
-    >
+    <div>
       {isActive ?
         isEditing ?
           <ActiveCell

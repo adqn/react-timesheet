@@ -25,7 +25,7 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
     x: position.x + window.scrollX,
     y: position.y + window.scrollY,
     height: size.height,
-    width: size.width,
+    width: 165, // FIXME
   }
   let thisHeight
 
@@ -57,6 +57,7 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
 
   function keyListener(e: any) {
     if (e.key === "Enter") {
+      e.preventDefault()
       if (rowId < context.template.length) {
         const newParentKey = `row${rowId + 1}-col${colId}`
         cellProps.y += size.height - 1
@@ -71,6 +72,7 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
     }
 
     else if (e.key === "Escape") {
+      e.preventDefault()
       setTempValue(originalValue)
       setIsEditing(false)
     }
@@ -95,7 +97,7 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
     }
 
     return () => {
-        context.setCellSelectionLayerActive(true)
+      if (rowId > 1) context.setCellSelectionLayerActive(true)
     }
   }, [])
 

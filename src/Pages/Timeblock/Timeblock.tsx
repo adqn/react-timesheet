@@ -295,7 +295,6 @@ const FlexCell = (props: any) => {
           parentKey={props.id}
           size={size}
           position={position}
-          coords={coords}
           visibility={visibility}
           setIsEditing={setIsEditing}
           originalValue={value}
@@ -328,7 +327,6 @@ const SaveTemplateBox = ({ template, setModalActive }: { template: Spreadsheet, 
 
     console.log(JSON.stringify(newTemplate))
 
-    // fetch('/api/savetemplate', req)
     fetch('http://localhost:5001/api/savetemplate', req)
       .then(() => {
         setStatus("Template saved!");
