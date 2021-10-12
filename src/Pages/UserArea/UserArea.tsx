@@ -271,7 +271,7 @@ const Stopwatch = ({ task, setTasks }: { task, setTasks: () => void }) => {
     if (context.fromMutable) {
       handleStart()
     } else context.setCurrentTask(defaultTask)
-  }, [context.fromMutable, context.fromMutableToggle])
+  }, [context.fromMutableToggle])
 
   return (
     <div>

@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-export const cellWidth: number = "150px" 
+export const cellWidth: number = 155 
 export const cellHeight: number = 36
 export const headerHeight: number = 32
 
@@ -148,7 +148,7 @@ export const AddRemoveButton = styled.div`
 export const ColumnResizeBar = styled.input`
   visibility: visible;
   // display: inline-block;
-  display: block;
+  // display: block;
   position: absolute;
   width: 5px;
   height: 34px;
@@ -157,6 +157,7 @@ export const ColumnResizeBar = styled.input`
   border: none;
   background: #27B7FF;
   opacity: 1;
+  z-index: 1;
   &:hover {
     cursor: col-resize;
   }

@@ -57,7 +57,6 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
 
   function keyListener(e: any) {
     if (e.key === "Enter") {
-      e.preventDefault()
       if (rowId < context.template.length) {
         const newParentKey = `row${rowId + 1}-col${colId}`
         cellProps.y += size.height - 1
@@ -72,7 +71,6 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
     }
 
     else if (e.key === "Escape") {
-      e.preventDefault()
       setTempValue(originalValue)
       setIsEditing(false)
     }

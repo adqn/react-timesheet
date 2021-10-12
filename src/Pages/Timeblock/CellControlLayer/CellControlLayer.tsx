@@ -1,8 +1,55 @@
 import React, { useEffect, useState } from 'react'
 
-import { SpreadsheetContext, newRow, newColumn } from '../utils'
+import { SpreadsheetContext, Spreadsheet, newRow, newColumn } from '../utils'
 import { ActiveCell } from '../ActiveCell'
 import * as Styled from '../Timeblock.styled'
+import * as d3 from 'd3'
+
+export const ColumnResize = ({ template, setTemplate }: { template: Spreadsheet, setTemplate: (t: Spreadsheet) => void }) => {
+  const [isActive, setIsActive] = useState(false)
+  const [sliderValue, setSliderValue] = useState(150)
+  const minSliderValue = 50;
+  const thisRef = React.createRef<React.ElementRef<typeof ColumnResize>>()
+  let bar
+
+  function updateWidth() {
+  }
+
+  function adjustSlider(e: any) {
+
+  }
+
+  // assuming each cell has a 'width' property 
+  // try not to use this
+  // function resizeColumn(dx: number, colNum: number) {
+  //   let temp = [...template]
+  //   template.map((row, i) => 
+  //     row.map((col, j) => { if (j === colNum) temp[i][j].width += dx }))
+  //   setTemplate(temp)
+  // }
+
+  useEffect(() => {
+    bar = d3.select(thisRef.current)
+    //   bar
+    //     .on("mouseover", function () {
+    //       d3.select(this)
+    //         .transition()
+    //         .duration(200)
+    //         .style("opacity", "1")
+    //     })
+    //     .on("mouseout", function () {
+    //       d3.select(this)
+    //         .transition()
+    //         .duration(200)
+    //         .style("opacity", "0")
+    //     })
+  })
+
+  return <Styled.ColumnResizeBar
+    ref={thisRef}
+  />
+}
+
 
 // control layer for cell selection/navigation
 export const CellControlLayer = (props) => {
@@ -128,7 +175,7 @@ export const CellControlLayer = (props) => {
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [props.selectedCellProps])
+  })
 
   return (
     <div>

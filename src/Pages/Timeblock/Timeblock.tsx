@@ -5,7 +5,7 @@ import Modal from '../../components/Modal'
 import * as Styled from './Timeblock.styled'
 
 import { ActiveCell } from './ActiveCell'
-import { CellControlLayer } from './CellControlLayer'
+import { CellControlLayer, ColumnResize } from './CellControlLayer'
 import { SpreadsheetContext, Cell, Spreadsheet, newColumn, newRow } from './utils'
 import { GoogleCalendarBlocks } from './GoogleCalendarBlocks/GoogleCalendarBlocks'
 
@@ -16,13 +16,13 @@ interface TemplateEntry {
 
 const defaultTemplate: Spreadsheet = Array.apply(null, Array(49)).map((_, index) => [
   {
-    id: `row${index+1}-col1`,
+    id: `row${index + 1}-col1`,
     width: Styled.cellWidth,
     height: index === 0 ? Styled.headerHeight : Styled.cellHeight,
     content: index === 0 ? 'Time' : `${index < 21 ? '0' : ''}${Math.floor((index - 1) / 2)}${index % 2 === 1 ? '00' : '30'}`
   },
   {
-    id: `row${index+1}-col2`,
+    id: `row${index + 1}-col2`,
     width: Styled.cellWidth,
     height: index === 0 ? Styled.headerHeight : Styled.cellHeight,
     content: index === 0 ? 'Plan' : ''
@@ -72,51 +72,6 @@ const ModifyColumn = ({ remove, template, setTemplate }: { remove?: boolean | un
   )
 }
 
-const ColumnResize = ({ template, setTemplate }: { template: Spreadsheet, setTemplate: (t: Spreadsheet) => void }) => {
-  const [isActive, setIsActive] = useState(false)
-  const [sliderValue, setSliderValue] = useState(150)
-  const minSliderValue = 50;
-  const thisRef = React.createRef<React.ElementRef<typeof ColumnResize>>()
-  let bar
-
-  function updateWidth() {
-  }
-
-  function adjustSlider(e: any) {
-
-  }
-
-  // assuming each cell has a 'width' property 
-  // try not to use this
-  // function resizeColumn(dx: number, colNum: number) {
-  //   let temp = [...template]
-  //   template.map((row, i) => 
-  //     row.map((col, j) => { if (j === colNum) temp[i][j].width += dx }))
-  //   setTemplate(temp)
-  // }
-
-  useEffect(() => {
-    bar = d3.select(thisRef.current)
-    //   bar
-    //     .on("mouseover", function () {
-    //       d3.select(this)
-    //         .transition()
-    //         .duration(200)
-    //         .style("opacity", "1")
-    //     })
-    //     .on("mouseout", function () {
-    //       d3.select(this)
-    //         .transition()
-    //         .duration(200)
-    //         .style("opacity", "0")
-    //     })
-  })
-
-  return <Styled.ColumnResizeBar
-    ref={thisRef}
-  />
-}
-
 const Sheet = () => {
   const [template, setTemplate] = useState(defaultTemplate)
   const [cellSelectionLayerActive, setCellSelectionLayerActive] = useState(false)
@@ -150,8 +105,9 @@ const Sheet = () => {
   };
 
   return (
-    <div>
+    <>
       <Styled.ControlContainer>
+        <ColumnResize template={template} setTemplate={setTemplate} />
         <Styled.FlexContainer>
           <SpreadsheetContext.Provider value={templateContext}>
             {cellSelectionLayerActive ?
@@ -216,8 +172,7 @@ const Sheet = () => {
         </Modal>
         : null}
       <br />
-      <ColumnResize template={template} setTemplate={setTemplate} />
-    </div>
+    </>
   )
 }
 
@@ -268,9 +223,9 @@ const FlexCell = (props: any) => {
     thisWidth = thisRef.current.offsetWidth
     thisHeight = thisRef.current.offsetHeight
     // set spawn size and position of ActiveCell
-    setCoords({x: thisX, y: thisY})
+    setCoords({ x: thisX, y: thisY })
     setSize({ width: thisWidth, height: thisHeight })
-    setPosition({ x: winX + thisX - scrollX, y: winY + thisY - scrollY})
+    setPosition({ x: winX + thisX - scrollX, y: winY + thisY - scrollY })
     setIsEditing(true)
     context.setCellSelectionLayerActive(false)
   }
