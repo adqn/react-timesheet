@@ -107,7 +107,7 @@ const Sheet = () => {
   return (
     <>
       <Styled.ControlContainer>
-        <ColumnResize template={template} setTemplate={setTemplate} />
+        {/* <ColumnResize template={template} setTemplate={setTemplate} /> */}
         <Styled.FlexContainer>
           <SpreadsheetContext.Provider value={templateContext}>
             {cellSelectionLayerActive ?
