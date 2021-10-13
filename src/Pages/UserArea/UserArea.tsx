@@ -208,11 +208,9 @@ interface Project {
 interface Task {
   id: string;
   projectId: string;
-  date: string;
-  start: number;
-  end: number;
-  duration: string;
-  description: string;
+  start: number | null;
+  end: number | null;
+  description: string | null;
 }
 
 type FIXME = any;
@@ -229,7 +227,7 @@ interface Callbacks {
   [name: string]: React.Dispatch<React.SetStateAction<boolean>> | (() => void);
 }
 
-// TODO: end current task and begin new one on successive fromMutable starts
+// TODO: strictly use defaultTask for unassigned tasks 
 const Stopwatch = ({ task, setTasks }: { task, setTasks: () => void }) => {
   // const [currentTask, setCurrentTask] = useState(task)
   const context = React.useContext(StopwatchContext)
@@ -242,10 +240,12 @@ const Stopwatch = ({ task, setTasks }: { task, setTasks: () => void }) => {
     start,
     reset,
   } = useServerStopwatch({setTasks})
-  const defaultTask = {
-    id: 0,
-    projectId: 0,
-    description: null
+  const defaultTask: Task = {
+    id: '0',
+    projectId: '0',
+    description: null,
+    start: null,
+    end: null
   }
 
   function handleStart() {
@@ -264,13 +264,15 @@ const Stopwatch = ({ task, setTasks }: { task, setTasks: () => void }) => {
     stop(context.currentTask)
     reset(undefined, false)
 
-    if (context.fromMutable) context.setFromMutable(false)
+    if (context.fromMutable) {
+      context.setFromMutable(false)
+    }
   }
 
   useEffect(() => {
     if (context.fromMutable) {
       handleStart()
-    } else context.setCurrentTask(defaultTask)
+    } else context.setCurrentTask({...defaultTask}) 
   }, [context.fromMutableToggle])
 
   return (
@@ -411,7 +413,7 @@ const projectsDropDown = (projects: Project[], setProject: (s:string) => void) =
 const SubmitStatus = ({ didSubmit }: { didSubmit: boolean }) =>
   didSubmit ? <div>Entry submitted!</div> : <div>Submitting...</div>
 
-const UserBar = ({ projects, setTasks }: {projects: Project[] | null, setTasks }) => {
+const UserBar = ({ projects, setTasks }: {projects: Project[] | null, setTasks: () => void }) => {
   const [timerRunning, setTimerRunning] = useState(false)
   const [name, setName] = useState("")
   const [client, setClient] = useState("")
