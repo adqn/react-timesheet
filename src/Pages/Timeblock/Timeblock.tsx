@@ -107,7 +107,7 @@ const Sheet = () => {
   return (
     <>
       <Styled.ControlContainer>
-        <ColumnResize template={template} setTemplate={setTemplate} />
+
         <Styled.FlexContainer>
           <SpreadsheetContext.Provider value={templateContext}>
             {cellSelectionLayerActive ?
@@ -121,18 +121,32 @@ const Sheet = () => {
                 onClick={null}
               />
               : null}
+                    <ColumnResize
+                      template={template}
+                      setTemplate={setTemplate}
+                      initalPosition={150}
+                    />
             {template.map((row, i) => (
               <Styled.Row key={i}>
                 {row.map((cell, j) => (
+                  <>
                   <FlexCell key={j}
                     omitLeftBorder={j === 0}
                     omitRightBorder={j === row.length - 1}
                     cellType={i === 0 ? "header" : undefined}
                     id={cell.id}
-                    initialWidth={cell.width}
-                    initialHeight={cell.height}
+                    width={cell.width}
+                    height={cell.height}
                     value={cell.content}
-                  />)
+                    />
+                    {/* {i === 0 ? <ColumnResize
+                      template={template}
+                      setTemplate={setTemplate}
+                      initalPosition={template[i][j].width}
+                    />
+                      : null} */}
+                  </>
+                  )
                 )}
               </Styled.Row>
             ))}
@@ -181,7 +195,7 @@ const FlexCell = (props: any) => {
   const value = props.value
   const [tempValue, setTempValue] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
-  const [size, setSize] = useState({ width: props.initialWidth, height: props.initialHeight })
+  const [size, setSize] = useState({ width: props.width, height: props.height })
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [coords, setCoords] = useState(position)
   const components = {
@@ -204,7 +218,7 @@ const FlexCell = (props: any) => {
 
   const resizeObserver = new ResizeObserver(entries => {
     for (let entry of entries) {
-      if (entry.target.offsetHeight != props.initialHeight) {
+      if (entry.target.offsetHeight != props.height) {
         // console.log(entry.target.offsetHeight)
         // const newSize = { ...size }
         // newSize.height = entry.target.offsetHeight
@@ -239,7 +253,7 @@ const FlexCell = (props: any) => {
     <CellType
       ref={thisRef}
       key={props.id}
-      width={props.initialWidth}
+      width={props.width}
       omitLeftBorder={props.omitLeftBorder}
       omitRightBorder={props.omitRightBorder}
       onClick={(e: any) => handleCellClick(e)}

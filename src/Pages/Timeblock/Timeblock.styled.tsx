@@ -1,6 +1,6 @@
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
-export const cellWidth: number = 155 
+export const cellWidth: number = 150 
 export const cellHeight: number = 36
 export const headerHeight: number = 32
 
@@ -47,11 +47,11 @@ export const Cell = styled.div<CellStyles>`
   line-height: 20px;
   font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 14px;
-  width: ${props => props.width};
-  min-width: 150px;
+  width: ${props => props.width + "px"};
+  // min-width: 150px;
   // max-width: 200px;
   min-height: 20px;
-  // min-width: 100px;
+  min-width: 100px;
   padding: 7px;
   // padding-left: 10px;
   // padding-right: 10px;
@@ -81,9 +81,9 @@ export const HeaderCell = styled.div<CellStyles>`
   color: grey;
   height: 32px;
   // width: 150px;
-  width: ${props => props.width};
+  width: ${props => props.width + "px"};
   // min-width: fit-content;
-  // min-width: 50px;
+  min-width: 100px;
   margin-left: -1px;
   border: solid 1px lightgrey;
   border-left: ${props => props.omitLeftBorder ? "none" : "1px solid lightgrey"};
@@ -105,7 +105,8 @@ export const SelectedCell = styled.div`
   top: ${props => props.top + "px"};
   left: ${props => props.left + "px"};
   height: ${props => props.height - 2 + "px"};
-  width: ${props => props.width - 2 + "px"};
+  width: ${props => props.width - 1 + "px"};
+  // width: ${props => props.width + "px"};
   border: solid 1px #0099ff;
   background: rgb(51, 204, 255, .25);
   // opacity: .3;
@@ -144,23 +145,66 @@ export const AddRemoveButton = styled.div`
     cursor: pointer;
   }
 `
+const trackH = "0.2em";
+const thumbD = "1.5em";
+
+const thumb = css`
+  box-sizing: border-box;
+  border: 1px;
+  width: ${thumbD};
+  height: ${thumbD};
+  background: #2EAADC;
+`;
+
+export const ColumnResizeContainer = styled.div`
+  position: absolute;
+  left: ${props => props.left + "px"}
+`
 
 export const ColumnResizeBar = styled.input`
   visibility: visible;
-  // display: inline-block;
-  // display: block;
-  position: absolute;
+  // border: 1px solid black;
   width: 5px;
-  height: 34px;
-  margin-top: -1px;
+  // height: 34px;
+  // margin-top: -1px;
   // margin-left: -12px;
-  border: none;
-  background: #27B7FF;
-  opacity: 1;
   z-index: 1;
-  &:hover {
-    cursor: col-resize;
+  &,
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
   }
+
+  &:focus {
+    outline: none;
+  }
+
+  margin: 0;
+  padding: 0;
+  height: ${thumbD};
+  background: transparent;
+  font: 1em/1 arial, sans-serif;
+
+
+  &::-webkit-slider-thumb {
+    ${thumb};
+  }
+
+  &::-moz-range-thumb {
+    ${thumb};
+  }
+
+  &::-ms-thumb {
+    margin-top: 0;
+    ${thumb};
+  }
+
+  &::-ms-tooltip {
+    display: none;
+  }
+
+  &::-moz-focus-outer {
+    border: 0;
+  } 
 `
 
 // export const cellSelectedOverlay = styled.div`

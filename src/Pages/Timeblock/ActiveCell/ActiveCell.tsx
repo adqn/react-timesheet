@@ -25,7 +25,7 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
     x: position.x + window.scrollX,
     y: position.y + window.scrollY,
     height: size.height,
-    width: 165, // FIXME
+    width: context.template[rowId - 1][colId - 1].width //+ 15 // account for padding
   }
   let thisHeight
 

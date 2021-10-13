@@ -5,10 +5,10 @@ import { ActiveCell } from '../ActiveCell'
 import * as Styled from '../Timeblock.styled'
 import * as d3 from 'd3'
 
-export const ColumnResize = ({ template, setTemplate }: { template: Spreadsheet, setTemplate: (t: Spreadsheet) => void }) => {
+export const ColumnResize = ({ template, setTemplate, initialPosition }: { template: Spreadsheet, setTemplate: (t: Spreadsheet) => void, initalPosition }) => {
   const [isActive, setIsActive] = useState(false)
-  const [sliderValue, setSliderValue] = useState(150)
-  const minSliderValue = 50;
+  const [value, setValue] = useState(50)
+  const minSliderValue = 150;
   const thisRef = React.createRef<React.ElementRef<typeof ColumnResize>>()
   let bar
 
@@ -20,13 +20,12 @@ export const ColumnResize = ({ template, setTemplate }: { template: Spreadsheet,
   }
 
   // assuming each cell has a 'width' property 
-  // try not to use this
-  // function resizeColumn(dx: number, colNum: number) {
-  //   let temp = [...template]
-  //   template.map((row, i) => 
-  //     row.map((col, j) => { if (j === colNum) temp[i][j].width += dx }))
-  //   setTemplate(temp)
-  // }
+  function resize(newWidth: number, colIdx: number = 0) {
+    let temp = [...template]
+    template.map((row, i) => 
+      row.map((_, j) => { if (j === colIdx) temp[i][j].width = newWidth }))
+    setTemplate(temp)
+  }
 
   useEffect(() => {
     bar = d3.select(thisRef.current)
@@ -43,11 +42,27 @@ export const ColumnResize = ({ template, setTemplate }: { template: Spreadsheet,
     //         .duration(200)
     //         .style("opacity", "0")
     //     })
-  })
+    console.log(value)
+    resize(parseInt(value) + 100) // fix this
+  }, [value])
 
-  return <Styled.ColumnResizeBar
-    ref={thisRef}
-  />
+  return (
+    <Styled.ColumnResizeContainer
+      left={69}
+    >
+      <Styled.ColumnResizeBar
+        ref={thisRef}
+        onInput={e => setValue(e.target.value)}
+        type="range"
+        style={{
+          width: "200px",
+          min: "50",
+          max: "200",
+          val: value
+        }}
+      />
+    </Styled.ColumnResizeContainer>
+  )
 }
 
 
@@ -77,20 +92,20 @@ export const CellControlLayer = (props) => {
       e.preventDefault()
       if (colId > 1) {
         newCellId = `row${rowId}-col${colId - 1}`
-        newCellProps.x -= newCellProps.width - 1
-      } 
+        newCellProps.x -= props.template[rowId - 1][colId - 2].width
+      }
     }
 
     else if (e.key === "ArrowRight") {
       e.preventDefault()
       if (colId < props.template[0].length) {
         newCellId = `row${rowId}-col${colId + 1}`
-        newCellProps.x += newCellProps.width - 1
+        newCellProps.x += props.template[rowId - 1][colId - 1].width
       } else {
         // may need to be setting cell position in template for cursor wraparound 
         // newCellId = `row${rowId + 1}-col${1}`
         // newCellProps.x += newCellProps.width - 1
-      } 
+      }
     }
 
     else if (e.key === "ArrowUp") {
@@ -122,7 +137,7 @@ export const CellControlLayer = (props) => {
         context.setTemplate(newTemplate)
         newCellId = `row${rowId}-col${colId + 1}`
         newCellProps.x += newCellProps.width - 1
-      } 
+      }
     }
 
     else if (e.ctrlKey) {
@@ -171,7 +186,7 @@ export const CellControlLayer = (props) => {
     props.setSelectedCellProps(newCellProps)
     console.log(newCellId, newCellProps)
   }
-  
+
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress);
@@ -193,7 +208,7 @@ export const CellControlLayer = (props) => {
           <div>
             <Styled.SelectedCell
               ref={selectedCellRef}
-              width={props.selectedCellProps.width}
+              width={props.selectedCellProps.width + 15} // account for padding
               height={props.selectedCellProps.height}
               top={props.selectedCellProps.y}
               left={props.selectedCellProps.x}
