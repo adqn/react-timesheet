@@ -1,4 +1,4 @@
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 export const cellWidth: number = 155 
 export const cellHeight: number = 36
@@ -145,12 +145,16 @@ export const AddRemoveButton = styled.div`
   }
 `
 
-export const ColumnResizeBar = styled.input`
-  visibility: visible;
-  // display: inline-block;
-  // display: block;
+export const ColumnResizeContainer = styled.div`
   position: absolute;
-  width: 5px;
+  margin-top: 6px;
+  left: ${props => props.left + "px"}
+`
+
+export const ColumnResizeBar = css`
+  -webkit-appearance: none;
+  visibility: visible;
+  width: 7px;
   height: 34px;
   margin-top: -1px;
   // margin-left: -12px;
@@ -161,6 +165,32 @@ export const ColumnResizeBar = styled.input`
   &:hover {
     cursor: col-resize;
   }
+`
+
+export const ColumnResizeSlider = styled.input`
+&,
+&::-webkit-slider-thumb {
+  -webkit-appearance: none;
+}
+&::-webkit-slider-thumb {
+  ${ColumnResizeBar};
+}
+
+&::-moz-range-thumb {
+  ${ColumnResizeBar};
+}
+
+&::-ms-thumb {
+  ${ColumnResizeBar};
+}
+
+&::-ms-tooltip {
+  display: none;
+}
+
+&::-moz-focus-outer {
+  border: 0;
+}
 `
 
 // export const cellSelectedOverlay = styled.div`

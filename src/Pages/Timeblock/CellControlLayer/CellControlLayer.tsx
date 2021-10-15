@@ -4,52 +4,73 @@ import { SpreadsheetContext, Spreadsheet, newRow, newColumn } from '../utils'
 import { ActiveCell } from '../ActiveCell'
 import * as Styled from '../Timeblock.styled'
 import * as d3 from 'd3'
+import { nodeModuleNameResolver } from 'typescript'
 
-export const ColumnResize = ({ template, setTemplate }: { template: Spreadsheet, setTemplate: (t: Spreadsheet) => void }) => {
-  const [isActive, setIsActive] = useState(false)
-  const [sliderValue, setSliderValue] = useState(150)
-  const minSliderValue = 50;
-  const thisRef = React.createRef<React.ElementRef<typeof ColumnResize>>()
-  let bar
+//             <>
+//               {i < template.length - 1 ? 
+//                 <ColumnResize
+//                   parentRef={columnRefs[i]}
+//                   initalPosition={150}
+//                 /> : null
+//               }
+//             <Styled.Column
+//               ref={columnRefs[i]}
+//               key={i}
+//               width={template[i][0].width}
+//             ></Styled.Column>
 
-  function updateWidth() {
+export const ColumnResize = ({ parentRef }: { parentRef }) => {
+const [isActive, setIsActive] = useState(false)
+const [value, setValue] = useState(50)
+const minSliderValue = 150;
+let bar
+const thisRef = React.createRef<React.ElementRef<typeof ColumnResize>>()
+
+function resize(newWidth: number) {
+  if (parentRef && parentRef.current) {
+    parentRef.current.style.width = newWidth + "px"
+    console.log("What")
   }
-
-  function adjustSlider(e: any) {
-
-  }
-
-  // assuming each cell has a 'width' property 
-  // try not to use this
-  // function resizeColumn(dx: number, colNum: number) {
-  //   let temp = [...template]
-  //   template.map((row, i) => 
-  //     row.map((col, j) => { if (j === colNum) temp[i][j].width += dx }))
-  //   setTemplate(temp)
-  // }
-
-  useEffect(() => {
-    bar = d3.select(thisRef.current)
-    //   bar
-    //     .on("mouseover", function () {
-    //       d3.select(this)
-    //         .transition()
-    //         .duration(200)
-    //         .style("opacity", "1")
-    //     })
-    //     .on("mouseout", function () {
-    //       d3.select(this)
-    //         .transition()
-    //         .duration(200)
-    //         .style("opacity", "0")
-    //     })
-  })
-
-  return <Styled.ColumnResizeBar
-    ref={thisRef}
-  />
 }
 
+useEffect(() => {
+  bar = d3.select(thisRef.current)
+  //   bar
+  //     .on("mouseover", function () {
+  //       d3.select(this)
+  //         .transition()
+  //         .duration(200)
+  //         .style("opacity", "1")
+  //     })
+  //     .on("mouseout", function () {
+  //       d3.select(this)
+  //         .transition()
+  //         .duration(200)
+  //         .style("opacity", "0")
+  //     })
+  // console.log(value)
+  resize(parseInt(value) + 100) // fix this
+}, [value])
+
+return (
+  <Styled.ColumnResizeContainer
+    // left={69}
+  >
+    <Styled.ColumnResizeSlider
+      ref={thisRef}
+      onInput={e => setValue(e.target.value)}
+      type="range"
+      style={{
+        width: "200px",
+        background: "none",
+        min: "50",
+        max: "200",
+        val: value
+      }}
+    />
+  </Styled.ColumnResizeContainer>
+)
+}
 
 // control layer for cell selection/navigation
 export const CellControlLayer = (props) => {

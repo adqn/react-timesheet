@@ -81,6 +81,10 @@ const Sheet = () => {
   const [isEditing, setIsEditing] = useState(false)
   const [tempValue, setTempValue] = useState(null)
   const [modalActive, setModalActive] = useState(false)
+  const columnRefs = Array.apply(null, Array(template[0].length - 1)).map(_ => 
+    React.createRef()
+  )
+
   const templateContext = {
     template,
     setTemplate,
@@ -104,10 +108,11 @@ const Sheet = () => {
     console.log("Copied to clipboard");
   };
 
+  useEffect(() => console.log(columnRefs[0]), [])
+
   return (
     <>
       <Styled.ControlContainer>
-        {/* <ColumnResize template={template} setTemplate={setTemplate} /> */}
         <Styled.FlexContainer>
           <SpreadsheetContext.Provider value={templateContext}>
             {cellSelectionLayerActive ?
@@ -123,8 +128,11 @@ const Sheet = () => {
               : null}
             {template.map((row, i) => (
               <Styled.Row key={i}>
+                {i === 0 ? <ColumnResize parentRef={columnRefs[i]} /> : null}
                 {row.map((cell, j) => (
-                  <FlexCell key={j}
+                  <FlexCell
+                    ref={i === 0 ? columnRefs[i] : undefined}
+                    key={j}
                     omitLeftBorder={j === 0}
                     omitRightBorder={j === row.length - 1}
                     cellType={i === 0 ? "header" : undefined}
@@ -132,7 +140,8 @@ const Sheet = () => {
                     initialWidth={cell.width}
                     initialHeight={cell.height}
                     value={cell.content}
-                  />)
+                  />
+                  )
                 )}
               </Styled.Row>
             ))}
