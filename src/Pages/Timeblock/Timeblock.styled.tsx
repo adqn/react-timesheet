@@ -1,4 +1,5 @@
 import styled, { css } from 'styled-components'
+import 'antd/dist/antd.css'
 
 export const cellWidth: number = 155 
 export const cellHeight: number = 36
@@ -49,7 +50,7 @@ export const Cell = styled.div<CellStyles>`
   font-size: 14px;
   width: ${props => props.width};
   min-width: 150px;
-  // max-width: 200px;
+  max-width: 150px;
   min-height: 20px;
   // min-width: 100px;
   padding: 7px;
@@ -105,7 +106,7 @@ export const SelectedCell = styled.div`
   top: ${props => props.top + "px"};
   left: ${props => props.left + "px"};
   height: ${props => props.height - 2 + "px"};
-  width: ${props => props.width - 2 + "px"};
+  width: ${props => props.width - 1 + "px"};
   border: solid 1px #0099ff;
   background: rgb(51, 204, 255, .25);
   // opacity: .3;

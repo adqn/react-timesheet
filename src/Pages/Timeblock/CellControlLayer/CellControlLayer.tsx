@@ -98,7 +98,7 @@ export const CellControlLayer = (props) => {
       e.preventDefault()
       if (colId > 1) {
         newCellId = `row${rowId}-col${colId - 1}`
-        newCellProps.x -= newCellProps.width - 1
+        newCellProps.x -= newCellProps.width - 0
       } 
     }
 
@@ -106,7 +106,7 @@ export const CellControlLayer = (props) => {
       e.preventDefault()
       if (colId < props.template[0].length) {
         newCellId = `row${rowId}-col${colId + 1}`
-        newCellProps.x += newCellProps.width - 1
+        newCellProps.x += newCellProps.width - 0
       } else {
         // may need to be setting cell position in template for cursor wraparound 
         // newCellId = `row${rowId + 1}-col${1}`
@@ -137,12 +137,12 @@ export const CellControlLayer = (props) => {
       e.preventDefault()
       if (colId < props.template[0].length) {
         newCellId = `row${rowId}-col${colId + 1}`
-        newCellProps.x += newCellProps.width - 1
+        newCellProps.x += newCellProps.width - 0
       } else {
         const newTemplate = newColumn(props.template)
         context.setTemplate(newTemplate)
         newCellId = `row${rowId}-col${colId + 1}`
-        newCellProps.x += newCellProps.width - 1
+        newCellProps.x += newCellProps.width - 0
       } 
     }
 

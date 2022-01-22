@@ -104,8 +104,8 @@ export const ActiveCell = ({ parentKey, size, position, coords, visibility, orig
       <Styled.EditCell
         ref={editCellRef}
         visibility={visibility}
-        left={position.x + 3 + "px"}
-        top={position.y + 3 + "px"}
+        left={position.x + 0 + "px"}
+        top={position.y + 0 + "px"}
         width={size.width + "px"}
         minheight={size.height + "px"}
         height={size.height + "px"}

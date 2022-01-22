@@ -1,5 +1,6 @@
 import * as d3 from 'd3'
 import React, { useEffect, useState } from 'react'
+import { Table, Badge, Menu, Dropdown, Space } from 'antd';
 
 import Modal from '../../components/Modal'
 import * as Styled from './Timeblock.styled'
@@ -128,7 +129,7 @@ const Sheet = () => {
               : null}
             {template.map((row, i) => (
               <Styled.Row key={i}>
-                {i === 0 ? <ColumnResize parentRef={columnRefs[i]} /> : null}
+                {/* {i === 0 ? <ColumnResize parentRef={columnRefs[i]} /> : null} */}
                 {row.map((cell, j) => (
                   <FlexCell
                     ref={i === 0 ? columnRefs[i] : undefined}
@@ -352,10 +353,27 @@ const LoadTemplateBox = ({ setTemplate, setModalActive }: { setTemplate: (t: Spr
   )
 }
 
+const columns = [
+  { title: 'Time', dataIndex: 'time', key: 'date' },
+  { title: 'Activity', dataIndex: 'plan', key: 'plan' }
+]
+
+let data = [
+  {
+    key: 0,
+    time: '0100',
+    plan: 'this timesheet'
+  }
+]
+
 export function Timeblock() {
   return (
     <div>
       <Sheet />
+      <Table
+        columns={columns}
+        dataSource={data}
+      />
     </div>
   )
 }
