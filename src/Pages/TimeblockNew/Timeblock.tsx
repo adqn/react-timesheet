@@ -60,10 +60,10 @@ const Cell = (props: {value: string}) => {
     }
 }
 
-const ModifyColumn = ({ remove, addColumn }: { remove?: boolean | undefined, addColumn: () => void }) => {
+const ModifyTable = ({ remove, action }: { remove?: boolean | undefined, action: () => void }) => {
     return (
         <Styled.AddRemoveButton
-        onClick={() => addColumn()}
+        onClick={() => action()}
         >
         {remove ? "-" : "+"}
         </Styled.AddRemoveButton>
@@ -110,13 +110,23 @@ const Table = (props: {}) => {
         ])
     }
 
+    const addRow = () => {
+        const key = data[0].length
+        const newRow = {}
+        Object.keys(data[0]).slice(1).map(key => newRow[key] = '')
+        newRow['key'] = key
+        console.log([...data])
+        setData([...data, newRow])
+    }
+
     return (
         <div>
             <Styled.NewTable
                 columns={columns}
                 dataSource={data}
             />
-            <ModifyColumn addColumn={addColumn} />
+            <ModifyTable action={addColumn} />
+            <ModifyTable action={addRow} />
         </div>
     )
 }
