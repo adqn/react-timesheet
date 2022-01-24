@@ -60,13 +60,18 @@ const Cell = (props: {value: string}) => {
     }
 }
 
-const ModifyTable = ({ remove, action }: { remove?: boolean | undefined, action: () => void }) => {
+const ModifyTable = ({ remove, type, action }: { remove?: boolean | undefined, type: string, action: () => void }) => {
     return (
-        <Styled.AddRemoveButton
-        onClick={() => action()}
-        >
-        {remove ? "-" : "+"}
-        </Styled.AddRemoveButton>
+        <>
+            <Styled.AddRemoveButton
+                onClick={() => action()}
+            >
+                {remove ? "-" : "+"}
+            </Styled.AddRemoveButton>
+            <span style={{ paddingLeft: "10px" }}>
+                New {type === "row" ? "row" : "column"}
+            </span>
+        </>
     )
 }
 
@@ -111,11 +116,10 @@ const Table = (props: {}) => {
     }
 
     const addRow = () => {
-        const key = data[0].length
+        const key = Object.keys(data[0]).length - 1
         const newRow = {}
-        Object.keys(data[0]).slice(1).map(key => newRow[key] = '')
         newRow['key'] = key
-        console.log([...data])
+        Object.keys(data[0]).slice(1).map(key => newRow[key] = "")
         setData([...data, newRow])
     }
 
@@ -125,8 +129,9 @@ const Table = (props: {}) => {
                 columns={columns}
                 dataSource={data}
             />
-            <ModifyTable action={addColumn} />
-            <ModifyTable action={addRow} />
+            <ModifyTable type={"column"} action={addColumn} />
+            <br />
+            <ModifyTable type={"row"} action={addRow} />
         </div>
     )
 }
