@@ -60,7 +60,7 @@ const Cell = (props: {value: string}) => {
     }
 }
 
-const ModifyTable = ({ remove, type, action }: { remove?: boolean | undefined, type: string, action: () => void }) => {
+const ModifyTable = ({ remove, type, action }: { remove?: true | undefined, type: string, action: () => void }) => {
     return (
         <>
             <Styled.AddRemoveButton
@@ -69,7 +69,7 @@ const ModifyTable = ({ remove, type, action }: { remove?: boolean | undefined, t
                 {remove ? "-" : "+"}
             </Styled.AddRemoveButton>
             <span style={{ paddingLeft: "10px" }}>
-                New {type === "row" ? "row" : "column"}
+                {remove ? "Remove" : "New"} {type === "row" ? "row" : "column"}
             </span>
         </>
     )
@@ -125,13 +125,32 @@ const Table = (props: {}) => {
 
     return (
         <div>
+            <ModifyTable
+                type={"column"}
+                action={addColumn}
+            />
+            <ModifyTable
+                type={"row"}
+                action={addRow}
+            />
+            <br />
+            <ModifyTable
+                type={"column"}
+                action={() => {
+                    setColumns(columns.slice(0, columns.length - 1))
+                    setData(data.slice(0, data.length - 1))
+                }}
+                remove
+            />
+            <ModifyTable
+                type={"row"}
+                action={() => setData(data.slice(0, data.length - 1))}
+                remove
+            />
             <Styled.NewTable
                 columns={columns}
                 dataSource={data}
             />
-            <ModifyTable type={"column"} action={addColumn} />
-            <br />
-            <ModifyTable type={"row"} action={addRow} />
         </div>
     )
 }
