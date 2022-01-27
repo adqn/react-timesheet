@@ -1,3 +1,4 @@
+import Column from 'antd/lib/table/Column';
 import { useState } from 'react';
 
 import * as Styled from './Timeblock.styled'
@@ -137,14 +138,14 @@ const Table = (props: {}) => {
             <ModifyTable
                 type={"column"}
                 action={() => {
-                    setColumns(columns.slice(0, columns.length - 1))
+                    // setColumns(columns.map((column, index) => ))
                     setData(data.slice(0, data.length - 1))
                 }}
                 remove
             />
             <ModifyTable
                 type={"row"}
-                action={() => setData(data.slice(0, data.length - 1))}
+                action={() => { if (data.length > 1) setData(data.slice(0, data.length - 1)) }}
                 remove
             />
             <Styled.NewTable
