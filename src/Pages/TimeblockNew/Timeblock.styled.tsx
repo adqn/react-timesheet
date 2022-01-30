@@ -2,10 +2,12 @@ import styled from 'styled-components'
 import { Table, Input } from 'antd'
 import 'antd/dist/antd.css'
 
-export const Cell = styled.div<{}>`
+export const Cell = styled.div<{selected?: boolean}>`
   padding: 16px;
   height: 100%;
   width: 100%;
+  background: ${props => props.selected ? 'rgb(51, 204, 255, .25)' : 'white'};
+  border: ${props => props.selected ? 'solid 1px #0099ff' : 'none'};
   &:hover {
     cursor: default;
   }
