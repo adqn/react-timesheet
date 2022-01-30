@@ -14,6 +14,8 @@ export const Cell = styled.div<{}>`
 export const EditCell = styled(Input)<{}>`
   width: 100%;
   height: 100%;
+  word-wrap: break-word;
+  word-break: break-all;
   &:hover {
     // cursor: default;
   }
@@ -23,7 +25,7 @@ export const NewTable = styled(Table)`
   .ant-table-cell {
     padding: 0;
     width: 20%;
-    height: 60px;
+    min-height: 60px;
   }
 `
 
