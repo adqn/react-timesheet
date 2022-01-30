@@ -1,6 +1,15 @@
+import { ColumnType } from "antd/lib/table"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
+import {
+  editableKey,
+  Row,
+  TimeblockColumnType,
+  TimeblockTableProps,
+} from "./types"
+
 import * as Styled from "./Timeblock.styled"
+import { usePrevious } from "./utils"
 
 enum CellState {
   DEFAULT = "DEFAULT",
@@ -52,10 +61,8 @@ interface Selection {
 
 type SetSelection = (selected: boolean) => void
 
-const Cell = (props: { value: string; setValue: (value: string) => void, selection?: boolean, setSelection?: SetSelection}) => {
-  const [oldvalue, setValue] = useState(props.value)
+const Cell = (props: { value: string, setValue: (value: string) => void }) => {
   const [cellState, setCellState] = useState(CellState.DEFAULT)
-
   const value = useMemo(() => props.value, [props])
 
   if (cellState === CellState.ACTIVE) {
@@ -64,30 +71,24 @@ const Cell = (props: { value: string; setValue: (value: string) => void, selecti
       <ActiveCell
         value={value}
         setValue={(value: string) => {
-          setValue(value)
           props.setValue(value)
-          setCellState(CellState.SELECTED)
-          if (!!props.setSelection) {
-            props.setSelection(true)
-          }
+          setCellState(CellState.DEFAULT)
         }}
         setDefault={() => setCellState(CellState.DEFAULT)}
       />
     )
   } else {
     return (
-      <Styled.Cell 
+      <Styled.Cell
         selected={cellState === CellState.SELECTED}
         onClick={() => {
           setCellState(CellState.ACTIVE)
-          if (!!props.setSelection) {
-            props.setSelection(false)
-          }
         }}
       >
         {value}
       </Styled.Cell>
-    )  }
+    )
+  }
 }
 
 const ModifyTable = ({
@@ -111,75 +112,60 @@ const ModifyTable = ({
   )
 }
 
-interface Row {
-  key: string
-  selected: string
-  time: string
-  plan: string
-  [revision: string]: string
-}
-
 const Table = (props: {}) => {
-  const setDataAt = (rowIndex: number, dataIndex: string, value: string) => {
-    const newData = [...data]
-    newData[rowIndex][dataIndex] = value
-    setData(newData.map((row) => {
-      row[dataIndex] = value;
-      return row;
-    }))
-  }
-
-  const [selection, setSelection] = useState<Selection | undefined>()
-  const isSelected = useCallback((rowIndex, colIndex) => {
-    return selection?.row === rowIndex && selection?.column === colIndex
-  }, [selection])
-
-  const [columns, setColumns] = useState([
-    {
-      title: <Cell setValue={() => null} value={"Time"} />,
-      dataIndex: "time",
-      key: "date",
-      render: (time: string, _: any, index: number) => (
-        <Cell
-          setValue={(value: string) => setDataAt(index, "time", value)}
-          value={time}
-          selection={isSelected(index, 0)}
-          setSelection={(selected) => selected ? setSelection({row: index, column: 0}) : setSelection(undefined)}
-        />
-      ),
-    },
-    {
-      title: <Cell setValue={() => null} value={"Activity"} />,
-      dataIndex: "plan",
-      key: "plan",
-      render: (plan: string, _, index: number) => (
-        <Cell
-          setValue={(value: string) => setDataAt(index, "plan", value)}
-          value={plan}
-          selection={isSelected(index, 1)}
-          setSelection={(selected) => selected ? setSelection({row: index, column: 1}) : setSelection(undefined)}
-        />
-      ),
-    },
-  ])
-
   const [data, setData] = useState<Array<Row>>([
     {
-      key: "0",
+      key: 0,
       time: "0100",
       plan: "this timesheet",
-      selected: "",
     },
     {
-      key: "1",
+      key: 1,
       time: "0200",
       plan: "that timesheet",
-      selected: "",
     },
+  ])
+  const prevData = usePrevious(data)
+  const [selected, setSelected] = useState<Array<[number, editableKey]>>([])
+  const prevSelected = usePrevious(selected)
+
+  const setDataAt = (
+    rowIndex: number,
+    dataIndex: TimeblockColumnType["dataIndex"],
+    value: string
+  ) => {
+    const newData = [...data]
+    const row = newData[rowIndex]
+    row[dataIndex] = value
+    setSelected([[rowIndex, dataIndex]])
+    setData(newData)
+  }
+
+  const createTimeblockColumn: (dataIndex: editableKey, title: string) => TimeblockColumnType = (dataIndex, title) => {
+    return {
+      title: <Cell setValue={() => null} value={title} />,
+      dataIndex,
+      key: dataIndex,
+      render: (value: string, row, index: number) => (
+        <Cell
+          key={row.key}
+          setValue={(value: string) => setDataAt(index, dataIndex, value)}
+          value={value}
+        />
+      ),
+      shouldCellUpdate: (row) => {
+        return !prevData || prevData[row.key][dataIndex] !== data[row.key][dataIndex]
+      },
+    }
+  }
+
+  const [columns, setColumns] = useState<TimeblockColumnType[]>([
+    createTimeblockColumn("time", "Time"),
+    createTimeblockColumn("plan", "Activity"),
   ])
 
   const addColumn = () => {
-    const dataIndex = `revision${columns.length - 1}`
+    const dataIndex = columns.length - 1
     setData(
       data.map((row) => ({
         ...row,
@@ -188,35 +174,18 @@ const Table = (props: {}) => {
     )
     setColumns([
       ...columns,
-      {
-        title: (
-          <Cell
-            setValue={() => null}
-            value={`Revision ${columns.length - 1}`}
-          />
-        ),
-        dataIndex,
-        key: dataIndex,
-        render: (value: string, _, index) => (
-          <Cell
-            setValue={(value: string) => setDataAt(index, dataIndex, value)}
-            value={value}
-            selection={isSelected(index, columns.length - 1)}
-            setSelection={(selected) => selected ? setSelection({row: index, column: columns.length - 1}) : setSelection(undefined)}
-            />
-        ),
-      },
+      createTimeblockColumn(dataIndex, `Revision ${dataIndex}`),
     ])
   }
 
   const addRow = () => {
-    const key = "" + (Object.keys(data[0]).length - 1)
+    const key = data.length
     const newRow = columns.reduce(
       (acc: Row, curr) => {
-        acc[curr.dataIndex] = curr.dataIndex
+        acc[curr.dataIndex] = "" + curr.dataIndex
         return acc
       },
-      { key, time: "", plan: "", selected: "" }
+      { key, time: "", plan: "" }
     )
     setData([...data, newRow])
   }
@@ -231,7 +200,7 @@ const Table = (props: {}) => {
         action={() => {
           if (columns.length > 2 && data.length > 1) {
             // This is before we remove column so it needs to be a minus 2
-            const removeIndex = `revision${columns.length - 2}`
+            const removeIndex = columns.length - 2
             setColumns(columns.slice(0, columns.length - 1))
             setData(
               data.map((row) => {
@@ -250,7 +219,7 @@ const Table = (props: {}) => {
         }}
         remove
       />
-      <Styled.NewTable columns={columns} dataSource={data} />
+      <Styled.NewTable columns={columns} dataSource={data} rowKey={"key"} />
     </div>
   )
 }
