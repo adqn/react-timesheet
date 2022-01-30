@@ -125,7 +125,6 @@ const Table = (props: {}) => {
       plan: "that timesheet",
     },
   ])
-  const prevData = usePrevious(data)
   const [selected, setSelected] = useState<Array<[number, editableKey]>>([])
   const prevSelected = usePrevious(selected)
 
@@ -134,7 +133,7 @@ const Table = (props: {}) => {
     dataIndex: TimeblockColumnType["dataIndex"],
     value: string
   ) => {
-    const newData = [...data]
+    const newData = [...data.map((row) => ({...row}))]
     const row = newData[rowIndex]
     row[dataIndex] = value
     setSelected([[rowIndex, dataIndex]])
@@ -153,9 +152,6 @@ const Table = (props: {}) => {
           value={value}
         />
       ),
-      shouldCellUpdate: (row) => {
-        return !prevData || prevData[row.key][dataIndex] !== data[row.key][dataIndex]
-      },
     }
   }
 
