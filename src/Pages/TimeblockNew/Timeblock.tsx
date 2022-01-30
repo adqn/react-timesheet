@@ -1,10 +1,6 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import {
-  editableKey,
-  Row,
-  TimeblockColumnType,
-} from "./types";
+import { editableKey, Row, TimeblockColumnType } from "./types";
 
 import * as Styled from "./Timeblock.styled";
 
@@ -17,9 +13,10 @@ const ActiveCell = (props: {
   value: string;
   setDefault: () => void;
   setValue: (value: string) => void;
+  onKeyDown?: (ev: React.KeyboardEvent<unknown>) => void;
 }) => {
   const [value, setValue] = useState(props.value);
-  const keyListener = (ev: React.KeyboardEvent<HTMLInputElement>) => {
+  const keyListener = (ev: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (ev.key === "Enter") {
       props.setDefault();
       props.setValue(value);
@@ -28,6 +25,10 @@ const ActiveCell = (props: {
       props.setValue(value);
     } else if (ev.key === "Escape") {
       props.setDefault();
+    }
+
+    if (props.onKeyDown) {
+      props.onKeyDown(ev);
     }
   };
 
@@ -50,8 +51,12 @@ const ActiveCell = (props: {
   );
 };
 
-
-const Cell = (props: { value: string; setValue: (value: string) => void; selected?: boolean}) => {
+const Cell = (props: {
+  value: string;
+  setValue: (value: string) => void;
+  selected?: boolean;
+  onKeyDown?: (ev: React.KeyboardEvent<unknown>) => void;
+}) => {
   const [cellState, setCellState] = useState(CellState.DEFAULT);
   const value = useMemo(() => props.value, [props]);
 
@@ -65,6 +70,7 @@ const Cell = (props: { value: string; setValue: (value: string) => void; selecte
           setCellState(CellState.DEFAULT);
         }}
         setDefault={() => setCellState(CellState.DEFAULT)}
+        onKeyDown={(ev) => props.onKeyDown && props.onKeyDown(ev)}
       />
     );
   } else {
@@ -75,6 +81,8 @@ const Cell = (props: { value: string; setValue: (value: string) => void; selecte
           setCellState(CellState.ACTIVE);
           props.setValue(value);
         }}
+        tabIndex={1}
+        onKeyUp={(ev) => props.onKeyDown && props.onKeyDown(ev)}
       >
         {value}
       </Styled.Cell>
@@ -118,6 +126,33 @@ const Table = (props: {}) => {
       selected: [],
     },
   ]);
+  const [lastSelected, setLastSelected] = useState<[number, editableKey]>()
+
+  const setSelected = (row: Row, colIndex: editableKey) => {
+    row.selected.push(colIndex);
+    setLastSelected([row.key, colIndex]);
+  }
+
+  const keyListener = useCallback((ev: KeyboardEvent) => {
+    if (!lastSelected || !["Enter"].includes(ev.key)) {
+      return;
+    }
+    const newData: Row[] = [...data.map((row) => ({ ...row, selected: [] }))];
+    if (ev.key === "Enter") {
+      const row = newData[Math.min(lastSelected[0] + 1, newData.length - 1)];
+      row.selected.push(lastSelected[1]);
+    }
+    setData(newData);
+  }, [data]);
+
+
+  useEffect(() => {
+    window.addEventListener('keydown', keyListener);
+
+    return () => {
+      window.removeEventListener('keydown', keyListener);
+    };
+  }, [keyListener])
 
   const setDataAt = (
     rowIndex: number,
@@ -127,7 +162,7 @@ const Table = (props: {}) => {
     const newData: Row[] = [...data.map((row) => ({ ...row, selected: [] }))];
     const row = newData[rowIndex];
     row[dataIndex] = value;
-    row.selected.push(dataIndex);
+    setSelected(row, dataIndex)
     setData(newData);
   };
 
@@ -145,6 +180,7 @@ const Table = (props: {}) => {
           setValue={(value: string) => setDataAt(index, dataIndex, value)}
           value={value}
           selected={row.selected.includes(dataIndex)}
+          onKeyDown={(ev) => console.log(ev)}
         />
       ),
       shouldCellUpdate: (row, prevRow) => {

@@ -17,7 +17,7 @@ export const Cell = styled.div<{ selected?: boolean }>`
   }
 `;
 
-export const EditCell = styled(Input)<{}>`
+export const EditCell = styled(Input.TextArea)<{}>`
   width: 100%;
   height: 100%;
   word-wrap: break-word;
