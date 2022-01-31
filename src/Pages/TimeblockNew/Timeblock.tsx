@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { editableKey, Row, TimeblockColumnType } from "./types";
 
 import * as Styled from "./Timeblock.styled";
+import { usePrevious } from "./utils";
 
 enum CellState {
   DEFAULT = "DEFAULT",
@@ -11,20 +12,15 @@ enum CellState {
 
 const ActiveCell = (props: {
   value: string;
-  setDefault: () => void;
   setValue: (value: string) => void;
   onKeyDown?: (ev: React.KeyboardEvent<unknown>) => void;
 }) => {
   const [value, setValue] = useState(props.value);
   const keyListener = (ev: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (ev.key === "Enter") {
-      props.setDefault();
       props.setValue(value);
     } else if (ev.key === "Tab") {
-      props.setDefault();
       props.setValue(value);
-    } else if (ev.key === "Escape") {
-      props.setDefault();
     }
 
     if (props.onKeyDown) {
@@ -44,9 +40,8 @@ const ActiveCell = (props: {
       }}
       onBlur={() => {
         props.setValue(value);
-        props.setDefault();
       }}
-      onChange={(ev) => setValue(ev.target.value)}
+      onChange={(ev) => setValue(ev.target.value.trimStart())}
     />
   );
 };
@@ -55,22 +50,18 @@ const Cell = (props: {
   value: string;
   setValue: (value: string) => void;
   selected?: boolean;
-  onKeyDown?: (ev: React.KeyboardEvent<unknown>) => void;
+  editing?: boolean;
 }) => {
-  const [cellState, setCellState] = useState(CellState.DEFAULT);
   const value = useMemo(() => props.value, [props]);
 
-  if (cellState === CellState.ACTIVE) {
+  if (props.editing) {
     // TODO
     return (
       <ActiveCell
         value={value}
         setValue={(value: string) => {
           props.setValue(value);
-          setCellState(CellState.DEFAULT);
         }}
-        setDefault={() => setCellState(CellState.DEFAULT)}
-        onKeyDown={(ev) => props.onKeyDown && props.onKeyDown(ev)}
       />
     );
   } else {
@@ -78,11 +69,8 @@ const Cell = (props: {
       <Styled.Cell
         selected={props.selected}
         onClick={() => {
-          setCellState(CellState.ACTIVE);
           props.setValue(value);
         }}
-        tabIndex={1}
-        onKeyUp={(ev) => props.onKeyDown && props.onKeyDown(ev)}
       >
         {value}
       </Styled.Cell>
@@ -111,92 +99,134 @@ const ModifyTable = ({
   );
 };
 
-const Table = (props: {}) => {
-  const [data, setData] = useState<Array<Row>>([
-    {
-      key: 0,
-      time: "0100",
-      plan: "this timesheet",
-      selected: [],
+const Table = () => {
+  const [data, setData] = useState<Array<Row>>(
+    new Array(48).fill(0).map((_, key) => ({
+      key,
+      time: (
+        "" +
+        (Math.floor(key / 2) * 100 +
+          Math.round(60 * (key / 2 - Math.floor(key / 2))))
+      ).padStart(4, "0"),
+      plan: "",
+    }))
+  );
+  const [selected, setSelected] = useState<[number, editableKey][]>([]);
+  const prevSelected = usePrevious(selected);
+  const [currentSelected, setCurrentSelected] =
+    useState<[number, editableKey, boolean]>();
+  const lastSelected = usePrevious(currentSelected);
+
+  const moveSelected = useCallback(
+    (row: Row, colIndex: editableKey, editing: boolean) => {
+      const newSelected: [number, editableKey][] = [];
+      newSelected.push([row.key, colIndex]);
+      setSelected(newSelected);
+      setCurrentSelected([row.key, colIndex, editing]);
     },
-    {
-      key: 1,
-      time: "0200",
-      plan: "that timesheet",
-      selected: [],
+    [selected]
+  );
+
+  const keyListener = useCallback(
+    (ev: KeyboardEvent) => {
+      if (!currentSelected || !["Enter", "Escape"].includes(ev.key)) {
+        return;
+      }
+      const newData: Row[] = [...data.map((row) => ({ ...row, selected: [] }))];
+      if (ev.key === "Enter") {
+        if (ev.shiftKey) {
+          return;
+        }
+        const [rowIndex, dataIndex, editing] = currentSelected;
+        const row =
+          newData[Math.min(rowIndex + (editing ? 1 : 0), newData.length - 1)];
+        moveSelected(row, dataIndex, !editing);
+      } else {
+        moveSelected(data[currentSelected[0]], currentSelected[1], false);
+      }
     },
-  ]);
-  const [lastSelected, setLastSelected] = useState<[number, editableKey]>()
-
-  const setSelected = (row: Row, colIndex: editableKey) => {
-    row.selected.push(colIndex);
-    setLastSelected([row.key, colIndex]);
-  }
-
-  const keyListener = useCallback((ev: KeyboardEvent) => {
-    if (!lastSelected || !["Enter"].includes(ev.key)) {
-      return;
-    }
-    const newData: Row[] = [...data.map((row) => ({ ...row, selected: [] }))];
-    if (ev.key === "Enter") {
-      const row = newData[Math.min(lastSelected[0] + 1, newData.length - 1)];
-      row.selected.push(lastSelected[1]);
-    }
-    setData(newData);
-  }, [data]);
-
+    [data, currentSelected]
+  );
 
   useEffect(() => {
-    window.addEventListener('keydown', keyListener);
+    window.addEventListener("keydown", keyListener);
 
     return () => {
-      window.removeEventListener('keydown', keyListener);
+      window.removeEventListener("keydown", keyListener);
     };
-  }, [keyListener])
+  }, [data, keyListener]);
 
-  const setDataAt = (
-    rowIndex: number,
+  const setDataAt = useCallback(
+    (rowIndex: number, dataIndex: editableKey, value: string) => {
+      const newData: Row[] = [...data.map((row) => ({ ...row, selected: [] }))];
+      const row = newData[rowIndex];
+      row[dataIndex] = value;
+      setData(newData);
+    },
+    [data]
+  );
+
+  const isEditing = (
+    row: Row,
     dataIndex: editableKey,
-    value: string
+    [rowIndex, columnIndex, editing]: [number, editableKey, boolean]
   ) => {
-    const newData: Row[] = [...data.map((row) => ({ ...row, selected: [] }))];
-    const row = newData[rowIndex];
-    row[dataIndex] = value;
-    setSelected(row, dataIndex)
-    setData(newData);
+    return row.key === rowIndex && columnIndex === dataIndex && editing;
   };
 
   const createTimeblockColumn: (
     dataIndex: editableKey,
     title: string
-  ) => TimeblockColumnType = (dataIndex, title) => {
-    return {
-      title: <Cell setValue={() => null} value={title} />,
-      dataIndex,
-      key: dataIndex,
-      render: (value: string, row, index: number) => (
-        <Cell
-          key={row.key}
-          setValue={(value: string) => setDataAt(index, dataIndex, value)}
-          value={value}
-          selected={row.selected.includes(dataIndex)}
-          onKeyDown={(ev) => console.log(ev)}
-        />
-      ),
-      shouldCellUpdate: (row, prevRow) => {
-        return (
-          row[dataIndex] !== prevRow[dataIndex] ||
-          row.selected.includes(dataIndex) !==
-            prevRow.selected.includes(dataIndex)
-        );
-      },
-    };
-  };
+  ) => TimeblockColumnType = useCallback(
+    (dataIndex, title) => {
+      const [rowIndex, columnIndex, editing] = currentSelected || [];
+      return {
+        title: <Cell setValue={() => null} value={title} />,
+        dataIndex,
+        key: dataIndex,
+        render: (value: string, row, index: number) => (
+          <div onClick={() => moveSelected(row, dataIndex, true)}>
+            <Cell
+              key={row.key}
+              setValue={(value: string) => setDataAt(index, dataIndex, value)}
+              value={value}
+              selected={selected.some(
+                ([r, c]) => row.key === r && dataIndex === c
+              )}
+              editing={
+                row.key === rowIndex && dataIndex === columnIndex && !!editing
+              }
+            />
+          </div>
+        ),
+        shouldCellUpdate: (row, prevRow) => {
+          return !!(
+            row[dataIndex] !== prevRow[dataIndex] ||
+            selected.some(([r, c]) => (row.key === r && dataIndex) === c) !==
+              prevSelected?.some(
+                ([r, c]) => (row.key === r && dataIndex) === c
+              ) ||
+            (currentSelected &&
+              lastSelected &&
+              isEditing(row, dataIndex, currentSelected) !==
+                isEditing(row, dataIndex, lastSelected))
+          );
+        },
+      };
+    },
+    [data, selected, prevSelected, currentSelected, lastSelected]
+  );
 
-  const [columns, setColumns] = useState<TimeblockColumnType[]>([
-    createTimeblockColumn("time", "Time"),
-    createTimeblockColumn("plan", "Activity"),
+  const [columns, setColumns] = useState<
+    { dataIndex: editableKey; title: string }[]
+  >([
+    { dataIndex: "time", title: "Time" },
+    { dataIndex: "plan", title: "Activity" },
   ]);
+
+  const displayColumns: TimeblockColumnType[] = useMemo(() => {
+    return columns.map((c) => createTimeblockColumn(c.dataIndex, c.title));
+  }, [data, columns, selected, prevSelected]);
 
   const addColumn = () => {
     const dataIndex = columns.length - 1;
@@ -206,10 +236,7 @@ const Table = (props: {}) => {
         [dataIndex]: "",
       }))
     );
-    setColumns([
-      ...columns,
-      createTimeblockColumn(dataIndex, `Revision ${dataIndex}`),
-    ]);
+    setColumns([...columns, { dataIndex, title: `Revision ${dataIndex}` }]);
   };
 
   const addRow = () => {
@@ -219,7 +246,7 @@ const Table = (props: {}) => {
         acc[curr.dataIndex] = "" + curr.dataIndex;
         return acc;
       },
-      { key, time: "", plan: "", selected: [] }
+      { key, time: "", plan: "" }
     );
     setData([...data, newRow]);
   };
@@ -253,7 +280,12 @@ const Table = (props: {}) => {
         }}
         remove
       />
-      <Styled.NewTable columns={columns} dataSource={data} rowKey={"key"} />
+      <Styled.NewTable
+        columns={displayColumns}
+        dataSource={data}
+        rowKey={"key"}
+        pagination={false}
+      />
     </div>
   );
 };

@@ -14,7 +14,6 @@ interface MetaParameters {
 }
 
 export interface Row extends SelectableColumns, MetaParameters {
-    selected: editableKey[]
 }
 
 export type TimeblockTableProps = TableProps<Row>
