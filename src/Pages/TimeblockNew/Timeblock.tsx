@@ -111,10 +111,12 @@ const Table = () => {
       plan: "",
     }))
   );
-  const [selected, setSelected] = useState<[number, editableKey][]>([]);
+  const [selected, setSelected] = useState<
+    [rowIndex: number, colIndex: editableKey][]
+  >([]);
   const prevSelected = usePrevious(selected);
   const [currentSelected, setCurrentSelected] =
-    useState<[number, editableKey, boolean]>();
+    useState<[rowIndex: number, colIndex: editableKey, editing: boolean]>();
   const lastSelected = usePrevious(currentSelected);
 
   const moveSelected = useCallback(
@@ -132,14 +134,13 @@ const Table = () => {
       if (!currentSelected || !["Enter", "Escape"].includes(ev.key)) {
         return;
       }
-      const newData: Row[] = [...data.map((row) => ({ ...row, selected: [] }))];
       if (ev.key === "Enter") {
         if (ev.shiftKey) {
           return;
         }
         const [rowIndex, dataIndex, editing] = currentSelected;
         const row =
-          newData[Math.min(rowIndex + (editing ? 1 : 0), newData.length - 1)];
+          data[Math.min(rowIndex + (editing ? 1 : 0), data.length - 1)];
         moveSelected(row, dataIndex, !editing);
       } else {
         moveSelected(data[currentSelected[0]], currentSelected[1], false);
