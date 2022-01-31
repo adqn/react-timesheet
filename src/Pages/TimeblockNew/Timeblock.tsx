@@ -18,6 +18,7 @@ const ActiveCell = (props: {
   const [value, setValue] = useState(props.value);
   const keyListener = (ev: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (ev.key === "Enter") {
+      // TODO: check for shift here
       props.setValue(value);
     } else if (ev.key === "Tab") {
       props.setValue(value);
@@ -143,7 +144,10 @@ const Table = () => {
           data[Math.min(rowIndex + (editing ? 1 : 0), data.length - 1)];
         moveSelected(row, dataIndex, !editing);
       } else {
-        moveSelected(data[currentSelected[0]], currentSelected[1], false);
+        // This is when "Escape" is pressed
+        // If currently editing, stop editing
+        const [rowIndex, colIndex] = currentSelected;
+        moveSelected(data[rowIndex], colIndex, false);
       }
     },
     [data, currentSelected]
@@ -159,7 +163,7 @@ const Table = () => {
 
   const setDataAt = useCallback(
     (rowIndex: number, dataIndex: editableKey, value: string) => {
-      const newData: Row[] = [...data.map((row) => ({ ...row, selected: [] }))];
+      const newData: Row[] = [...data.map((row) => ({ ...row }))];
       const row = newData[rowIndex];
       row[dataIndex] = value;
       setData(newData);
@@ -186,7 +190,7 @@ const Table = () => {
         dataIndex,
         key: dataIndex,
         render: (value: string, row, index: number) => (
-          <div onClick={() => moveSelected(row, dataIndex, true)}>
+          <div key={row.key} onClick={() => moveSelected(row, dataIndex, true)}>
             <Cell
               key={row.key}
               setValue={(value: string) => setDataAt(index, dataIndex, value)}
