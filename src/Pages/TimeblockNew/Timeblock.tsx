@@ -133,6 +133,7 @@ const Table = () => {
   const eventKeys = [
     "Enter",
     "Escape",
+    "Tab",
     "ArrowUp",
     "ArrowDown",
     "ArrowLeft",
@@ -151,6 +152,14 @@ const Table = () => {
         const row =
           data[Math.min(rowIndex + (editing ? 1 : 0), data.length - 1)];
         moveSelected(row, dataIndex, !editing);
+      }
+      else if (ev.key === "Tab") {
+        ev.preventDefault();
+        const currentColumn = columns.filter((col, i) => col.dataIndex === dataIndex)[0]
+        const currentColumnIndex = columns.indexOf(currentColumn)
+        if (currentColumnIndex < columns.length - 1) {
+          moveSelected(data[rowIndex], columns[currentColumnIndex + 1].dataIndex, false);
+        }
       }
       else if (ev.key === "Escape") {
         // This is when "Escape" is pressed
