@@ -130,9 +130,17 @@ const Table = () => {
     [selected]
   );
 
+  const eventKeys = [
+    "Enter",
+    "Escape",
+    "ArrowUp",
+    "ArrowDown",
+    "ArrowLeft",
+    "ArrowRight",
+  ]
   const keyListener = useCallback(
     (ev: KeyboardEvent) => {
-      if (!currentSelected || !["Enter", "Escape"].includes(ev.key)) {
+      if (!currentSelected || !eventKeys.includes(ev.key)) {
         return;
       }
       if (ev.key === "Enter") {
@@ -143,7 +151,32 @@ const Table = () => {
         const row =
           data[Math.min(rowIndex + (editing ? 1 : 0), data.length - 1)];
         moveSelected(row, dataIndex, !editing);
-      } else {
+      }
+      else if (ev.key == "ArrowUp") {
+        const [rowIndex, dataIndex] = currentSelected;
+        moveSelected(data[rowIndex > 0 ? rowIndex - 1 : rowIndex], dataIndex, false);
+      }
+      else if (ev.key == "ArrowDown") {
+        const [rowIndex, dataIndex] = currentSelected;
+        moveSelected(data[rowIndex < data.length - 1 ? rowIndex + 1 : rowIndex], dataIndex, false);
+      }
+      else if (ev.key == "ArrowLeft") {
+        const [rowIndex, colIndex] = currentSelected;
+        const currentColumn = columns.filter((col, i) => col.dataIndex === colIndex)[0]
+        const currentColumnIndex = columns.indexOf(currentColumn)
+        if (currentColumnIndex > 0) {
+          moveSelected(data[rowIndex], columns[currentColumnIndex - 1].dataIndex, false);
+        }
+      }
+      else if (ev.key == "ArrowRight") {
+        const [rowIndex, colIndex] = currentSelected;
+        const currentColumn = columns.filter((col, i) => col.dataIndex === colIndex)[0]
+        const currentColumnIndex = columns.indexOf(currentColumn)
+        if (currentColumnIndex < columns.length - 1) {
+          moveSelected(data[rowIndex], columns[currentColumnIndex + 1].dataIndex, false);
+        }
+      }
+      else {
         // This is when "Escape" is pressed
         // If currently editing, stop editing
         const [rowIndex, colIndex] = currentSelected;
