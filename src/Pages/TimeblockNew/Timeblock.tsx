@@ -143,44 +143,43 @@ const Table = () => {
       if (!currentSelected || !eventKeys.includes(ev.key)) {
         return;
       }
+      const [rowIndex, dataIndex, editing] = currentSelected;
       if (ev.key === "Enter") {
         if (ev.shiftKey) {
           return;
         }
-        const [rowIndex, dataIndex, editing] = currentSelected;
         const row =
           data[Math.min(rowIndex + (editing ? 1 : 0), data.length - 1)];
         moveSelected(row, dataIndex, !editing);
       }
-      else if (ev.key === "ArrowUp") {
-        const [rowIndex, dataIndex] = currentSelected;
-        moveSelected(data[rowIndex > 0 ? rowIndex - 1 : rowIndex], dataIndex, false);
-      }
-      else if (ev.key === "ArrowDown") {
-        const [rowIndex, dataIndex] = currentSelected;
-        moveSelected(data[rowIndex < data.length - 1 ? rowIndex + 1 : rowIndex], dataIndex, false);
-      }
-      else if (ev.key === "ArrowLeft") {
-        const [rowIndex, colIndex] = currentSelected;
-        const currentColumn = columns.filter((col, i) => col.dataIndex === colIndex)[0]
-        const currentColumnIndex = columns.indexOf(currentColumn)
-        if (currentColumnIndex > 0) {
-          moveSelected(data[rowIndex], columns[currentColumnIndex - 1].dataIndex, false);
-        }
-      }
-      else if (ev.key === "ArrowRight") {
-        const [rowIndex, colIndex] = currentSelected;
-        const currentColumn = columns.filter((col, i) => col.dataIndex === colIndex)[0]
-        const currentColumnIndex = columns.indexOf(currentColumn)
-        if (currentColumnIndex < columns.length - 1) {
-          moveSelected(data[rowIndex], columns[currentColumnIndex + 1].dataIndex, false);
-        }
-      }
-      else {
+      else if (ev.key === "Escape") {
         // This is when "Escape" is pressed
         // If currently editing, stop editing
         const [rowIndex, colIndex] = currentSelected;
         moveSelected(data[rowIndex], colIndex, false);
+      } else {
+        if (!editing) {
+          if (ev.key === "ArrowUp") {
+            moveSelected(data[rowIndex > 0 ? rowIndex - 1 : rowIndex], dataIndex, false);
+          }
+          else if (ev.key === "ArrowDown") {
+            moveSelected(data[rowIndex < data.length - 1 ? rowIndex + 1 : rowIndex], dataIndex, false);
+          }
+          else if (ev.key === "ArrowLeft") {
+            const currentColumn = columns.filter((col, i) => col.dataIndex === dataIndex)[0]
+            const currentColumnIndex = columns.indexOf(currentColumn)
+            if (currentColumnIndex > 0) {
+              moveSelected(data[rowIndex], columns[currentColumnIndex - 1].dataIndex, false);
+            }
+          }
+          else if (ev.key === "ArrowRight") {
+            const currentColumn = columns.filter((col, i) => col.dataIndex === dataIndex)[0]
+            const currentColumnIndex = columns.indexOf(currentColumn)
+            if (currentColumnIndex < columns.length - 1) {
+              moveSelected(data[rowIndex], columns[currentColumnIndex + 1].dataIndex, false);
+            }
+          }
+        }
       }
     },
     [data, currentSelected]
