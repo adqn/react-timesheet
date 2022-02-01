@@ -152,15 +152,15 @@ const Table = () => {
           data[Math.min(rowIndex + (editing ? 1 : 0), data.length - 1)];
         moveSelected(row, dataIndex, !editing);
       }
-      else if (ev.key == "ArrowUp") {
+      else if (ev.key === "ArrowUp") {
         const [rowIndex, dataIndex] = currentSelected;
         moveSelected(data[rowIndex > 0 ? rowIndex - 1 : rowIndex], dataIndex, false);
       }
-      else if (ev.key == "ArrowDown") {
+      else if (ev.key === "ArrowDown") {
         const [rowIndex, dataIndex] = currentSelected;
         moveSelected(data[rowIndex < data.length - 1 ? rowIndex + 1 : rowIndex], dataIndex, false);
       }
-      else if (ev.key == "ArrowLeft") {
+      else if (ev.key === "ArrowLeft") {
         const [rowIndex, colIndex] = currentSelected;
         const currentColumn = columns.filter((col, i) => col.dataIndex === colIndex)[0]
         const currentColumnIndex = columns.indexOf(currentColumn)
@@ -168,7 +168,7 @@ const Table = () => {
           moveSelected(data[rowIndex], columns[currentColumnIndex - 1].dataIndex, false);
         }
       }
-      else if (ev.key == "ArrowRight") {
+      else if (ev.key === "ArrowRight") {
         const [rowIndex, colIndex] = currentSelected;
         const currentColumn = columns.filter((col, i) => col.dataIndex === colIndex)[0]
         const currentColumnIndex = columns.indexOf(currentColumn)
