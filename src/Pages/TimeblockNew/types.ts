@@ -16,6 +16,12 @@ interface MetaParameters {
 export interface Row extends SelectableColumns, MetaParameters {
 }
 
+
+export interface Column {
+  dataIndex: editableKey;
+  title: string;
+}
+
 export type TimeblockTableProps = TableProps<Row>
 export interface TimeblockColumnType extends ColumnType<Row> {
     dataIndex: keyof SelectableColumns

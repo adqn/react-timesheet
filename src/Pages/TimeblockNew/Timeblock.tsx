@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { editableKey, Row, TimeblockColumnType } from "./types";
+import { editableKey, Row, Column, TimeblockColumnType } from "./types";
 
 import * as Styled from "./Timeblock.styled";
 import { usePrevious } from "./utils";
@@ -122,7 +122,7 @@ const Table = () => {
 
   const moveSelected = useCallback(
     (row: Row, colIndex: editableKey, editing: boolean) => {
-      const newSelected: [number, editableKey][] = [];
+      const newSelected: [rowIndex: number, colIndex: editableKey][] = [];
       newSelected.push([row.key, colIndex]);
       setSelected(newSelected);
       setCurrentSelected([row.key, colIndex, editing]);
@@ -139,6 +139,7 @@ const Table = () => {
     "ArrowLeft",
     "ArrowRight",
   ]
+
   const keyListener = useCallback(
     (ev: KeyboardEvent) => {
       if (!currentSelected || !eventKeys.includes(ev.key)) {
@@ -159,6 +160,10 @@ const Table = () => {
         const currentColumnIndex = columns.indexOf(currentColumn)
         if (currentColumnIndex < columns.length - 1) {
           moveSelected(data[rowIndex], columns[currentColumnIndex + 1].dataIndex, false);
+        } else {
+          // Having issues with setState being asynchronous
+          // addColumn();
+          // moveSelected(data[rowIndex], columns[currentColumnIndex + 1].dataIndex, false);
         }
       }
       else if (ev.key === "Escape") {
@@ -263,9 +268,7 @@ const Table = () => {
     [data, selected, prevSelected, currentSelected, lastSelected]
   );
 
-  const [columns, setColumns] = useState<
-    { dataIndex: editableKey; title: string }[]
-  >([
+  const [columns, setColumns] = useState<Column[]>([
     { dataIndex: "time", title: "Time" },
     { dataIndex: "plan", title: "Activity" },
   ]);
@@ -335,6 +338,18 @@ const Table = () => {
     </div>
   );
 };
+
+const exportTable = (rows: Row[], cols: Column[]) => {
+  const rowData = [];
+  const columnData = [];
+  cols.map((col: Column, i: number) => {
+    columnData.push(
+      {dataIndex: col.dataIndex, title: col.title}
+    )
+  })
+  rows.map((row: Row, i: number) => {
+  })
+}
 
 export function Timeblock() {
   return <Table />;
