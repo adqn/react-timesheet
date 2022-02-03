@@ -55,3 +55,21 @@ export const AddRemoveButton = styled.div`
     cursor: pointer;
   }
 `;
+
+export const DefaultButton = styled.div`
+  display: inline-block;
+  border: 1px solid lightgrey;
+  height: 30px;
+  width: fit-content;
+  padding: 2px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin-left: 5px;
+  margin-right: 5px;
+  &:hover {
+    cursor: pointer;
+  }
+  &:active {
+    background: #f2f2f2;
+  }
+`

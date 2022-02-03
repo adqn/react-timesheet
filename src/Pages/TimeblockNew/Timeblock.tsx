@@ -300,35 +300,49 @@ const Table = () => {
     setData([...data, newRow]);
   };
 
+  const exportTable = (rows: Row[], cols: Column[]) => {
+    return [rows, cols];
+  }
+
   return (
     <div>
       <ModifyTable type={"column"} action={addColumn} />
       <ModifyTable type={"row"} action={addRow} />
       <br />
-      <ModifyTable
-        type={"column"}
-        action={() => {
-          if (columns.length > 2 && data.length > 1) {
-            // This is before we remove column so it needs to be a minus 2
-            const removeIndex = columns.length - 2;
-            setColumns(columns.slice(0, columns.length - 1));
-            setData(
-              data.map((row) => {
-                delete row[removeIndex];
-                return row;
-              })
-            );
-          }
-        }}
-        remove
-      />
-      <ModifyTable
-        type={"row"}
-        action={() => {
-          if (data.length > 1) setData(data.slice(0, data.length - 1));
-        }}
-        remove
-      />
+      <div style={{display: 'block'}}>
+        <ModifyTable
+          type={"column"}
+          action={() => {
+            if (columns.length > 2 && data.length > 1) {
+              // This is before we remove column so it needs to be a minus 2
+              const removeIndex = columns.length - 2;
+              setColumns(columns.slice(0, columns.length - 1));
+              setData(
+                data.map((row) => {
+                  delete row[removeIndex];
+                  return row;
+                })
+              );
+            }
+          }}
+          remove
+        />
+        <ModifyTable
+          type={"row"}
+          action={() => {
+            if (data.length > 1) setData(data.slice(0, data.length - 1));
+          }}
+          remove
+        />
+    </div>
+      <Styled.DefaultButton
+        onClick={() => console.log(exportTable(data, columns))}
+      >
+        Save table
+      </Styled.DefaultButton>
+      <Styled.DefaultButton>
+        Load table
+      </Styled.DefaultButton>
       <Styled.NewTable
         columns={displayColumns}
         dataSource={data}
@@ -338,18 +352,6 @@ const Table = () => {
     </div>
   );
 };
-
-const exportTable = (rows: Row[], cols: Column[]) => {
-  const rowData = [];
-  const columnData = [];
-  cols.map((col: Column, i: number) => {
-    columnData.push(
-      {dataIndex: col.dataIndex, title: col.title}
-    )
-  })
-  rows.map((row: Row, i: number) => {
-  })
-}
 
 export function Timeblock() {
   return <Table />;
