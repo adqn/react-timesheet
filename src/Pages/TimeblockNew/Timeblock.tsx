@@ -260,13 +260,13 @@ const Table = () => {
           return !!(
             row[dataIndex] !== prevRow[dataIndex] ||
             selected.some(([r, c]) => (row.key === r && dataIndex) === c) !==
-              prevSelected?.some(
-                ([r, c]) => (row.key === r && dataIndex) === c
-              ) ||
+            prevSelected?.some(
+              ([r, c]) => (row.key === r && dataIndex) === c
+            ) ||
             (currentSelected &&
               lastSelected &&
               isEditing(row, dataIndex, currentSelected) !==
-                isEditing(row, dataIndex, lastSelected))
+              isEditing(row, dataIndex, lastSelected))
           );
         },
       };
@@ -308,40 +308,48 @@ const Table = () => {
 
   return (
     <div>
-      <ModifyTable type={"column"} action={addColumn} />
-      <ModifyTable type={"row"} action={addRow} />
-      <br />
-      <div style={{display: 'block'}}>
-        <ModifyTable
-          type={"column"}
-          action={() => {
-            if (columns.length > 2 && data.length > 1) {
-              // This is before we remove column so it needs to be a minus 2
-              const removeIndex = columns.length - 2;
-              setColumns(columns.slice(0, columns.length - 1));
-              setData(
-                data.map((row) => {
-                  delete row[removeIndex];
-                  return row;
-                })
-              );
-            }
-          }}
-          remove
-        />
-        <ModifyTable
-          type={"row"}
-          action={() => {
-            if (data.length > 1) setData(data.slice(0, data.length - 1));
-          }}
-          remove
-        />
-    </div>
-      <ServerFunctions
-        rows={data}
-        cols={columns}
-        setTables={setTables}
-      />
+      {/*UI stuff*/}
+      <div
+        style={{
+          display: 'inline-block',
+          marginBottom: "10px"
+        }}>
+        <div>
+          <ModifyTable type={"row"} action={addRow} />
+          <ModifyTable type={"column"} action={addColumn} />
+        </div>
+        <div>
+          <ModifyTable
+            type={"column"}
+            action={() => {
+              if (columns.length > 2 && data.length > 1) {
+                // This is before we remove column so it needs to be a minus 2
+                const removeIndex = columns.length - 2;
+                setColumns(columns.slice(0, columns.length - 1));
+                setData(
+                  data.map((row) => {
+                    delete row[removeIndex];
+                    return row;
+                  })
+                );
+              }
+            }}
+            remove
+          />
+          <ModifyTable
+            type={"row"}
+            action={() => {
+              if (data.length > 1) setData(data.slice(0, data.length - 1));
+            }}
+            remove
+          />
+          <ServerButtons
+            rows={data}
+            cols={columns}
+            setTables={setTables}
+          />
+        </div>
+      </div>
       <Styled.NewTable
         columns={displayColumns}
         dataSource={data}
@@ -352,7 +360,7 @@ const Table = () => {
   );
 };
 
-const ServerFunctions = (props: {
+const ServerButtons = (props: {
   rows: Row[];
   cols: Column[];
   setTables: (tables: TableData[]) => void;
@@ -369,21 +377,30 @@ const ServerFunctions = (props: {
         data: [props.rows, props.cols]
       })
     }
-    fetch('http://localhost:5001/api/savetemplate', req)
-      .then(() => console.log('Table saved'))
+    // fetch('http://localhost:5001/api/savetemplate', req)
+    //   .then(() => console.log('Table saved'))
+    return [rows, cols];
   }
 
   return (
-    <>
+    <div
+      style={{
+        display: "inline-block",
+        position: "absolute",
+        right: "0px"
+      }}>
       <Styled.DefaultButton
         onClick={() => console.log(exportTable(props.rows, props.cols))}
+        style={{display: "inline-block"}}
       >
         Save table
       </Styled.DefaultButton>
-      <Styled.DefaultButton>
+      <Styled.DefaultButton
+        style={{display: "inline-block"}}
+      >
         Load table
       </Styled.DefaultButton>
-    </>
+    </div>
   )
 }
 
