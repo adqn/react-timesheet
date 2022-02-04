@@ -10,6 +10,11 @@ enum CellState {
   ACTIVE = "ACTIVE",
 }
 
+interface TableData {
+  rows: Row[];
+  cols: Column[];
+}
+
 const ActiveCell = (props: {
   value: string;
   setValue: (value: string) => void;
@@ -101,6 +106,7 @@ const ModifyTable = ({
 };
 
 const Table = () => {
+  const [tables, setTables] = useState<Array<TableData>>()
   const [data, setData] = useState<Array<Row>>(
     new Array(48).fill(0).map((_, key) => ({
       key,
@@ -300,10 +306,6 @@ const Table = () => {
     setData([...data, newRow]);
   };
 
-  const exportTable = (rows: Row[], cols: Column[]) => {
-    return [rows, cols];
-  }
-
   return (
     <div>
       <ModifyTable type={"column"} action={addColumn} />
@@ -335,14 +337,11 @@ const Table = () => {
           remove
         />
     </div>
-      <Styled.DefaultButton
-        onClick={() => console.log(exportTable(data, columns))}
-      >
-        Save table
-      </Styled.DefaultButton>
-      <Styled.DefaultButton>
-        Load table
-      </Styled.DefaultButton>
+      <ServerFunctions
+        rows={data}
+        cols={columns}
+        setTables={setTables}
+      />
       <Styled.NewTable
         columns={displayColumns}
         dataSource={data}
@@ -352,6 +351,41 @@ const Table = () => {
     </div>
   );
 };
+
+const ServerFunctions = (props: {
+  rows: Row[];
+  cols: Column[];
+  setTables: (tables: TableData[]) => void;
+}) => {
+  const exportTable = (rows: Row[], cols: Column[]) => {
+    const req = {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: 'default table',
+        data: [props.rows, props.cols]
+      })
+    }
+    fetch('http://localhost:5001/api/savetemplate', req)
+      .then(() => console.log('Table saved'))
+  }
+
+  return (
+    <>
+      <Styled.DefaultButton
+        onClick={() => console.log(exportTable(props.rows, props.cols))}
+      >
+        Save table
+      </Styled.DefaultButton>
+      <Styled.DefaultButton>
+        Load table
+      </Styled.DefaultButton>
+    </>
+  )
+}
 
 export function Timeblock() {
   return <Table />;
