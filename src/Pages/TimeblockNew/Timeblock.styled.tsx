@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Table, Input } from "antd";
+import { Table, Input, Menu } from "antd";
 import "antd/dist/antd.css";
 
 import { TimeblockTableProps } from "./types";
@@ -70,4 +70,15 @@ export const DefaultButton = styled.div`
   &:active {
     background: #f2f2f2;
   }
+`
+
+export const InputField = styled(Input)`
+  width: 200px;
+`
+
+export const DefaultMenu = styled(Menu)`
+  width: 200px;
+`
+
+export const MenuItem = styled(Menu.Item)`
 `

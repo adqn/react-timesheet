@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { editableKey, Row, Column, TimeblockColumnType } from "./types";
 
 import * as Styled from "./Timeblock.styled";
+import Modal from '../../components/Modal'
 import { usePrevious } from "./utils";
 
 enum CellState {
@@ -11,6 +12,7 @@ enum CellState {
 }
 
 interface TableData {
+  name: string;
   rows: Row[];
   cols: Column[];
 }
@@ -367,8 +369,12 @@ const ServerButtons = (props: {
   setData: (rows: Row[]) => void;
   setColumns: (columns: Column[]) => void;
 }) => {
-  const [tables, setTables] = useState<Array<TableData>>()
-  const exportTable = (rows: Row[], cols: Column[]) => {
+  const [tables, setTables] = useState<Array<TableData> | undefined>()
+  const [value, setValue] = useState<string | undefined>();
+  const [inputVisibility, setInputVisibility] = useState("hidden");
+  const [menuVisibility, setMenuVisibility] = useState("hidden");
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  const exportTable = (rows: Row[], cols: Column[], name: string = "untitled") => {
     const req = {
       method: 'POST',
       headers: {
@@ -376,19 +382,42 @@ const ServerButtons = (props: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        name: 'default table',
+        name,
         rows: props.rows,
         cols: props.cols
       })
     }
     fetch('http://localhost:5001/api/savetemplate', req)
       .then(() => console.log('Table saved'))
-    // return [rows, cols];
   }
 
   const getTables = async () => {
     return (await fetch('http://localhost:5001/api/templates')).json()
   }
+
+  const TableMenu = () => 
+    <Styled.DefaultMenu
+      style={{
+        visibility: `${menuVisibility === "hidden" ? "hidden" : "visible"}`,
+        position: 'absolute',
+        top: '37px',
+        right: '0px',
+        marginRight: '5px',
+        zIndex: 1
+      }}
+    >
+      {tables?.map(table => {
+        return (
+          <Styled.MenuItem
+            onClick={() => {
+              props.setData(table.rows);
+              props.setColumns(table.cols);
+              setMenuVisibility("hidden");
+            }}
+          >{table.name}</Styled.MenuItem>
+        )
+      })}
+    </Styled.DefaultMenu>
 
   return (
     <div
@@ -398,24 +427,59 @@ const ServerButtons = (props: {
         right: "0px"
       }}>
       <Styled.DefaultButton
-        style={{display: "inline-block"}}
-        onClick={() => console.log(exportTable(props.rows, props.cols))}
+        style={{ display: "inline-block" }}
+        onClick={() => {
+          if (inputVisibility === "visible") {
+            exportTable(props.rows, props.cols, value);
+            setInputVisibility("hidden")
+            setValue(undefined)
+          }
+          else {
+            setInputVisibility("visible")
+          }
+        }}
       >
         Save table
       </Styled.DefaultButton>
       <Styled.DefaultButton
         style={{display: "inline-block"}}
         onClick={() => {
-          getTables()
-            .then(res => {
-              console.log(res);
-              props.setColumns(res[res.length - 1].template.cols);
-              props.setData(res[res.length - 1].template.rows);
-            })
+          if (menuVisibility === "visible") {
+            setMenuVisibility("hidden")
+          }
+          else {
+            getTables()
+              .then(res => setTables(new Array(res.length).fill(0).map((_, i) => res[i].template)))
+            setMenuVisibility("visible")
+          }
         }}
       >
         Load table
       </Styled.DefaultButton>
+      <Styled.InputField
+        style={{
+          visibility: `${inputVisibility === "hidden" ? "hidden" : "visible"}`,
+          position: 'absolute',
+          top: '37px',
+          right: '0px',
+          marginRight: '5px',
+          zIndex: 1
+        }}
+        placeholder={"Enter table name"}
+        value={value}
+        autoFocus={inputVisibility === "visible"}
+        onChange={(ev) => setValue(ev.target.value)}
+        onKeyDown={(ev) => {
+          if (ev.key !== "Enter") return
+          if (inputVisibility === "visible") {
+            exportTable(props.rows, props.cols, value);
+            setInputVisibility("hidden")
+            setValue(undefined)
+          }
+        }}
+        onBlur={() => setInputVisibility("hidden")}
+      />
+      {tables ? <TableMenu /> : null}
     </div>
   )
 }
