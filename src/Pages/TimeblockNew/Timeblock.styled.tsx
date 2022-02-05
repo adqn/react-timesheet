@@ -37,7 +37,7 @@ export const NewTable = styled<React.ComponentType<TimeblockTableProps>>(Table)`
 export const AddRemoveButton = styled.div`
   display: inline-block;
   height: fit-content;
-  width: 20px;
+  width: 25px;
   text-align: center;
   font: 1.5em bold;
   font-weight: 900;

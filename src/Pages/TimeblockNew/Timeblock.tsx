@@ -95,10 +95,11 @@ const ModifyTable = ({
 }) => {
   return (
     <>
-      <Styled.AddRemoveButton onClick={() => action()}>
-        {remove ? "-" : "+"}
-      </Styled.AddRemoveButton>
       <span style={{ paddingLeft: "10px" }}>
+        <Styled.AddRemoveButton
+          onClick={() => action()}>
+          {remove ? "-" : "+"}
+        </Styled.AddRemoveButton>
         {remove ? "Remove" : "New"} {type === "row" ? "row" : "column"}
       </span>
     </>
@@ -106,7 +107,6 @@ const ModifyTable = ({
 };
 
 const Table = () => {
-  const [tables, setTables] = useState<Array<TableData>>()
   const [data, setData] = useState<Array<Row>>(
     new Array(48).fill(0).map((_, key) => ({
       key,
@@ -346,7 +346,8 @@ const Table = () => {
           <ServerButtons
             rows={data}
             cols={columns}
-            setTables={setTables}
+            setData={setData}
+            setColumns={setColumns}
           />
         </div>
       </div>
@@ -363,8 +364,10 @@ const Table = () => {
 const ServerButtons = (props: {
   rows: Row[];
   cols: Column[];
-  setTables: (tables: TableData[]) => void;
+  setData: (rows: Row[]) => void;
+  setColumns: (columns: Column[]) => void;
 }) => {
+  const [tables, setTables] = useState<Array<TableData>>()
   const exportTable = (rows: Row[], cols: Column[]) => {
     const req = {
       method: 'POST',
@@ -374,12 +377,17 @@ const ServerButtons = (props: {
       },
       body: JSON.stringify({
         name: 'default table',
-        data: [props.rows, props.cols]
+        rows: props.rows,
+        cols: props.cols
       })
     }
-    // fetch('http://localhost:5001/api/savetemplate', req)
-    //   .then(() => console.log('Table saved'))
-    return [rows, cols];
+    fetch('http://localhost:5001/api/savetemplate', req)
+      .then(() => console.log('Table saved'))
+    // return [rows, cols];
+  }
+
+  const getTables = async () => {
+    return (await fetch('http://localhost:5001/api/templates')).json()
   }
 
   return (
@@ -390,13 +398,21 @@ const ServerButtons = (props: {
         right: "0px"
       }}>
       <Styled.DefaultButton
-        onClick={() => console.log(exportTable(props.rows, props.cols))}
         style={{display: "inline-block"}}
+        onClick={() => console.log(exportTable(props.rows, props.cols))}
       >
         Save table
       </Styled.DefaultButton>
       <Styled.DefaultButton
         style={{display: "inline-block"}}
+        onClick={() => {
+          getTables()
+            .then(res => {
+              console.log(res);
+              props.setColumns(res[res.length - 1].template.cols);
+              props.setData(res[res.length - 1].template.rows);
+            })
+        }}
       >
         Load table
       </Styled.DefaultButton>
