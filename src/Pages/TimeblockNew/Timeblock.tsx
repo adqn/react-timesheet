@@ -17,6 +17,174 @@ interface TableData {
   cols: Column[];
 }
 
+const SaveTableInput = (props: {
+  rows: Row[];
+  cols: Column[];
+  exportTable: (
+    rows: Row[],
+    cols: Column[],
+    name?: string | "undefined"
+  ) => void
+  setInputVisibility: (visibility: string) => void;
+}) => {
+  const [value, setValue] = useState<string | undefined>();
+
+  // useEffect(() => {
+  //   window.onclick = (ev: any) => {
+  //     console.log(ev.target)
+  //     if (ev.target.id !== "SaveTableInput") {
+  //       props.setInputVisibility("hidden");
+  //     }
+  //   }
+  // }, [])
+
+  return (
+    <Styled.InputField
+      id="SaveTableInput"
+      style={{
+        position: 'absolute',
+        top: '37px',
+        right: '0px',
+        marginRight: '5px',
+        zIndex: 1
+      }}
+      autoFocus
+      placeholder={"Enter table name"}
+      onChange={(ev) => setValue(ev.target.value)}
+      onKeyDown={(ev) => {
+        if (ev.key !== "Enter") return
+        props.exportTable(props.rows, props.cols, value);
+        props.setInputVisibility("hidden")
+      }}
+    />
+  )
+}
+
+const ServerButtons = (props: {
+  rows: Row[];
+  cols: Column[];
+  setData: (rows: Row[]) => void;
+  setColumns: (columns: Column[]) => void;
+}) => {
+  const [tables, setTables] = useState<Array<TableData> | undefined>([])
+  const [value, setValue] = useState<string | undefined>();
+  const [inputVisibility, setInputVisibility] = useState("hidden");
+  const [menuVisibility, setMenuVisibility] = useState("hidden");
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  const exportTable = (
+    rows: Row[],
+    cols: Column[],
+    name: string = "untitled") => {
+    const req = {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name,
+        rows: props.rows,
+        cols: props.cols
+      })
+    }
+    fetch('http://localhost:5001/api/savetemplate', req)
+      .then(() => console.log('Table saved'))
+  }
+
+  const getTables = async () => {
+    return (await fetch('http://localhost:5001/api/templates')).json()
+  }
+
+  const LoadTableMenu = () => 
+    <Styled.DefaultMenu
+      style={{
+        visibility: `${menuVisibility === "hidden" ? "hidden" : "visible"}`,
+        position: 'absolute',
+        top: '37px',
+        right: '0px',
+        marginRight: '5px',
+        zIndex: 1
+      }}
+    >
+      {tables?.map((table, i) => {
+        return (
+          <Styled.MenuItem
+            key={i}
+            onClick={() => {
+              props.setData(table.rows);
+              props.setColumns(table.cols);
+              setMenuVisibility("hidden");
+            }}
+          >{table.name}</Styled.MenuItem>
+        )
+      })}
+    </Styled.DefaultMenu>
+
+  return (
+    <div
+      style={{
+        display: "inline-block",
+        position: "absolute",
+        right: "0px"
+      }}>
+      <Styled.DefaultButton
+        id="SaveTableButton"
+        style={{ display: "inline-block" }}
+        onClick={() => {
+          inputVisibility === "visible" ? setInputVisibility("hidden") : setInputVisibility("visible")
+        }}
+      >
+        Save table
+      </Styled.DefaultButton>
+      <Styled.DefaultButton
+        style={{display: "inline-block"}}
+        onClick={() => {
+          if (menuVisibility === "visible") {
+            setMenuVisibility("hidden")
+          }
+          else {
+            getTables()
+              .then(res => setTables(new Array(res.length).fill(0).map((_, i) => res[i].template)))
+            setMenuVisibility("visible")
+          }
+        }}
+      >
+        Load table
+      </Styled.DefaultButton>
+      {inputVisibility === "visible" ?
+        <SaveTableInput
+          rows={props.rows}
+          cols={props.cols}
+          exportTable={exportTable}
+          setInputVisibility={setInputVisibility}
+        /> : null}
+      {menuVisibility === "visible" ? <LoadTableMenu /> : null}
+    </div>
+  )
+}
+
+const ModifyTable = ({
+  remove,
+  type,
+  action,
+}: {
+  remove?: true | undefined;
+  type: string;
+  action: () => void;
+}) => {
+  return (
+    <>
+      <span style={{ paddingLeft: "10px" }}>
+        <Styled.AddRemoveButton
+          onClick={() => action()}>
+          {remove ? "-" : "+"}
+        </Styled.AddRemoveButton>
+        {remove ? "Remove" : "New"} {type === "row" ? "row" : "column"}
+      </span>
+    </>
+  );
+};
+
 const ActiveCell = (props: {
   value: string;
   setValue: (value: string) => void;
@@ -84,28 +252,6 @@ const Cell = (props: {
       </Styled.Cell>
     );
   }
-};
-
-const ModifyTable = ({
-  remove,
-  type,
-  action,
-}: {
-  remove?: true | undefined;
-  type: string;
-  action: () => void;
-}) => {
-  return (
-    <>
-      <span style={{ paddingLeft: "10px" }}>
-        <Styled.AddRemoveButton
-          onClick={() => action()}>
-          {remove ? "-" : "+"}
-        </Styled.AddRemoveButton>
-        {remove ? "Remove" : "New"} {type === "row" ? "row" : "column"}
-      </span>
-    </>
-  );
 };
 
 const Table = () => {
@@ -362,127 +508,6 @@ const Table = () => {
     </div>
   );
 };
-
-const ServerButtons = (props: {
-  rows: Row[];
-  cols: Column[];
-  setData: (rows: Row[]) => void;
-  setColumns: (columns: Column[]) => void;
-}) => {
-  const [tables, setTables] = useState<Array<TableData> | undefined>()
-  const [value, setValue] = useState<string | undefined>();
-  const [inputVisibility, setInputVisibility] = useState("hidden");
-  const [menuVisibility, setMenuVisibility] = useState("hidden");
-  const [submitted, setSubmitted] = useState<boolean>(false);
-  const exportTable = (rows: Row[], cols: Column[], name: string = "untitled") => {
-    const req = {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        name,
-        rows: props.rows,
-        cols: props.cols
-      })
-    }
-    fetch('http://localhost:5001/api/savetemplate', req)
-      .then(() => console.log('Table saved'))
-  }
-
-  const getTables = async () => {
-    return (await fetch('http://localhost:5001/api/templates')).json()
-  }
-
-  const TableMenu = () => 
-    <Styled.DefaultMenu
-      style={{
-        visibility: `${menuVisibility === "hidden" ? "hidden" : "visible"}`,
-        position: 'absolute',
-        top: '37px',
-        right: '0px',
-        marginRight: '5px',
-        zIndex: 1
-      }}
-    >
-      {tables?.map(table => {
-        return (
-          <Styled.MenuItem
-            onClick={() => {
-              props.setData(table.rows);
-              props.setColumns(table.cols);
-              setMenuVisibility("hidden");
-            }}
-          >{table.name}</Styled.MenuItem>
-        )
-      })}
-    </Styled.DefaultMenu>
-
-  return (
-    <div
-      style={{
-        display: "inline-block",
-        position: "absolute",
-        right: "0px"
-      }}>
-      <Styled.DefaultButton
-        style={{ display: "inline-block" }}
-        onClick={() => {
-          if (inputVisibility === "visible") {
-            exportTable(props.rows, props.cols, value);
-            setInputVisibility("hidden")
-            setValue(undefined)
-          }
-          else {
-            setInputVisibility("visible")
-          }
-        }}
-      >
-        Save table
-      </Styled.DefaultButton>
-      <Styled.DefaultButton
-        style={{display: "inline-block"}}
-        onClick={() => {
-          if (menuVisibility === "visible") {
-            setMenuVisibility("hidden")
-          }
-          else {
-            getTables()
-              .then(res => setTables(new Array(res.length).fill(0).map((_, i) => res[i].template)))
-            setMenuVisibility("visible")
-          }
-        }}
-      >
-        Load table
-      </Styled.DefaultButton>
-      <Styled.InputField
-        style={{
-          visibility: `${inputVisibility === "hidden" ? "hidden" : "visible"}`,
-          position: 'absolute',
-          top: '37px',
-          right: '0px',
-          marginRight: '5px',
-          zIndex: 1
-        }}
-        placeholder={"Enter table name"}
-        value={value}
-        autoFocus={inputVisibility === "visible"}
-        onChange={(ev) => setValue(ev.target.value)}
-        onKeyDown={(ev) => {
-          if (ev.key !== "Enter") return
-          if (inputVisibility === "visible") {
-            exportTable(props.rows, props.cols, value);
-            setInputVisibility("hidden")
-            setValue(undefined)
-          }
-        }}
-        onBlur={() => setInputVisibility("hidden")}
-      />
-      {tables ? <TableMenu /> : null}
-    </div>
-  )
-}
 
 export function Timeblock() {
   return <Table />;

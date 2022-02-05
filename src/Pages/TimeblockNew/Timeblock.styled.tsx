@@ -64,6 +64,7 @@ export const DefaultButton = styled.div`
   padding-right: 5px;
   margin-left: 5px;
   margin-right: 5px;
+  user-select: none;
   &:hover {
     cursor: pointer;
   }
