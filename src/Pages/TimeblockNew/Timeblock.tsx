@@ -29,13 +29,15 @@ const SaveTableInput = (props: {
 }) => {
   const [value, setValue] = useState<string | undefined>();
 
+  const toggleVisibility = (ev: any) => {
+    if (ev.target.id != "SaveTableInput") {
+      props.setInputVisibility("hidden");
+    }
+  }
+
   // useEffect(() => {
-  //   window.onclick = (ev: any) => {
-  //     console.log(ev.target)
-  //     if (ev.target.id !== "SaveTableInput") {
-  //       props.setInputVisibility("hidden");
-  //     }
-  //   }
+  //   window.addEventListener("click", toggleVisibility)
+  //   return () => window.removeEventListener("click", toggleVisibility)
   // }, [])
 
   return (
@@ -288,6 +290,7 @@ const Table = () => {
     "Enter",
     "Escape",
     "Tab",
+    "Control",
     "ArrowUp",
     "ArrowDown",
     "ArrowLeft",
@@ -325,7 +328,8 @@ const Table = () => {
         // If currently editing, stop editing
         const [rowIndex, colIndex] = currentSelected;
         moveSelected(data[rowIndex], colIndex, false);
-      } else {
+      }
+      else {
         if (!editing) {
           if (ev.key === "ArrowUp") {
             moveSelected(data[rowIndex > 0 ? rowIndex - 1 : rowIndex], dataIndex, false);
