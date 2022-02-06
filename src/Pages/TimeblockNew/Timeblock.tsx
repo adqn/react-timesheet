@@ -97,6 +97,20 @@ const ServerButtons = (props: {
     return (await fetch('http://localhost:5001/api/templates')).json()
   }
 
+  const copyAsMarkdown = async () => {
+    const ret: string[] = [];
+    
+    ret.push(`|${props.cols.map((c) => c.title).join("|")}|`);
+    ret.push(`|${props.cols.map((_, col) => col === 0 ? ":-:" : "-").join("|")}|`)
+    props.rows.forEach((_row, index) => {
+      const row = props.cols.map((col) => _row[col.dataIndex]);
+
+      ret.push(`|${row.join("|")}|`);
+    })
+    await navigator.clipboard.writeText(ret.join("\n"));
+    console.log("Copied to clipboard");
+  };
+
   const LoadTableMenu = () => 
     <Styled.DefaultMenu
       style={{
@@ -129,6 +143,13 @@ const ServerButtons = (props: {
         position: "absolute",
         right: "0px"
       }}>
+      <Styled.DefaultButton
+        id="SaveTableButton"
+        style={{ display: "inline-block" }}
+        onClick={copyAsMarkdown}
+      >
+        Copy as markdown
+      </Styled.DefaultButton>
       <Styled.DefaultButton
         id="SaveTableButton"
         style={{ display: "inline-block" }}
