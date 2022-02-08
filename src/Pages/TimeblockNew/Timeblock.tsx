@@ -72,7 +72,6 @@ const ServerButtons = (props: {
   const [value, setValue] = useState<string | undefined>();
   const [inputVisibility, setInputVisibility] = useState("hidden");
   const [menuVisibility, setMenuVisibility] = useState("hidden");
-  const [submitted, setSubmitted] = useState<boolean>(false);
   const exportTable = (
     rows: Row[],
     cols: Column[],
