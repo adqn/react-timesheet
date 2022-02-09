@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { editableKey, Row, Column, TimeblockColumnType } from "./types";
-
 import * as Styled from "./Timeblock.styled";
 import Modal from '../../components/Modal'
+import { StatusAlert, StatusType } from '../../components/StatusAlert'
 import { usePrevious } from "./utils";
 
 enum CellState {
@@ -181,6 +180,7 @@ const ServerButtons = (props: {
           setInputVisibility={setInputVisibility}
         /> : null}
       {menuVisibility === "visible" ? <LoadTableMenu /> : null}
+      <StatusAlert visible={true} status={StatusType.success} />
     </div>
   )
 }
