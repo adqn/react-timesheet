@@ -12,7 +12,7 @@ describe('StatusAlert', () => {
           status={StatusType.success}
         />
       ).toJSON()
-    screen.debug();
+    // screen.debug();
     expect(tree).toMatchSnapshot();
   });
 });
