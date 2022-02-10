@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from'styled-components'
 
-export enum StatusType {
+export const enum StatusType {
   success = "green",
   failure = "red",
   working = "yellow"
