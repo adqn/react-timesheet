@@ -71,8 +71,17 @@ const ServerButtons = (props: {
   const [value, setValue] = useState<string | undefined>();
   const [inputVisibility, setInputVisibility] = useState("hidden");
   const [menuVisibility, setMenuVisibility] = useState("hidden");
-  const [statusVisible, setStatusVisible] = useState(true);
+  const [statusVisible, setStatusVisible] = useState(false);
   const [status, setStatus] = useState<StatusType>(StatusType.success);
+
+  const showStatus = (status: StatusType) => {
+    if (!statusVisible) {
+      setStatus(status);
+      setStatusVisible(true);
+      setTimeout(() => setStatusVisible(false), 4000);
+    }
+  }
+
   const exportTable = (
     rows: Row[],
     cols: Column[],
@@ -93,8 +102,7 @@ const ServerButtons = (props: {
       .then((res) => console.log('Table saved')) 
       .catch((err) => {
         console.log(err);
-        setStatus(StatusType.failure);
-        setStatusVisible(true);
+        showStatus(StatusType.failure);
       });
   }
 
@@ -135,6 +143,7 @@ const ServerButtons = (props: {
               props.setData(table.rows);
               props.setColumns(table.cols);
               setMenuVisibility("hidden");
+              showStatus(StatusType.success);
             }}
           >{table.name}</Styled.MenuItem>
         )
@@ -172,7 +181,10 @@ const ServerButtons = (props: {
           }
           else {
             getTables()
-              .then(res => setTables(new Array(res.length).fill(0).map((_, i) => res[i].template)))
+              .then(res => {
+                setTables(new Array(res.length).fill(0).map((_, i) => res[i].template));
+              })
+              .catch(() => showStatus(StatusType.failure));
             setMenuVisibility("visible")
           }
         }}
@@ -187,7 +199,7 @@ const ServerButtons = (props: {
           setInputVisibility={setInputVisibility}
         /> : null}
       {menuVisibility === "visible" ? <LoadTableMenu /> : null}
-      <StatusAlert visible={statusVisible} status={status} />
+      {statusVisible ? <StatusAlert visible={statusVisible} status={status} /> : null}
     </div>
   )
 }

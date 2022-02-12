@@ -46,9 +46,9 @@ export const StatusAlert = (props: {visible: boolean, status: StatusType}) => {
     [StatusType.working]: "Working..."
   }
 
-  useEffect(() => {
-    if (visible) setTimeout(() => setVisible(false), 4000)
-  }, [visible]);
+  // useEffect(() => {
+  //   if (visible) setTimeout(() => setVisible(false), 4000)
+  // }, [visible]);
 
   return (
     <StatusContainer
