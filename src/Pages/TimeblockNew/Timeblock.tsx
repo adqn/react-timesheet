@@ -71,6 +71,8 @@ const ServerButtons = (props: {
   const [value, setValue] = useState<string | undefined>();
   const [inputVisibility, setInputVisibility] = useState("hidden");
   const [menuVisibility, setMenuVisibility] = useState("hidden");
+  const [statusVisible, setStatusVisible] = useState(true);
+  const [status, setStatus] = useState<StatusType>(StatusType.success);
   const exportTable = (
     rows: Row[],
     cols: Column[],
@@ -88,7 +90,12 @@ const ServerButtons = (props: {
       })
     }
     fetch('http://localhost:5001/api/savetemplate', req)
-      .then(() => console.log('Table saved'))
+      .then((res) => console.log('Table saved')) 
+      .catch((err) => {
+        console.log(err);
+        setStatus(StatusType.failure);
+        setStatusVisible(true);
+      });
   }
 
   const getTables = async () => {
@@ -180,7 +187,7 @@ const ServerButtons = (props: {
           setInputVisibility={setInputVisibility}
         /> : null}
       {menuVisibility === "visible" ? <LoadTableMenu /> : null}
-      <StatusAlert visible={true} status={StatusType.success} />
+      <StatusAlert visible={statusVisible} status={status} />
     </div>
   )
 }
@@ -278,7 +285,7 @@ const Cell = (props: {
 
 const Table = () => {
   const [data, setData] = useState<Array<Row>>(
-    new Array(48).fill(0).map((_, key) => ({
+    new Array(4).fill(0).map((_, key) => ({
       key,
       time: (
         "" +
