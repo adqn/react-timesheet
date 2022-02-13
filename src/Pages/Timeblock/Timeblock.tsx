@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-
 import { editableKey, Row, Column, TimeblockColumnType } from "./types";
-
 import * as Styled from "./Timeblock.styled";
 import Modal from '../../components/Modal'
+import { StatusAlert, StatusType } from '../../components/StatusAlert'
 import { usePrevious } from "./utils";
 
 enum CellState {
@@ -72,7 +71,24 @@ const ServerButtons = (props: {
   const [value, setValue] = useState<string | undefined>();
   const [inputVisibility, setInputVisibility] = useState("hidden");
   const [menuVisibility, setMenuVisibility] = useState("hidden");
-  const [submitted, setSubmitted] = useState<boolean>(false);
+  const [statusVisible, setStatusVisible] = useState(false);
+  const [status, setStatus] = useState<StatusType>(StatusType.success);
+  const [statusMessage, setStatusMessage] = useState<string>("");
+  let toggleStatus: NodeJS.Timeout;
+
+  const showStatus = (status: StatusType, message: string) => {
+    setStatusMessage(message);
+    setStatus(status);
+    setStatusVisible(true);
+
+    if (statusVisible) {
+      clearTimeout(toggleStatus);
+      toggleStatus = setTimeout(() => setStatusVisible(false), 3000);
+    } else {
+      toggleStatus = setTimeout(() => setStatusVisible(false), 3000);
+    }
+  }
+
   const exportTable = (
     rows: Row[],
     cols: Column[],
@@ -90,7 +106,11 @@ const ServerButtons = (props: {
       })
     }
     fetch('http://localhost:5001/api/savetemplate', req)
-      .then(() => console.log('Table saved'))
+      .then((res) => console.log('Table saved')) 
+      .catch((err) => {
+        console.log(err);
+        showStatus(StatusType.failure, "Failed to save table");
+      });
   }
 
   const getTables = async () => {
@@ -107,8 +127,8 @@ const ServerButtons = (props: {
 
       ret.push(`|${row.join("|")}|`);
     })
-    await navigator.clipboard.writeText(ret.join("\n"));
-    console.log("Copied to clipboard");
+    await navigator.clipboard.writeText(ret.join("\n"))
+      .then(() => showStatus(StatusType.success, "Copied to clipboard"));
   };
 
   const LoadTableMenu = () => 
@@ -130,6 +150,7 @@ const ServerButtons = (props: {
               props.setData(table.rows);
               props.setColumns(table.cols);
               setMenuVisibility("hidden");
+              showStatus(StatusType.success, "Loaded table");
             }}
           >{table.name}</Styled.MenuItem>
         )
@@ -167,7 +188,10 @@ const ServerButtons = (props: {
           }
           else {
             getTables()
-              .then(res => setTables(new Array(res.length).fill(0).map((_, i) => res[i].template)))
+              .then(res => {
+                setTables(new Array(res.length).fill(0).map((_, i) => res[i].template));
+              })
+              .catch(() => showStatus(StatusType.failure, "Couldn't fetch from server"));
             setMenuVisibility("visible")
           }
         }}
@@ -182,6 +206,11 @@ const ServerButtons = (props: {
           setInputVisibility={setInputVisibility}
         /> : null}
       {menuVisibility === "visible" ? <LoadTableMenu /> : null}
+      {statusVisible ? <StatusAlert
+        visible={statusVisible}
+        status={status}
+        message={statusMessage}
+      /> : null}
     </div>
   )
 }
@@ -279,7 +308,7 @@ const Cell = (props: {
 
 const Table = () => {
   const [data, setData] = useState<Array<Row>>(
-    new Array(48).fill(0).map((_, key) => ({
+    new Array(4).fill(0).map((_, key) => ({
       key,
       time: (
         "" +
