@@ -17,7 +17,7 @@ const StatusContainer = styled.div <{
   transform: translate(-50%, 0);
   width: fit-content;
   height: 30px;
-  top: 50px;
+  bottom: 50px;
   padding: 5px;
   border-radius: 5px;
   color: white;
@@ -38,24 +38,17 @@ const StatusContainer = styled.div <{
   `}
 `;
 
-export const StatusAlert = (props: {visible: boolean, status: StatusType}) => {
-  const [visible, setVisible] = useState<boolean>(props.visible);
-  const statusMessages = {
-    [StatusType.success]: "Action completed successfully",
-    [StatusType.failure]: "Action failed",
-    [StatusType.working]: "Working..."
-  }
-
-  // useEffect(() => {
-  //   if (visible) setTimeout(() => setVisible(false), 4000)
-  // }, [visible]);
-
+export const StatusAlert = (props: {
+  visible: boolean,
+  status: StatusType,
+  message: string
+}) => {
   return (
     <StatusContainer
-      visible={visible}
+      visible={props.visible}
       background={props.status}
     >
-      {statusMessages[props.status]}
+      {props.message}
     </StatusContainer>
   )
 }

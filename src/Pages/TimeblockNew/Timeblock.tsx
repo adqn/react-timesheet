@@ -73,12 +73,19 @@ const ServerButtons = (props: {
   const [menuVisibility, setMenuVisibility] = useState("hidden");
   const [statusVisible, setStatusVisible] = useState(false);
   const [status, setStatus] = useState<StatusType>(StatusType.success);
+  const [statusMessage, setStatusMessage] = useState<string>("");
+  let toggleStatus: NodeJS.Timeout;
 
-  const showStatus = (status: StatusType) => {
-    if (!statusVisible) {
-      setStatus(status);
-      setStatusVisible(true);
-      setTimeout(() => setStatusVisible(false), 4000);
+  const showStatus = (status: StatusType, message: string) => {
+    setStatusMessage(message);
+    setStatus(status);
+    setStatusVisible(true);
+
+    if (statusVisible) {
+      clearTimeout(toggleStatus);
+      toggleStatus = setTimeout(() => setStatusVisible(false), 3000);
+    } else {
+      toggleStatus = setTimeout(() => setStatusVisible(false), 3000);
     }
   }
 
@@ -102,7 +109,7 @@ const ServerButtons = (props: {
       .then((res) => console.log('Table saved')) 
       .catch((err) => {
         console.log(err);
-        showStatus(StatusType.failure);
+        showStatus(StatusType.failure, "Failed to save table");
       });
   }
 
@@ -120,8 +127,8 @@ const ServerButtons = (props: {
 
       ret.push(`|${row.join("|")}|`);
     })
-    await navigator.clipboard.writeText(ret.join("\n"));
-    console.log("Copied to clipboard");
+    await navigator.clipboard.writeText(ret.join("\n"))
+      .then(() => showStatus(StatusType.success, "Copied to clipboard"));
   };
 
   const LoadTableMenu = () => 
@@ -143,7 +150,7 @@ const ServerButtons = (props: {
               props.setData(table.rows);
               props.setColumns(table.cols);
               setMenuVisibility("hidden");
-              showStatus(StatusType.success);
+              showStatus(StatusType.success, "Loaded table");
             }}
           >{table.name}</Styled.MenuItem>
         )
@@ -184,7 +191,7 @@ const ServerButtons = (props: {
               .then(res => {
                 setTables(new Array(res.length).fill(0).map((_, i) => res[i].template));
               })
-              .catch(() => showStatus(StatusType.failure));
+              .catch(() => showStatus(StatusType.failure, "Couldn't fetch from server"));
             setMenuVisibility("visible")
           }
         }}
@@ -199,7 +206,11 @@ const ServerButtons = (props: {
           setInputVisibility={setInputVisibility}
         /> : null}
       {menuVisibility === "visible" ? <LoadTableMenu /> : null}
-      {statusVisible ? <StatusAlert visible={statusVisible} status={status} /> : null}
+      {statusVisible ? <StatusAlert
+        visible={statusVisible}
+        status={status}
+        message={statusMessage}
+      /> : null}
     </div>
   )
 }
