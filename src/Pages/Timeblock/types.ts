@@ -1,6 +1,12 @@
 import { TableProps } from "antd"
 import { ColumnType } from "antd/lib/table"
 
+export interface TableData {
+  name: string;
+  rows: Row[];
+  cols: Column[];
+}
+
 interface SelectableColumns {
     time: string
     plan: string

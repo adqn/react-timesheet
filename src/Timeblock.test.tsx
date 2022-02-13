@@ -18,11 +18,11 @@ window.matchMedia = window.matchMedia || function() {
 import React from 'react';
 import renderer from 'react-test-renderer';
 import { render, screen } from '@testing-library/react';
-import { Timeblock } from './Pages/TimeblockNew';
+import { Timeblock } from './Pages/Timeblock';
 
 describe('Timeblock', () => {
   test('renders Timeblock and gets roles', () => {
     render(<Timeblock />);
-    screen.getByRole('');
+    // screen.getByRole('');
   });
 });
