@@ -38,8 +38,8 @@ const SaveTableInput = (props: {
       }}
       autoFocus
       placeholder={"Enter table name"}
-      onChange={(ev) => setValue(ev.target.value)}
-      onKeyDown={(ev) => {
+      onChange={(ev: React.ChangeEvent<HTMLInputElement>) => setValue(ev.target.value)}
+      onKeyDown={(ev: React.KeyboardEvent) => {
         if (ev.key !== "Enter") return
         props.exportTable(props.rows, props.cols, value);
         props.setInputVisibility("hidden")
@@ -175,7 +175,7 @@ export const ServerButtons = (props: {
           }
           else {
             getTables()
-              .then(res => {
+              .then((res) => {
                 setTables(new Array(res.length).fill(0).map((_, i) => res[i].template));
               })
               .catch(() => showStatus(StatusType.failure, "Couldn't fetch from server"));

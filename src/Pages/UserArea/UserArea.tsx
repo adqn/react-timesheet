@@ -349,8 +349,8 @@ const ProjectMenuInput = ({ projects }: { projects: Project[] }) => {
   const [value, setValue] = useState("")
   const [foundProjects, setFoundProjects] = useState<Project[] | null>(null)
 
-  function handleInput(e) {
-    setValue(e.target.value)
+  function handleInput(ev: any) {
+    setValue(ev.target.value)
     const results = projects.filter(project => project.name.toLowerCase().includes(value))
     if (results.length > 0) {
       setFoundProjects(results)
@@ -473,7 +473,7 @@ const UserBar = ({ projects, setTasks }: {projects: Project[] | null, setTasks: 
   )
 }
 
-const MutableUserBar = ({task}) => {
+const MutableUserBar = ({task: Task}) => {
   const startDate = new Date(task.start)
   const endDate = new Date(task.end)
   const context = React.useContext(StopwatchContext)
