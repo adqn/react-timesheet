@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react'
-import { makeServer } from './mirageServer'
+import React, { useState } from 'react'
 import Topbar from './components/Topbar'
 import Sidebar from './components/Sidebar'
 import Timer from './components/Timer'
