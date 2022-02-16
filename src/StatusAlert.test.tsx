@@ -17,7 +17,8 @@ describe('StatusAlert', () => {
     render(
       <StatusAlert
         visible={true}
-        status={StatusType.failure}
+        status={StatusType.failure} 
+        message=""
       />);
     // const tree = renderer
       // .create(
