@@ -165,16 +165,16 @@ const ServerButtons = (props: {
 
     const rows = props.rows.map((row) => ({...row}));
 
-    calendarBlocks.forEach((event) =>{  
-      console.log(event);
-      let startIndex = 0;
-      if (event.start.getDate() === now.getDate()) {
+    calendarBlocks.forEach((event) =>{
+      const todaysDate = now.getDate() + 1;
+      let startIndex = event.start.getDate() > todaysDate ? 49 : 0;
+      if (event.start.getDate() === todaysDate) {
         const hour = event.start.getHours();
         const minutes = event.start.getMinutes() >= 30 ? 30 : 0;
         startIndex = (hour * 2) + (minutes/30);
       }
       let endIndex = 49;
-      if (event.end.getDate() === now.getDate()) {
+      if (event.end.getDate() === todaysDate) {
         const hour = event.end.getHours();
         const minutes = event.end.getMinutes() >= 30 ? 30 : 0;
         endIndex = (hour * 2) + (minutes/30);

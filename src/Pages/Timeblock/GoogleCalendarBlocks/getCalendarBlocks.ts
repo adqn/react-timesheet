@@ -51,7 +51,7 @@ export const getCalendarBlocks = async () => {
     },
     */
     const api = apiCalendar();
-    const events: {summary: string; start: Date, end: Date}[] = (await api.listUpcomingEvents(5)).result.items.map((rawEvent: any) => ({
+    const events: {summary: string; start: Date, end: Date}[] = (await api.listTodaysEvents()).result.items.map((rawEvent: any) => ({
         summary: rawEvent.summary.replace("Rory:", ""),
         start: new Date(rawEvent.start.dateTime),
         end: new Date(rawEvent.end.dateTime),

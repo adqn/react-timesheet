@@ -12,7 +12,7 @@ class ApiCalendar {
       this.initClient = this.initClient.bind(this);
       this.handleSignoutClick = this.handleSignoutClick.bind(this);
       this.handleAuthClick = this.handleAuthClick.bind(this);
-      this.listUpcomingEvents = this.listUpcomingEvents.bind(this);
+      this.listTodaysEvents = this.listTodaysEvents.bind(this);
       this.listEvents = this.listEvents.bind(this);
       this.listenSign = this.listenSign.bind(this);
       this.onLoad = this.onLoad.bind(this);
@@ -130,22 +130,20 @@ class ApiCalendar {
 
   /**
    * List all events in the calendar
-   * @param {number} maxResults to see
    * @param {string} calendarId to see by default use the calendar attribute
    * @returns {any}
    */
-  public listUpcomingEvents(
-    maxResults: number,
+  public listTodaysEvents(
     calendarId: string = this.calendar
   ): any {
     if (this.gapi) {
       return this.gapi.client.calendar.events.list({
         calendarId: calendarId,
-        timeMin: '2022-02-20T00:00:00.000Z', // new Date().toISOString(),
-        timeMax: '2022-02-21T00:00:00.000Z',
+        timeMin: '2022-02-21T00:00:01.000Z', // new Date().toISOString(),
+        timeMax: '2022-02-22T23:59:59.999Z',
+        timeZone: "Pacific Standard Time",
         showDeleted: false,
         singleEvents: true,
-        // maxResults: maxResults,
         orderBy: 'startTime',
       });
     } else {
