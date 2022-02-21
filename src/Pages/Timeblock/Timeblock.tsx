@@ -5,6 +5,8 @@ import Modal from '../../components/Modal'
 import { StatusAlert, StatusType } from '../../components/StatusAlert'
 import { usePrevious } from "./utils";
 
+import { getCalendarBlocks, initCalendar } from "./GoogleCalendarBlocks/getCalendarBlocks";
+
 enum CellState {
   DEFAULT = "DEFAULT",
   ACTIVE = "ACTIVE",
@@ -156,6 +158,35 @@ const ServerButtons = (props: {
         )
       })}
     </Styled.DefaultMenu>
+  
+  const initializeFromCalendar = async () => {
+    const now = new Date();
+    const calendarBlocks = await getCalendarBlocks();
+
+    const rows = props.rows.map((row) => ({...row}));
+
+    calendarBlocks.forEach((event) =>{  
+      console.log(event);
+      let startIndex = 0;
+      if (event.start.getDate() === now.getDate()) {
+        const hour = event.start.getHours();
+        const minutes = event.start.getMinutes() >= 30 ? 30 : 0;
+        startIndex = (hour * 2) + (minutes/30);
+      }
+      let endIndex = 49;
+      if (event.end.getDate() === now.getDate()) {
+        const hour = event.end.getHours();
+        const minutes = event.end.getMinutes() >= 30 ? 30 : 0;
+        endIndex = (hour * 2) + (minutes/30);
+      }
+
+      rows.slice(startIndex, endIndex).map((row) => {
+        row.plan = event.summary;
+      });
+    });
+
+    props.setData(rows);
+  };
 
   return (
     <div
@@ -197,6 +228,12 @@ const ServerButtons = (props: {
         }}
       >
         Load table
+      </Styled.DefaultButton>
+      <Styled.DefaultButton
+        style={{display: "inline-block"}}
+        onClick={initializeFromCalendar}
+      >
+        Initialize from Calendar
       </Styled.DefaultButton>
       {inputVisibility === "visible" ?
         <SaveTableInput
@@ -308,7 +345,7 @@ const Cell = (props: {
 
 const Table = () => {
   const [data, setData] = useState<Array<Row>>(
-    new Array(4).fill(0).map((_, key) => ({
+    new Array(48).fill(0).map((_, key) => ({
       key,
       time: (
         "" +
@@ -564,5 +601,6 @@ const Table = () => {
 };
 
 export function Timeblock() {
+  initCalendar();
   return <Table />;
 }
