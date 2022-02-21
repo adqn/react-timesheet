@@ -161,12 +161,13 @@ const ServerButtons = (props: {
   
   const initializeFromCalendar = async () => {
     const now = new Date();
+    const todaysDate = now.getDate();
+    
     const calendarBlocks = await getCalendarBlocks();
 
     const rows = props.rows.map((row) => ({...row}));
 
     calendarBlocks.forEach((event) =>{
-      const todaysDate = now.getDate() + 1;
       let startIndex = event.start.getDate() > todaysDate ? 49 : 0;
       if (event.start.getDate() === todaysDate) {
         const hour = event.start.getHours();

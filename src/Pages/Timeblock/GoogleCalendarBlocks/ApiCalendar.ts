@@ -137,11 +137,14 @@ class ApiCalendar {
     calendarId: string = this.calendar
   ): any {
     if (this.gapi) {
+      const timeMin = new Date();
+      timeMin.setHours(0, 0, 0, 0);
+      const timeMax = new Date();
+      timeMax.setHours(48, 0, 0, 0);
       return this.gapi.client.calendar.events.list({
         calendarId: calendarId,
-        timeMin: '2022-02-21T00:00:01.000Z', // new Date().toISOString(),
-        timeMax: '2022-02-22T23:59:59.999Z',
-        timeZone: "Pacific Standard Time",
+        timeMin: timeMin.toISOString(),
+        timeMax: timeMax.toISOString(),
         showDeleted: false,
         singleEvents: true,
         orderBy: 'startTime',
