@@ -348,7 +348,7 @@ const Table = () => {
   const [data, setData] = useState<Array<Row>>(
     new Array(48).fill(0).map((_, key) => ({
       key,
-      time: (
+      time: key === 0 ? "Midnight" : (
         "" +
         (Math.floor(key / 2) * 100 +
           Math.round(60 * (key / 2 - Math.floor(key / 2))))

@@ -162,6 +162,22 @@ class ApiCalendar {
    * @param {string} calendarId to see by default use the calendar attribute
    * @returns {any}
    */
+  public async listCalendars(): Promise<any> {
+    if (this.gapi) {
+      return this.gapi.client.calendar.calendarList.list({});
+    } else {
+      console.log('Error: this.gapi not loaded');
+      return false;
+    }
+  }  
+
+  /**
+   * List all events in the calendar queried by custom query options
+   * See all available options here https://developers.google.com/calendar/v3/reference/events/list
+   * @param {object} queryOptions to see
+   * @param {string} calendarId to see by default use the calendar attribute
+   * @returns {any}
+   */
   public listEvents(queryOptions: object,calendarId: string = this.calendar): any {
     if (this.gapi) {
         return this.gapi.client.calendar.events.list({
