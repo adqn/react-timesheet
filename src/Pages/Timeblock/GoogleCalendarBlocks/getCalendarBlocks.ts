@@ -2,7 +2,7 @@ import { apiCalendar } from './ApiCalendar';
 
 export const initCalendar = () => {
     const api = apiCalendar();
-    api.onLoad(() => {
+    api.onLoad(async () => {
         if (!api.sign) {
             api.handleAuthClick();
         }
@@ -55,7 +55,11 @@ export const getCalendarBlocks = async () => {
         summary: rawEvent.summary.replace("Rory:", ""),
         start: new Date(rawEvent.start.dateTime),
         end: new Date(rawEvent.end.dateTime),
-    }));
+    })).concat((await api.listTodaysEvents("ksiondag846@gmail.com")).result.items.map((rawEvent: any) => ({
+        summary: rawEvent.summary.replace("Rory:", ""),
+        start: new Date(rawEvent.start.dateTime),
+        end: new Date(rawEvent.end.dateTime),
+    })));
 
     return events;
 };

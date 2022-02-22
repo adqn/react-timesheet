@@ -174,14 +174,15 @@ const ServerButtons = (props: {
         const minutes = event.start.getMinutes() >= 30 ? 30 : 0;
         startIndex = (hour * 2) + (minutes/30);
       }
-      let endIndex = 49;
+      let endIndex = 48;
       if (event.end.getDate() === todaysDate) {
         const hour = event.end.getHours();
-        const minutes = event.end.getMinutes() >= 30 ? 30 : 0;
-        endIndex = (hour * 2) + (minutes/30);
+        const minutes = event.end.getMinutes();
+        // Making end-index inclusive and doing finicky edge-condition maths
+        endIndex = (hour * 2) + Math.floor(minutes/30) - ((minutes % 30) === 0 ? 1 : 0);
       }
 
-      rows.slice(startIndex, endIndex).map((row) => {
+      rows.slice(startIndex, endIndex + 1).map((row) => {
         row.plan = event.summary;
       });
     });
@@ -348,7 +349,7 @@ const Table = () => {
   const [data, setData] = useState<Array<Row>>(
     new Array(48).fill(0).map((_, key) => ({
       key,
-      time: (
+      time: key === 0 ? "Midnight" : (
         "" +
         (Math.floor(key / 2) * 100 +
           Math.round(60 * (key / 2 - Math.floor(key / 2))))
